@@ -67,7 +67,9 @@ Na revisão foram procuradas formulações vagas ou requisitos não confirmados.
 
 ## Pressupostos novos
 
-- **P-23** Uma password tem pelo menos 8 caracteres. *(Valor comum; por confirmar.)*
-- **P-24** O nome de um projeto tem no máximo 100 caracteres e o título de uma tarefa no máximo 200.
-- **P-25** Quem faz uma ação nunca recebe notificação dela (ex.: atribuir uma tarefa a si próprio).
-- **P-26** As notificações não lidas mantêm-se até o utilizador as abrir; não expiram no MVP.
+O Mário reviu o backlog e confirmou explicitamente P-23 a P-26. Ficam também aceites a reativação de projetos arquivados (US-16) e a regra de que o Gestor não pode sair do próprio projeto (US-05).
+
+- **P-23** ✅ Uma password tem pelo menos 8 caracteres.
+- **P-24** ✅ O nome de um projeto tem no máximo 100 caracteres e o título de uma tarefa no máximo 200.
+- **P-25** ✅ Quem faz uma ação nunca recebe notificação dela (ex.: atribuir uma tarefa a si próprio).
+- **P-26** ✅ As notificações não lidas mantêm-se até o utilizador as abrir; não expiram no MVP.

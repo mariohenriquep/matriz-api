@@ -2,7 +2,7 @@
 
 > Gerado no Exercício 3 da Ficha 01 (ver `docs/ai-log/ex03-user-stories.md`) a partir das decisões do Exercício 2.
 > Prioridade MoSCoW: **M** = Must, **S** = Should. Critérios de aceitação em Given / When / Then (Dado / Quando / Então).
-> Os itens com **[P-xx]** dependem de um pressuposto ainda não confirmado pelo cliente.
+> Os itens com **[P-xx]** dependem de um pressuposto ainda não confirmado (ver `docs/constraints.md`).
 
 ## Perfis
 
@@ -40,7 +40,7 @@
 
 **Como** visitante, **quero** criar uma conta e iniciar sessão, **para** aceder aos projetos da minha equipa.
 
-1. **Dado** que não existe conta com `ana@exemplo.pt`, **quando** me registo com nome "Ana", esse email e uma password com 8 ou mais caracteres **[P-23]**, **então** a conta é criada e fico com sessão iniciada.
+1. **Dado** que não existe conta com `ana@exemplo.pt`, **quando** me registo com nome "Ana", esse email e uma password com 8 ou mais caracteres, **então** a conta é criada e fico com sessão iniciada.
 2. **Dado** que não existe nenhuma conta na Matriz, **quando** a Ana se regista, **então** a conta dela fica como administrador global **[P-20]**.
 3. **Dado** que já existe conta com `ana@exemplo.pt`, **quando** alguém se tenta registar com `Ana@Exemplo.pt`, **então** o registo é recusado com "Já existe uma conta com este email".
 4. **Dado** que tenho conta, **quando** inicio sessão com email ou password errados, **então** vejo "Credenciais inválidas", sem indicar qual dos dois está errado.
@@ -52,7 +52,7 @@
 
 1. **Dado** que tenho sessão iniciada, **quando** crio o projeto "Website 2027", **então** o projeto aparece na minha lista de projetos e eu fico como seu Gestor.
 2. **Dado** que tenho sessão iniciada, **quando** tento criar um projeto sem nome ou só com espaços, **então** o projeto não é criado e vejo "O nome é obrigatório".
-3. **Dado** que tenho sessão iniciada, **quando** tento criar um projeto com um nome de 101 caracteres **[P-24]**, **então** o projeto não é criado e vejo "O nome tem no máximo 100 caracteres".
+3. **Dado** que tenho sessão iniciada, **quando** tento criar um projeto com um nome de 101 caracteres, **então** o projeto não é criado e vejo "O nome tem no máximo 100 caracteres".
 
 ## US-03 — Ver a lista dos meus projetos (M)
 
@@ -155,7 +155,7 @@ As notificações são dentro da aplicação **[P-21]**.
 
 1. **Dado** que o Rui me atribui a tarefa T, **quando** abro a Matriz, **então** vejo o contador de notificações não lidas aumentado em 1 e uma notificação "Rui atribuiu-te a tarefa T em P".
 2. **Dado** que o Rui me adiciona ao projeto P, **então** recebo a notificação "Rui adicionou-te ao projeto P".
-3. **Dado** que me atribuo a mim próprio uma tarefa, **então** não recebo notificação **[P-25]**.
+3. **Dado** que me atribuo a mim próprio uma tarefa, **então** não recebo notificação.
 4. **Dado** que tenho 3 notificações não lidas, **quando** abro uma, **então** fica marcada como lida e o contador passa a 2.
 
 ## US-15 — As minhas tarefas (S)
@@ -184,10 +184,10 @@ As notificações são dentro da aplicação **[P-21]**.
 | CE-03 | O último administrador global tenta despromover-se. | Recusado: tem de existir sempre um. | US-11 |
 | CE-04 | Projeto sem tarefas. | Progresso 0%, sem erro (sem divisão por zero). | US-12 |
 | CE-05 | Ação de escrita num projeto arquivado. | Recusada; o projeto fica só de leitura. | US-16 |
-| CE-06 | Data limite no passado ao criar tarefa. | Aceite. A tarefa aparece como "Atrasada" enquanto não estiver `Concluída`. **[P]** | US-06 |
+| CE-06 | Data limite no passado ao criar tarefa. | Aceite. A tarefa aparece como "Atrasada" enquanto não estiver `Concluída`. **[P-27]** | US-06 |
 | CE-07 | Utilizador abre um projeto onde não é membro (e não é admin). | Resposta "não encontrado", sem revelar que o projeto existe. | US-03, US-06 |
 | CE-08 | Email com maiúsculas diferentes. | Tratado como o mesmo email. | US-01, US-04 |
-| CE-09 | Duas pessoas editam a mesma tarefa ao mesmo tempo. | Prevalece a última gravação no MVP. **[P]** | US-07, US-09 |
+| CE-09 | Duas pessoas editam a mesma tarefa ao mesmo tempo. | Prevalece a última gravação no MVP. **[P-11]** | US-07, US-09 |
 | CE-10 | Mover uma tarefa no Kanban para a coluna onde já está. | Nada muda e não se gera notificação. | US-13 |
-| CE-11 | O utilizador faz uma ação sobre si próprio (ex.: atribuir-se uma tarefa). | Sem notificação. **[P-25]** | US-14 |
+| CE-11 | O utilizador faz uma ação sobre si próprio (ex.: atribuir-se uma tarefa). | Sem notificação (P-25). | US-14 |
 | CE-12 | Responsável é removido do projeto depois de receber a notificação. | A notificação mantém-se, mas ao abri-la vê "Já não tens acesso a este projeto". | US-05, US-14 |
