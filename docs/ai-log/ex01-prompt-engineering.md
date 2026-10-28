@@ -141,6 +141,8 @@ Antes de responder, confirma que:
 - **Validation** obriga a IA a rever a resposta e dá-nos critérios objetivos para a avaliar.
 - A separação entre factos e pressupostos torna visível o que tem de ser confirmado com o cliente.
 
+**Decisão:** a partir daqui, todos os pedidos à IA neste projeto usam a estrutura do prompt B (Goal → Context → Constraints → Task → Validation).
+
 **Limitações observadas (mesmo no prompt B)**
 - A IA continua a não saber as respostas; só as perguntas são fiáveis. As respostas serão pressupostos nossos (Exercício 2).
 - Algumas perguntas sobrepõem-se (ex.: 2 e 7); o humano tem de as rever e agrupar.
