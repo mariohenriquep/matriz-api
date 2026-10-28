@@ -16,6 +16,10 @@ Antes de qualquer tarefa, lê os documentos relevantes:
 | Funcionalidades, regras ou âmbito | `docs/requirements.md` |
 | Comportamento esperado ou testes | `docs/user-stories.md` (critérios de aceitação e casos-limite) |
 | Decisões técnicas, segurança, pressupostos | `docs/constraints.md` |
+| Estrutura do código, módulos e dependências | `docs/architecture.md` |
+| Base de dados, entidades e regras de integridade | `docs/database.md` |
+| Endpoints, pedidos, respostas e erros | `openapi.yaml` |
+| Ecrãs e interface | `docs/ui/` |
 
 Se encontrares contradições entre documentos, não escolhas sozinho: assinala-as e pergunta.
 

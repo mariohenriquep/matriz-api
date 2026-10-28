@@ -52,4 +52,19 @@ Legenda: **Aceitar** / **Alterar** (aplicar outra versão) / **Rejeitar**. A dec
 
 ## Decisão do Mário
 
-*(por preencher)*
+O Mário aceitou a proposta na íntegra (2026-10-28).
+
+### Alterações aplicadas
+
+| # | Ficheiro(s) | Alteração |
+|---|-------------|-----------|
+| A-01 | database.md (RN-06) | A criação do primeiro administrador na instalação não gera registo. |
+| A-02 | openapi.yaml (`NovaTarefa.titulo`) | `pattern: '\S'` para recusar títulos só com espaços. |
+| A-03 | openapi.yaml (`responsavelId`) | Removido o valor especial `sem`. |
+| A-04 | openapi.yaml (`info.description`) | Lista de endpoints previstos por módulo, para a Aula 03. |
+| A-05 | README.md | Estado do projeto por fases e novos ficheiros na tabela da documentação. |
+| A-06 | AGENTS.md §1 | Linhas para arquitetura, dados, API e UI. |
+| A-07 | constraints.md (D-03, D-04, D-07), architecture.md | Decisões marcadas como tomadas. |
+| A-08 | docs/ui/wireframe.html e .png | Título da lista lateral: "Projetos". |
+
+A-09 e A-10 foram rejeitadas e não exigiram alterações.

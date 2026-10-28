@@ -28,7 +28,7 @@
 
 ## 3. Decisão
 
-**Monólito modular**, com uma aplicação web (SPA) separada que consome uma API REST.
+**Monólito modular**, com uma aplicação web (SPA) separada que consome uma API REST. ✅ Aprovado pelo Mário (D-04).
 
 **Justificação**
 
@@ -87,8 +87,8 @@ flowchart LR
 |------|---------|--------|
 | Estilo de API | REST com JSON; contrato em `openapi.yaml` (Exercício 3). | Proposto |
 | Erros | Formato uniforme baseado em *Problem Details* (RFC 9457), com mensagens em português. | Proposto |
-| Entrega de notificações (D-07) | O frontend consulta o contador de não lidas periodicamente (ex.: a cada 30 s) e ao mudar de ecrã. Sem WebSockets no MVP. | Proposto |
-| Base de dados (D-03) | Relacional, pela natureza das relações e regras de integridade. Motor concreto por decidir. | Proposto |
+| Entrega de notificações (D-07) | O frontend consulta o contador de não lidas periodicamente (ex.: a cada 30 s) e ao mudar de ecrã. Sem WebSockets no MVP. | ✅ Decidido |
+| Base de dados (D-03) | Relacional, pela natureza das relações e regras de integridade. Motor concreto por decidir. | ✅ Decidido (motor pendente) |
 | Autenticação (D-05) | Por decidir na Aula 03, junto com a stack. | Pendente |
 | Linguagem e frameworks (D-01, D-02) | Por decidir. O `.gitignore` de Java sugere Java no backend, mas não foi confirmado. | Pendente |
 

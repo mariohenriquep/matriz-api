@@ -13,6 +13,19 @@ info:
     Os nomes seguem o modelo de dados em `docs/database.md`. Os erros usam *Problem Details*
     (RFC 9457) com mensagens em português, como em `docs/architecture.md` §5.
 
+    **Endpoints previstos para a Aula 03** (ainda sem schemas), um grupo por módulo de
+    `docs/architecture.md` §4:
+
+    - Identidade e acesso: `POST /auth/registo`, `POST /auth/login`, `POST /auth/logout`.
+    - Projetos e membros: `GET|POST /projetos`, `GET|PATCH /projetos/{id}`,
+      `POST /projetos/{id}/arquivo`, `DELETE /projetos/{id}/arquivo` (reativar),
+      `GET|POST /projetos/{id}/membros`, `DELETE /projetos/{id}/membros/{utilizadorId}`.
+    - Tarefas: `PATCH|DELETE /tarefas/{id}`, `GET /eu/tarefas` (As minhas tarefas).
+    - Progresso: calculado a partir de `GET /projetos/{id}/tarefas` ou num endpoint próprio, a decidir.
+    - Notificações: `GET /eu/notificacoes`, `GET /eu/notificacoes/nao-lidas/contagem`,
+      `POST /eu/notificacoes/{id}/lida`.
+    - Administração: `POST|DELETE /admin/administradores/{utilizadorId}`, `GET /admin/registo`.
+
     O mecanismo de autenticação ainda não foi decidido (D-05). Aqui é representado como um
     token *bearer*; pode vir a ser uma sessão com cookie sem mudar as operações.
 servers:
@@ -46,14 +59,9 @@ paths:
         - name: responsavelId
           in: query
           required: false
-          description: Filtrar por responsável. Usar `sem` para tarefas sem responsável.
+          description: Filtrar por responsável.
           schema:
-            type: string
-          examples:
-            utilizador:
-              value: '42'
-            semResponsavel:
-              value: sem
+            $ref: '#/components/schemas/Id'
       responses:
         '200':
           description: Lista de tarefas (pode estar vazia, US-10 crit. 3).
@@ -244,6 +252,7 @@ components:
           type: string
           minLength: 1
           maxLength: 200
+          pattern: '\S'
           description: Obrigatório; não pode ser só espaços (P-24).
         descricao:
           type: [string, 'null']

@@ -182,7 +182,7 @@ Estas regras são verificadas na aplicação (módulos em `docs/architecture.md`
 | RN-03 | Ao remover um membro, as tarefas de que é responsável nesse projeto ficam com `responsavel_id` vazio (na mesma transação). | RF-07, CE-01 |
 | RN-04 | Se `PROJETO.arquivado_em` estiver preenchido, não se cria nem altera nenhuma tarefa nem membro desse projeto. | RF-18, CE-05 |
 | RN-05 | Tem de existir sempre pelo menos um UTILIZADOR com `is_admin_global = verdadeiro`. | RF-13, CE-03 |
-| RN-06 | Cada mudança de `is_admin_global` cria uma linha em REGISTO_ADMIN (na mesma transação). | RF-19 |
+| RN-06 | Cada promoção ou despromoção cria uma linha em REGISTO_ADMIN (na mesma transação). A criação do primeiro administrador na instalação não gera registo, porque não tem autor. | RF-02, RF-19 |
 | RN-07 | Não se cria NOTIFICACAO quando autor e destinatário são o mesmo. | P-25 |
 | RN-08 | Mover uma tarefa para o estado em que já está não altera nada nem gera notificação. | CE-10 |
 | RN-09 | O email compara-se sem distinguir maiúsculas (guardar normalizado ou com índice que ignore maiúsculas). | CE-08 |

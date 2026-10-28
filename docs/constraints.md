@@ -76,11 +76,11 @@
 |----|---------|--------|-------|
 | D-01 | Linguagem e framework do backend. | Aula 02/03 | O `.gitignore` inicial do repositório é de Java, mas isso não é uma decisão tomada. |
 | D-02 | Framework do frontend. | Aula 02/03 | — |
-| D-03 | Base de dados. | Aula 02 | Proposto: relacional (`docs/architecture.md` §5); motor por decidir. |
-| D-04 | Estilo de arquitetura (monólito, monólito modular, microservices). | Aula 02 | Proposto: monólito modular (`docs/architecture.md` §3). |
+| D-03 | Base de dados. | Aula 02 | ✅ Relacional (`docs/architecture.md` §5). Motor concreto ainda pendente. |
+| D-04 | Estilo de arquitetura (monólito, monólito modular, microservices). | Aula 02 | ✅ Monólito modular (`docs/architecture.md` §3). |
 | D-05 | Mecanismo de autenticação (sessão com cookie ou token). | Aula 02/03 | — |
 | D-06 | Política de apagamento de contas e retenção de dados. | Antes de produção | — |
-| D-07 | Como entregar as notificações in-app (consulta periódica ou tempo real). | Aula 02/03 | Proposto: consulta periódica (`docs/architecture.md` §5). |
+| D-07 | Como entregar as notificações in-app (consulta periódica ou tempo real). | Aula 02/03 | ✅ Consulta periódica (`docs/architecture.md` §5). |
 | D-08 | Alojamento e ambiente de produção. | Mais tarde | — |
 | D-09 | Restringir o registo (domínio de email da empresa ou só por convite). | Antes de produção | Ver RK-01. |
 
