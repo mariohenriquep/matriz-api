@@ -190,7 +190,7 @@ Estas regras são verificadas na aplicação (módulos em `docs/architecture.md`
 ## 5. Decisões e pressupostos deste modelo
 
 - **Arquivo por data em vez de booleano:** `arquivado_em` diz se está arquivado e quando. Reativar volta a pô-lo vazio.
-- **Eliminar tarefa é definitivo** (sem "apagado lógico"), porque o histórico de tarefas está fora do âmbito. As notificações que apontavam para ela ficam com `tarefa_id` vazio [P-32, por confirmar].
+- **Eliminar tarefa é definitivo** (sem "apagado lógico"), porque o histórico de tarefas está fora do âmbito. As notificações que apontavam para ela ficam com `tarefa_id` vazio (✅ P-32).
 - **Progresso não é guardado:** é calculado com uma contagem por estado (`docs/architecture.md` §3, alternativas rejeitadas).
 - **Sessões não estão modeladas:** dependem do mecanismo de autenticação (D-05). Se forem sessões no servidor, será precisa uma tabela SESSAO.
 - **Identificadores:** tipo concreto (número sequencial ou UUID) a decidir com a stack (D-01, D-03).

@@ -47,7 +47,7 @@
 | P-29 | Após 5 tentativas de login falhadas seguidas, a conta fica bloqueada para login durante 15 minutos. | Por confirmar | RNF-11. |
 | P-30 | Consultar as notificações a cada 30 segundos é suficiente (sem tempo real). | Por confirmar | RF-16, arquitetura. |
 | P-31 | Frontend e backend são publicados no mesmo domínio. | Por confirmar | Autenticação, arquitetura. |
-| P-32 | Eliminar uma tarefa é definitivo; as notificações que apontavam para ela perdem a ligação. | Por confirmar | Modelo de dados. |
+| P-32 | Eliminar uma tarefa é definitivo; as notificações que apontavam para ela perdem a ligação. | ✅ | Modelo de dados. |
 
 ## 3. Segurança e privacidade
 

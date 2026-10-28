@@ -49,4 +49,4 @@ dados relacional, módulos).
 
 - **Tabela de papéis (PAPEL / UTILIZADOR_PAPEL).** Rejeitada: só há três papéis fixos; Gestor = `PROJETO.gestor_id`, Administrador = `is_admin_global`, Membro = MEMBRO_PROJETO. Uma tabela genérica de papéis seria uma funcionalidade não pedida.
 - **Guardar o texto das notificações.** Rejeitado: gera-se a partir do tipo e das ligações, e não fica desatualizado se o nome da tarefa mudar.
-- **Apagado lógico de tarefas.** Rejeitado no MVP: o histórico está fora do âmbito (P-32, por confirmar).
+- **Apagado lógico de tarefas.** Rejeitado no MVP: o histórico está fora do âmbito (✅ P-32).
