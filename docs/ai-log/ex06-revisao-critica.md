@@ -95,4 +95,28 @@ Legenda da decisão: **Aceitar** (aplicar a sugestão tal como está), **Alterar
 
 ## Decisão do Mário
 
-*(por preencher depois da revisão)*
+O Mário aceitou a proposta na íntegra (2026-10-28): 12 sugestões aceites, 3 alteradas e 3 rejeitadas, como na tabela.
+
+### Alterações aplicadas
+
+| # | Ficheiro(s) | Alteração |
+|---|-------------|-----------|
+| R-01 | requirements (RF-18), user-stories (US-16) | Reativar: Gestor ou administrador. |
+| R-02 | requirements (RF-07), user-stories (US-05, CE-02) | O Gestor não pode ser removido nem pelo administrador. |
+| R-03 | requirements (RF-10), user-stories (US-08 crit. 4) | O administrador não membro não pode ser responsável. |
+| R-04 | requirements (RF-05), user-stories (US-03) | Lista "Projetos arquivados" à parte. |
+| R-06 | requirements (RF-17) | Justificação reescrita. |
+| R-07 | README | Pressupostos assinalados. |
+| R-08 | requirements (topo) | Explicado o papel do Mário como cliente. |
+| R-09 | requirements (RNF-02), constraints (P-28) | Sessão expira após 8 h de inatividade (pressuposto). |
+| R-10 | requirements (RNF-07) | 768 px a 1920 px, sem scroll horizontal. |
+| R-11 | requirements (RNF-01) | bcrypt ou Argon2. |
+| R-12 | requirements (RF-02, perfis, §6), user-stories (perfis, US-01), constraints (P-20), README | Primeiro administrador criado na instalação. |
+| R-13 | constraints (RK-01, D-09) | Registo aberto registado como risco aceite. |
+| R-14 | constraints (RK-02) | Enumeração de contas registada como risco aceite. |
+| R-15 | requirements (RF-19), user-stories (US-11 crit. 5), README | Registo de promoções e despromoções. |
+| R-16 | requirements (RF-08), README | Estado "Atrasada". |
+| R-17 | requirements (RNF-11), constraints (P-29) | Bloqueio após 5 tentativas falhadas (pressuposto). |
+| R-18 | AGENTS.md §6 | README.md e AGENTS.md também exigem aprovação para serem alterados. |
+
+R-05 (manter a reativação) não exigiu alterações.

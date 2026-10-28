@@ -57,7 +57,7 @@ Pede sempre confirmação explícita antes de:
 - reescrever histórico Git (`rebase`, `reset --hard`, `push --force`) ou fazer push, merge ou abrir pull requests;
 - alterar dependências, configuração de segurança, autenticação ou permissões;
 - executar comandos que afetem sistemas externos (bases de dados, serviços, deploy);
-- alterar os documentos de requisitos (`docs/requirements.md`, `docs/user-stories.md`, `docs/constraints.md`).
+- alterar os documentos de contexto do projeto (`README.md`, `AGENTS.md`, `docs/requirements.md`, `docs/user-stories.md`, `docs/constraints.md`).
 
 ## 7. Proteger informação confidencial
 

@@ -14,21 +14,21 @@ Descrição do cliente:
 - Organizar o trabalho em projetos com membros.
 - Criar, atribuir e atualizar tarefas.
 - Acompanhar o progresso de cada projeto.
-- Garantir que cada pessoa só vê os projetos que lhe dizem respeito.
+- Garantir que cada pessoa só vê os projetos que lhe dizem respeito *(pressuposto P-14, por confirmar)*.
 
 ## Funcionalidades previstas para o MVP
 
-- Registo e início de sessão; a primeira conta é administrador global.
+- Registo e início de sessão; o primeiro administrador global é criado na instalação.
 - Criação de projetos por qualquer utilizador, que fica Gestor do projeto.
 - Gestão de membros de cada projeto.
-- Tarefas com título, descrição, prioridade, responsável e data limite.
+- Tarefas com título, descrição, prioridade, responsável e data limite; as que passam do prazo aparecem como "Atrasada".
 - Três estados: `Por fazer`, `Em curso`, `Concluída`.
 - Lista de tarefas com filtros e quadro Kanban.
 - Painel de progresso por projeto.
 - Notificações dentro da aplicação.
 - "As minhas tarefas".
 - Arquivo e reativação de projetos.
-- Administração global: promover e despromover administradores.
+- Administração global: promover e despromover administradores, com registo dessas ações.
 
 Detalhe em [`docs/requirements.md`](docs/requirements.md) e [`docs/user-stories.md`](docs/user-stories.md).
 

@@ -11,7 +11,7 @@
 | **Visitante** | Sem sessão iniciada. |
 | **Membro de projeto** | Trabalha nas tarefas dos projetos onde foi adicionado. |
 | **Gestor de projeto** | Quem criou o projeto. Edita, arquiva e gere os membros desse projeto. Também é Membro. |
-| **Administrador global** | Vê e gere todos os projetos e promove outros a administrador global. A primeira conta registada é administrador **[P-20]**. |
+| **Administrador global** | Vê e gere todos os projetos e promove outros a administrador global. O primeiro administrador é criado na instalação. |
 
 ## Resumo do backlog
 
@@ -27,7 +27,7 @@
 | US-08 | Atribuir responsável | F-06 | M |
 | US-09 | Alterar o estado de uma tarefa | F-07 | M |
 | US-10 | Listar e filtrar tarefas | F-08 | M |
-| US-11 | Promover e despromover administradores | F-12 | M |
+| US-11 | Promover e despromover administradores (com registo) | F-12 | M |
 | US-12 | Ver o progresso do projeto | F-09 | M |
 | US-13 | Quadro Kanban | F-13 | S |
 | US-14 | Receber notificações | F-14 | S |
@@ -41,7 +41,7 @@
 **Como** visitante, **quero** criar uma conta e iniciar sessão, **para** aceder aos projetos da minha equipa.
 
 1. **Dado** que não existe conta com `ana@exemplo.pt`, **quando** me registo com nome "Ana", esse email e uma password com 8 ou mais caracteres, **então** a conta é criada e fico com sessão iniciada.
-2. **Dado** que não existe nenhuma conta na Matriz, **quando** a Ana se regista, **então** a conta dela fica como administrador global **[P-20]**.
+2. **Dado** que a Matriz foi instalada com a Ana configurada como administradora, **quando** o Rui é o primeiro a registar-se, **então** a conta do Rui fica sem privilégios de administrador.
 3. **Dado** que já existe conta com `ana@exemplo.pt`, **quando** alguém se tenta registar com `Ana@Exemplo.pt`, **então** o registo é recusado com "Já existe uma conta com este email".
 4. **Dado** que tenho conta, **quando** inicio sessão com email ou password errados, **então** vejo "Credenciais inválidas", sem indicar qual dos dois está errado.
 5. **Dado** que tenho sessão iniciada, **quando** termino a sessão, **então** deixo de conseguir abrir qualquer página de projeto sem voltar a iniciar sessão.
@@ -59,7 +59,7 @@
 **Como** utilizador autenticado, **quero** ver os projetos em que participo, **para** escolher em qual vou trabalhar.
 
 1. **Dado** que sou membro de P1 e P2 e não sou membro de P3, **quando** abro a lista de projetos, **então** vejo P1 e P2 e não vejo P3.
-2. **Dado** que sou administrador global, **quando** abro a lista de projetos, **então** vejo todos os projetos ativos, incluindo os que não integro.
+2. **Dado** que sou administrador global, **quando** abro a lista de projetos, **então** vejo todos os projetos ativos, incluindo os que não integro, e em "Projetos arquivados" vejo todos os arquivados.
 3. **Dado** que não participo em nenhum projeto, **quando** abro a lista, **então** vejo "Ainda não participas em nenhum projeto" e a opção "Criar projeto".
 
 ## US-04 — Adicionar membro a um projeto (M)
@@ -78,6 +78,7 @@
 
 1. **Dado** que o Rui é membro de P e responsável por 2 tarefas, **quando** o removo, **então** ele deixa de ver P e as 2 tarefas ficam sem responsável.
 2. **Dado** que sou o Gestor de P, **quando** me tento remover a mim próprio, **então** a operação é recusada com "O gestor não pode sair do projeto".
+3. **Dado** que sou administrador global, **quando** tento remover o Gestor de P, **então** a operação é recusada com "O gestor não pode ser removido do projeto". (Como administrador, já posso gerir P diretamente.)
 
 ## US-06 — Criar tarefa (M)
 
@@ -104,6 +105,7 @@
 1. **Dado** que a tarefa T pertence a P e o Rui é membro de P, **quando** atribuo T ao Rui, **então** o Rui aparece como responsável de T e recebe uma notificação.
 2. **Dado** que a Joana não é membro de P, **quando** tento atribuir T à Joana, **então** a operação é recusada com "O responsável tem de ser membro do projeto".
 3. **Dado** que T está atribuída ao Rui, **quando** removo o responsável, **então** T fica "Sem responsável".
+4. **Dado** que a Ana é administradora global mas não é membro de P, **quando** tento atribuir-lhe T, **então** a operação é recusada com "O responsável tem de ser membro do projeto".
 
 ## US-09 — Alterar o estado de uma tarefa (M)
 
@@ -130,6 +132,7 @@
 2. **Dado** que o Rui é administrador global, **quando** o despromovo, **então** ele passa a ver só os projetos onde é membro.
 3. **Dado** que sou o único administrador global, **quando** me tento despromover, **então** a operação é recusada com "Tem de existir pelo menos um administrador global".
 4. **Dado** que não sou administrador global, **quando** tento promover alguém, **então** a operação é recusada com "Sem permissão".
+5. **Dado** que a Ana promoveu o Rui a 2026-11-02 às 10:00, **quando** um administrador abre o registo de administradores, **então** vê a entrada "Ana promoveu Rui — 2026-11-02 10:00".
 
 ## US-12 — Ver o progresso do projeto (M)
 
@@ -171,7 +174,7 @@ As notificações são dentro da aplicação **[P-21]**.
 
 1. **Dado** que sou Gestor de P (ou administrador global), **quando** arquivo P, **então** P sai da lista de projetos ativos e aparece em "Projetos arquivados".
 2. **Dado** que P está arquivado, **quando** qualquer pessoa tenta criar, editar ou mudar o estado de uma tarefa de P, **então** a operação é recusada com "O projeto está arquivado".
-3. **Dado** que P está arquivado, **quando** o reativo, **então** P volta à lista de projetos ativos.
+3. **Dado** que sou Gestor de P (ou administrador global) e P está arquivado, **quando** o reativo, **então** P volta à lista de projetos ativos.
 
 ---
 
@@ -180,7 +183,7 @@ As notificações são dentro da aplicação **[P-21]**.
 | ID | Situação | Comportamento esperado | US |
 |----|----------|------------------------|----|
 | CE-01 | Membro removido com tarefas atribuídas. | As tarefas ficam sem responsável; não são apagadas. | US-05 |
-| CE-02 | O Gestor tenta sair do próprio projeto. | Recusado. | US-05 |
+| CE-02 | O Gestor tenta sair do próprio projeto, ou um administrador tenta removê-lo. | Recusado. | US-05 |
 | CE-03 | O último administrador global tenta despromover-se. | Recusado: tem de existir sempre um. | US-11 |
 | CE-04 | Projeto sem tarefas. | Progresso 0%, sem erro (sem divisão por zero). | US-12 |
 | CE-05 | Ação de escrita num projeto arquivado. | Recusada; o projeto fica só de leitura. | US-16 |
