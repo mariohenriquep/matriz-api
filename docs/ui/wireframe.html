@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<title>Matriz — Wireframe do painel do projeto</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Comic Sans MS", "Comic Neue", "Segoe Print", sans-serif; color: #222; background: #fff; width: 1280px; }
+  .box { border: 2px solid #333; border-radius: 6px; }
+  .muted { color: #777; }
+  .n-mark { display:inline-grid; place-items:center; width:18px; height:18px; border-radius:50%; background:#fff6b0; border:1px solid #b39b00; font-size:11px; font-weight:bold; margin-left:4px; vertical-align:middle; }
+  .legend { margin-top:16px; background:#fffbe0; border:1px dashed #b39b00; padding:8px 12px; font-size:13px; columns:2; }
+  .legend div { margin-bottom:3px; }
+  .note { position: absolute; background: #fff6b0; border: 1px dashed #b39b00; font-size: 12px; padding: 4px 6px; border-radius: 3px; max-width: 190px; }
+  header { display: flex; align-items: center; gap: 24px; padding: 12px 20px; border-bottom: 2px solid #333; }
+  .logo { font-weight: bold; font-size: 22px; letter-spacing: 2px; border: 2px solid #333; padding: 2px 10px; }
+  nav a { margin-right: 18px; text-decoration: underline; color: #222; }
+  .spacer { flex: 1; }
+  .bell { position: relative; border: 2px solid #333; border-radius: 50%; width: 34px; height: 34px; display: grid; place-items: center; }
+  .badge { position: absolute; top: -8px; right: -10px; background: #333; color: #fff; font-size: 11px; border-radius: 10px; padding: 1px 6px; }
+  .user { border: 2px solid #333; border-radius: 18px; padding: 4px 12px; }
+  .layout { display: flex; min-height: 720px; }
+  aside { width: 220px; border-right: 2px solid #333; padding: 16px; }
+  aside h4 { margin: 0 0 10px; }
+  aside .item { border: 1px solid #999; border-radius: 4px; padding: 6px 8px; margin-bottom: 8px; font-size: 14px; }
+  aside .item.active { border: 2px solid #333; background: #eee; font-weight: bold; }
+  aside .btn { margin-top: 14px; text-align: center; }
+  main { flex: 1; padding: 18px 24px; position: relative; }
+  .title-row { display: flex; align-items: center; gap: 12px; }
+  .title-row h2 { margin: 0; font-size: 24px; }
+  .btn { border: 2px solid #333; border-radius: 4px; padding: 5px 12px; font-size: 14px; display: inline-block; background: #fff; }
+  .btn.primary { background: #333; color: #fff; }
+  .tag { border: 1px solid #555; border-radius: 10px; padding: 1px 8px; font-size: 11px; }
+  .stats { display: flex; gap: 14px; margin: 16px 0; }
+  .stat { flex: 1; padding: 10px 14px; }
+  .stat .n { font-size: 28px; font-weight: bold; }
+  .progress { flex: 2; padding: 10px 14px; }
+  .bar { height: 18px; border: 2px solid #333; border-radius: 9px; margin-top: 8px; overflow: hidden; }
+  .bar > div { height: 100%; width: 40%; background: repeating-linear-gradient(45deg, #555 0 6px, #999 6px 12px); }
+  .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
+  .select { border: 2px solid #333; border-radius: 4px; padding: 4px 10px; font-size: 14px; min-width: 160px; }
+  .tabs .btn { border-radius: 0; margin-right: -2px; }
+  .tabs .btn.on { background: #ddd; font-weight: bold; }
+  .board { display: flex; gap: 14px; }
+  .col { flex: 1; padding: 10px; background: #f4f4f4; min-height: 330px; }
+  .col h4 { margin: 0 0 10px; display: flex; justify-content: space-between; }
+  .card { background: #fff; border: 2px solid #333; border-radius: 4px; padding: 8px; margin-bottom: 10px; font-size: 13px; }
+  .card .t { font-weight: bold; margin-bottom: 6px; }
+  .card .meta { display: flex; justify-content: space-between; align-items: center; }
+  .avatar { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #333; display: inline-grid; place-items: center; font-size: 10px; }
+  .late { border: 2px solid #333; font-weight: bold; }
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">MATRIZ</span>
+  <nav><a>Projetos</a><a>As minhas tarefas</a><span class="n-mark">1</span><a>Administração</a><span class="n-mark">2</span></nav>
+  <span class="spacer"></span>
+  <span class="bell">🔔<span class="badge">3</span></span><span class="n-mark">3</span>
+  <span class="user">Ana ▾ <span class="tag">admin</span></span>
+</header>
+
+<div class="layout">
+  <aside>
+    <h4>Os meus projetos</h4>
+    <div class="item active">Website 2027</div>
+    <div class="item">App interna</div>
+    <div class="item">Migração CRM</div>
+    <div class="item muted">Projetos arquivados ›<span class="n-mark">10</span></div>
+    <div class="btn">+ Criar projeto</div>
+  </aside>
+
+  <main>
+    <div class="title-row">
+      <h2>Website 2027</h2>
+      <span class="tag">Gestor: Rui</span>
+      <span class="spacer"></span>
+      <span class="btn">Membros (3)</span>
+      <span class="btn">Editar</span>
+      <span class="btn">Arquivar</span><span class="n-mark">4</span>
+    </div>
+
+    <div class="stats">
+      <div class="box stat"><div class="muted">Por fazer</div><div class="n">3</div></div>
+      <div class="box stat"><div class="muted">Em curso</div><div class="n">3</div></div>
+      <div class="box stat"><div class="muted">Concluída</div><div class="n">4</div></div>
+      <div class="box progress"><div><b>40% concluído</b> <span class="muted">· 4 de 10 tarefas</span><span class="n-mark">5</span></div><div class="bar"><div></div></div></div>
+    </div>
+
+    <div class="toolbar">
+      <span class="tabs"><span class="btn on">Quadro</span><span class="btn">Lista</span></span>
+      <span class="select">Estado: Todos ▾</span>
+      <span class="select">Responsável: Todos ▾</span><span class="n-mark">6</span>
+      <span class="spacer" style="flex:1"></span>
+      <span class="btn primary">+ Nova tarefa</span><span class="n-mark">9</span>
+    </div>
+
+    <div class="board">
+      <div class="box col">
+        <h4><span>Por fazer <span class="n-mark">7</span></span> <span class="muted">3</span></h4>
+        <div class="card"><div class="t">Rever logótipo</div><div class="meta"><span class="tag">Média</span><span class="avatar">JO</span></div></div>
+        <div class="card late"><div class="t">Escrever textos da homepage</div><div class="meta"><span class="tag">Alta</span><span><span class="tag">⚠ Atrasada · 20/10</span><span class="n-mark">8</span> <span class="avatar">RU</span></span></div></div>
+        <div class="card"><div class="t">Definir domínio</div><div class="meta"><span class="tag">Baixa</span><span class="muted">Sem responsável</span></div></div>
+      </div>
+      <div class="box col">
+        <h4>Em curso <span class="muted">3</span></h4>
+        <div class="card"><div class="t">Maquete da página de contactos</div><div class="meta"><span class="tag">Média</span><span><span class="muted">15/11</span> <span class="avatar">JO</span></span></div></div>
+        <div class="card"><div class="t">Configurar formulário</div><div class="meta"><span class="tag">Alta</span><span class="avatar">RU</span></div></div>
+        <div class="card"><div class="t">Escolher fotografias</div><div class="meta"><span class="tag">Baixa</span><span class="avatar">AN</span></div></div>
+      </div>
+      <div class="box col">
+        <h4>Concluída <span class="muted">4</span></h4>
+        <div class="card"><div class="t">Reunião de arranque</div><div class="meta"><span class="tag">Média</span><span class="avatar">RU</span></div></div>
+        <div class="card"><div class="t">Levantamento de páginas</div><div class="meta"><span class="tag">Média</span><span class="avatar">JO</span></div></div>
+        <div class="card muted">+ 2 tarefas</div>
+      </div>
+    </div>
+    <div class="legend">
+      <div><b>1</b> Tarefas atribuídas a mim em todos os projetos (US-15)</div>
+      <div><b>2</b> Só visível para administradores globais (US-11)</div>
+      <div><b>3</b> Notificações: contador de não lidas (US-14)</div>
+      <div><b>4</b> Membros, Editar e Arquivar só para Gestor ou admin (US-04, US-05, US-16)</div>
+      <div><b>5</b> Progresso: contagem por estado e % arredondada (US-12)</div>
+      <div><b>6</b> Filtros combinados por estado e responsável (US-10)</div>
+      <div><b>7</b> Mover um cartão para outra coluna muda o estado (US-13)</div>
+      <div><b>8</b> Data limite ultrapassada e não concluída (P-27)</div>
+      <div><b>9</b> Abre o formulário de nova tarefa (US-06)</div>
+      <div><b>10</b> Projetos arquivados numa lista à parte (US-03)</div>
+    </div>
+  </main>
+</div>
+</body>
+</html>
