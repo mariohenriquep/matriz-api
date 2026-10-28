@@ -45,6 +45,9 @@
 | P-27 | Uma tarefa com data limite no passado e não concluída aparece como "Atrasada". | ✅ | US-06, interface. |
 | P-28 | A sessão expira após 8 horas de inatividade (a rever com D-05). | Por confirmar | RNF-02. |
 | P-29 | Após 5 tentativas de login falhadas seguidas, a conta fica bloqueada para login durante 15 minutos. | Por confirmar | RNF-11. |
+| P-30 | Consultar as notificações a cada 30 segundos é suficiente (sem tempo real). | Por confirmar | RF-16, arquitetura. |
+| P-31 | Frontend e backend são publicados no mesmo domínio. | Por confirmar | Autenticação, arquitetura. |
+| P-32 | Eliminar uma tarefa é definitivo; as notificações que apontavam para ela perdem a ligação. | ✅ | Modelo de dados. |
 
 ## 3. Segurança e privacidade
 
@@ -73,11 +76,11 @@
 |----|---------|--------|-------|
 | D-01 | Linguagem e framework do backend. | Aula 02/03 | O `.gitignore` inicial do repositório é de Java, mas isso não é uma decisão tomada. |
 | D-02 | Framework do frontend. | Aula 02/03 | — |
-| D-03 | Base de dados. | Aula 02 | — |
-| D-04 | Estilo de arquitetura (monólito, monólito modular, microservices). | Aula 02 | — |
+| D-03 | Base de dados. | Aula 02 | ✅ Relacional (`docs/architecture.md` §5). Motor concreto ainda pendente. |
+| D-04 | Estilo de arquitetura (monólito, monólito modular, microservices). | Aula 02 | ✅ Monólito modular (`docs/architecture.md` §3). |
 | D-05 | Mecanismo de autenticação (sessão com cookie ou token). | Aula 02/03 | — |
 | D-06 | Política de apagamento de contas e retenção de dados. | Antes de produção | — |
-| D-07 | Como entregar as notificações in-app (consulta periódica ou tempo real). | Aula 02/03 | Afeta a arquitetura. |
+| D-07 | Como entregar as notificações in-app (consulta periódica ou tempo real). | Aula 02/03 | ✅ Consulta periódica (`docs/architecture.md` §5). |
 | D-08 | Alojamento e ambiente de produção. | Mais tarde | — |
 | D-09 | Restringir o registo (domínio de email da empresa ou só por convite). | Antes de produção | Ver RK-01. |
 

@@ -41,8 +41,16 @@ Detalhe em [`docs/requirements.md`](docs/requirements.md) e [`docs/user-stories.
 | [`docs/requirements.md`](docs/requirements.md) | Visão, utilizadores, requisitos funcionais e não funcionais, âmbito do MVP. |
 | [`docs/user-stories.md`](docs/user-stories.md) | Backlog do MVP: user stories, prioridades, critérios de aceitação e casos-limite. |
 | [`docs/constraints.md`](docs/constraints.md) | Restrições, pressupostos, segurança e privacidade, decisões técnicas pendentes. |
+| [`docs/architecture.md`](docs/architecture.md) | Arquitetura (monólito modular), componentes e decisões transversais. |
+| [`docs/database.md`](docs/database.md) | Modelo de dados, diagrama ER (Mermaid) e regras de negócio. |
+| [`openapi.yaml`](openapi.yaml) | Contrato REST (OpenAPI 3.1) das operações de tarefas e lista dos endpoints previstos. |
+| [`docs/ui/`](docs/ui/) | Wireframe do painel do projeto (`wireframe.png`, fonte em `wireframe.html`). |
 | [`docs/ai-log/`](docs/ai-log/) | Registo do uso de IA em cada exercício (prompts, análise e revisão humana). |
 
 ## Estado atual
 
-**Fase 1 — Especificação (Ficha PL 01).** Requisitos, backlog e restrições definidos. Ainda não há código nem decisões de tecnologia; a arquitetura, o modelo de dados e a API são tratados na fase seguinte (Ficha PL 02).
+- ✅ **Fase 1 — Especificação (Ficha PL 01):** requisitos, backlog e restrições.
+- ✅ **Fase 2 — Conceção (Ficha PL 02):** arquitetura, modelo de dados, contrato da API e wireframe.
+- ⏭️ **Fase 3 — Desenvolvimento (Aula 03):** escolha da stack (D-01, D-02, D-05) e implementação.
+
+Ainda não há código.
