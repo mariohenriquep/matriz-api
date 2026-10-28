@@ -42,7 +42,7 @@
 | P-24 | Nome do projeto até 100 caracteres; título da tarefa até 200. | ✅ | Validação. |
 | P-25 | Quem faz uma ação não recebe notificação dela. | ✅ | Notificações. |
 | P-26 | As notificações não lidas mantêm-se até serem abertas; não expiram no MVP. | ✅ | Armazenamento. |
-| P-27 | Uma tarefa com data limite no passado e não concluída aparece como "Atrasada". | Por confirmar | US-06, interface. |
+| P-27 | Uma tarefa com data limite no passado e não concluída aparece como "Atrasada". | ✅ | US-06, interface. |
 
 ## 3. Segurança e privacidade
 

@@ -184,7 +184,7 @@ As notificações são dentro da aplicação **[P-21]**.
 | CE-03 | O último administrador global tenta despromover-se. | Recusado: tem de existir sempre um. | US-11 |
 | CE-04 | Projeto sem tarefas. | Progresso 0%, sem erro (sem divisão por zero). | US-12 |
 | CE-05 | Ação de escrita num projeto arquivado. | Recusada; o projeto fica só de leitura. | US-16 |
-| CE-06 | Data limite no passado ao criar tarefa. | Aceite. A tarefa aparece como "Atrasada" enquanto não estiver `Concluída`. **[P-27]** | US-06 |
+| CE-06 | Data limite no passado ao criar tarefa. | Aceite. A tarefa aparece como "Atrasada" enquanto não estiver `Concluída`. | US-06 |
 | CE-07 | Utilizador abre um projeto onde não é membro (e não é admin). | Resposta "não encontrado", sem revelar que o projeto existe. | US-03, US-06 |
 | CE-08 | Email com maiúsculas diferentes. | Tratado como o mesmo email. | US-01, US-04 |
 | CE-09 | Duas pessoas editam a mesma tarefa ao mesmo tempo. | Prevalece a última gravação no MVP. **[P-11]** | US-07, US-09 |
