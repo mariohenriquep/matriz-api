@@ -5,6 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -92,6 +93,36 @@ public class ServicoTarefas {
             throw ErroApi.semPermissao("Só quem criou a tarefa ou o gestor do projeto a pode eliminar");
         }
         tarefas.eliminar(tarefa);
+    }
+
+    /**
+     * Junta um responsável (Ex. 6). Qualquer membro pode atribuir; o responsável tem de ser membro do projeto.
+     * Um id inexistente dá a mesma resposta que um não membro, para não revelar que contas existem.
+     */
+    @Transactional
+    public Tarefa atribuir(long tarefa, long utilizador, long responsavel) {
+        long projeto = acesso.exigirMembroDaTarefa(tarefa, utilizador);
+        if (!tarefas.naoMembros(projeto, List.of(responsavel)).isEmpty()) {
+            throw ErroApi.regraDeNegocio("/erros/responsavel-nao-membro", "O responsável tem de ser membro do projeto");
+        }
+        if (tarefas.eResponsavel(tarefa, responsavel)) {
+            throw ErroApi.conflito("Este utilizador já é responsável pela tarefa");
+        }
+        try {
+            tarefas.atribuir(tarefa, responsavel);
+        } catch (DuplicateKeyException e) {
+            // Dois pedidos ao mesmo tempo: a chave primária impede o duplicado
+            throw ErroApi.conflito("Este utilizador já é responsável pela tarefa");
+        }
+        return tarefas.obter(tarefa).orElseThrow();
+    }
+
+    @Transactional
+    public void removerResponsavel(long tarefa, long utilizador, long responsavel) {
+        acesso.exigirMembroDaTarefa(tarefa, utilizador);
+        if (tarefas.removerResponsavel(tarefa, responsavel) == 0) {
+            throw ErroApi.naoEncontrado("Este utilizador não é responsável pela tarefa");
+        }
     }
 
     /** Sem repetições e todos membros do projeto (RN-02). */

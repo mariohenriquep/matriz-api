@@ -82,6 +82,18 @@ public class TarefaRepositorio {
                 new MapSqlParameterSource("tarefa", tarefa).addValue("utilizador", utilizador));
     }
 
+    public boolean eResponsavel(long tarefa, long utilizador) {
+        return !jdbc.queryForList(
+                "SELECT 1 FROM tarefa_responsavel WHERE tarefa_id = :tarefa AND utilizador_id = :utilizador",
+                new MapSqlParameterSource("tarefa", tarefa).addValue("utilizador", utilizador), Integer.class).isEmpty();
+    }
+
+    /** Devolve o número de atribuições removidas (0 se o utilizador não era responsável). */
+    public int removerResponsavel(long tarefa, long utilizador) {
+        return jdbc.update("DELETE FROM tarefa_responsavel WHERE tarefa_id = :tarefa AND utilizador_id = :utilizador",
+                new MapSqlParameterSource("tarefa", tarefa).addValue("utilizador", utilizador));
+    }
+
     /**
      * Altera uma coluna e o {@code atualizado_em}. A coluna vem sempre de código, nunca do cliente.
      * Enums são guardados pelo nome e datas como {@code DATE}.

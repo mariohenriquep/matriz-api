@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router'
 import type { Membro, Projeto } from '../api/projetos'
 import {
   ESTADOS,
@@ -232,7 +233,9 @@ export function Tarefas({ projeto, membros, aoMudar }: Props) {
             return (
               <li key={tarefa.id}>
                 <div className="tarefa-topo">
-                  <strong>{tarefa.titulo}</strong>
+                  <strong>
+                    <Link to={`/tarefas/${tarefa.id}`}>{tarefa.titulo}</Link>
+                  </strong>
                   <span className={`etiqueta prioridade-${tarefa.prioridade.toLowerCase()}`}>
                     {nomePrioridade(tarefa.prioridade)}
                   </span>
