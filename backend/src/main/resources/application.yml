@@ -1,0 +1,37 @@
+# Configuração da Matriz. Os valores sensíveis vêm de variáveis de ambiente ou do ficheiro .env
+# na raiz do repositório (copiado de .env.example). O .env nunca entra no Git.
+spring:
+  application:
+    name: matriz
+  config:
+    import:
+      - optional:file:../.env[.properties]
+      - optional:file:.env[.properties]
+  datasource:
+    url: ${MATRIZ_DB_URL:jdbc:postgresql://localhost:5432/matriz}
+    username: ${POSTGRES_USER:matriz}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    locations: classpath:db/migration
+
+server:
+  port: ${MATRIZ_PORTA:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-components: always
+
+matriz:
+  seed:
+    # Cria as contas e os projetos de demonstração se a base de dados não tiver utilizadores.
+    ativo: ${MATRIZ_SEED_ATIVO:true}
+    password: ${MATRIZ_SEED_PASSWORD:}

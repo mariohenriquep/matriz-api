@@ -29,10 +29,10 @@ A Ficha 03 define um âmbito funcional mínimo. Foi comparado com o MVP aprovado
 | Migrations | **Flyway** | Scripts SQL versionados em `backend/src/main/resources/db/migration`. |
 | Seed | Componente Java que corre no arranque **só se não houver utilizadores** | Não apaga dados em cada arranque. |
 | Frontend | **React + Vite + TypeScript** | React Router para navegação; `fetch` com um cliente central (`VITE_API_URL`). |
-| Testes backend | JUnit 5 + Spring Boot Test + MockMvc + **Testcontainers** (PostgreSQL real) | *Proposta:* requer Docker. Alternativa sem Docker: base de dados de teste local. |
+| Testes backend | JUnit 5 + Spring Boot Test + MockMvc + **Testcontainers** (PostgreSQL real) | ✅ O Mário tem Docker no Mac. |
 | Testes frontend | Vitest + Testing Library | Poucos testes, focados em formulários e estados. |
 
-### Estrutura do repositório (*Proposta*)
+### Estrutura do repositório ✅ (criada no Ex. 2)
 
 ```
 matriz-api/
@@ -53,7 +53,7 @@ matriz-api/
 
 O módulo **Progresso** de `docs/architecture.md` é implementado como contagens calculadas dentro de `projetos` (consulta agregada às tarefas); não precisa de pacote próprio nesta fase.
 
-## 3. Regras de acesso consolidadas ✅ (por validar contigo os pormenores marcados *)
+## 3. Regras de acesso consolidadas ✅
 
 Identidade: o utilizador é **sempre** obtido do token. O backend nunca aceita do cliente o dono do projeto, o criador da tarefa nem o autor do comentário.
 
@@ -69,7 +69,7 @@ Identidade: o utilizador é **sempre** obtido do token. O backend nunca aceita d
 | Comentar | Membros | 404 |
 | Editar ou apagar comentários | Ninguém no MVP * | — (não há operação) |
 
-\* Regras herdadas do nosso MVP (US-07) ou assumidas agora; confirmar.
+\* Regras herdadas do nosso MVP (US-07) ou propostas no Ex. 1; confirmadas pelo Mário a 2026-10-29.
 
 ## 4. Alterações ao modelo de dados
 
@@ -87,8 +87,8 @@ Cada incremento segue o ciclo pedido pela ficha: análise e plano → validaçã
 
 | Inc. | Ex. | Conteúdo | Componentes / ficheiros previstos | Critérios de aceitação | Verificação | Estado |
 |------|-----|----------|-----------------------------------|------------------------|-------------|--------|
-| I-0 | 1 | Plano, regras de acesso, contrato completo | `docs/implementation-plan.md`, `openapi.yaml`, docs atualizados | Contrato cobre todo o âmbito; diferenças registadas | `openapi-spec-validator` | ✅ Feito (à espera de validação) |
-| I-1 | 2 | Estrutura, BD, migrations, seed | `backend/` (pom, app, `V1__esquema.sql`), `docker-compose.yml`, `.env.example`, seed, `frontend/` inicial | App arranca; esquema criado por Flyway; seed com ≥ 2 utilizadores e projetos com acessos distintos; 2.º arranque não duplica dados | `mvn verify`; arrancar 2 vezes e contar linhas; `npm run build` | Por fazer |
+| I-0 | 1 | Plano, regras de acesso, contrato completo | `docs/implementation-plan.md`, `openapi.yaml`, docs atualizados | Contrato cobre todo o âmbito; diferenças registadas | `openapi-spec-validator` | ✅ Feito |
+| I-1 | 2 | Estrutura, BD, migrations, seed | `backend/` (pom, app, `V1__esquema.sql`), `docker-compose.yml`, `.env.example`, seed, `frontend/` inicial | App arranca; esquema criado por Flyway; seed com ≥ 2 utilizadores e projetos com acessos distintos; 2.º arranque não duplica dados | `mvn test`; arrancar 2 vezes e contar linhas; `npm run build` | ✅ Feito (à espera de validação); ver `docs/ai-log/f03-ex02-persistencia.md` |
 | I-2 | 3 | Autenticação e autorização | `identidade/` (JWT, filtro, `/auth/*`), handler de erros | Login válido → token; inválido → 401 genérico; sem token → 401; logout invalida token; 2 utilizadores não veem os projetos um do outro | Testes MockMvc; `curl` | Por fazer |
 | I-3 | 4 | Projetos e membros | `projetos/` (entidades, repositórios, serviço, controlador) + ecrãs de login e projetos | CRUD de projetos com validação 1–100 / ≤ 1000; pesquisa por nome; só Gestor edita/elimina; eliminação sem órfãos. **Percurso:** login → criar projeto → ver na lista → recarregar e reiniciar o backend → continua lá | Testes de integração; percurso manual no browser | Por fazer |
 | I-4 | 5 | Tarefas | `tarefas/` + detalhe do projeto (lista, filtros, formulário) | CRUD; estado e prioridade; filtros por estado, prioridade e responsável; títulos só com espaços recusados; contagens atualizadas sem recarregar | Testes de integração; manual | Por fazer |
@@ -100,11 +100,10 @@ Cada incremento segue o ciclo pedido pela ficha: análise e plano → validaçã
 ## 6. Como trabalhamos e onde corre
 
 - O código fica no teu repositório local (`/Users/mariohenriquepinto/SharedFolder/Matriz/matriz-api`), num branch `feat/ficha03-implementacao`.
-- Compilo e testo num ambiente com Java 21, Maven, PostgreSQL e Docker. *Proposta:* para correres no teu Mac precisas de Java 21, Maven (ou o `mvnw` incluído), Node 22 e Docker (ou PostgreSQL instalado). **Confirmar o que tens instalado.**
+- Compilo e testo num ambiente com Java 21, Maven, PostgreSQL e Docker. Para correres no teu Mac precisas de Java 21, Node 22 e Docker (o Maven vem pelo `mvnw`). Docker ✅ confirmado; Java 21 e Node 22 por confirmar.
 - Commit no fim de cada incremento; push e PR só com o teu OK.
 
 ## 7. Pendentes
 
-- Confirmar as regras marcadas com * em §3.
-- Confirmar se tens Docker no Mac (para o PostgreSQL de desenvolvimento e os testes com Testcontainers).
 - P-33 (novos limites de descrição) por confirmar.
+- Ex. 2: limites do utilizador (`nome` ≤ 100, `email` ≤ 254) por confirmar; ver `docs/ai-log/f03-ex02-persistencia.md`.

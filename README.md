@@ -43,14 +43,81 @@ Detalhe em [`docs/requirements.md`](docs/requirements.md) e [`docs/user-stories.
 | [`docs/constraints.md`](docs/constraints.md) | Restrições, pressupostos, segurança e privacidade, decisões técnicas pendentes. |
 | [`docs/architecture.md`](docs/architecture.md) | Arquitetura (monólito modular), componentes e decisões transversais. |
 | [`docs/database.md`](docs/database.md) | Modelo de dados, diagrama ER (Mermaid) e regras de negócio. |
-| [`openapi.yaml`](openapi.yaml) | Contrato REST (OpenAPI 3.1) das operações de tarefas e lista dos endpoints previstos. |
+| [`openapi.yaml`](openapi.yaml) | Contrato REST (OpenAPI 3.1) de todas as operações do MVP. |
+| [`docs/implementation-plan.md`](docs/implementation-plan.md) | Plano de implementação da Ficha 03: stack, regras de acesso e incrementos. |
 | [`docs/ui/`](docs/ui/) | Wireframe do painel do projeto (`wireframe.png`, fonte em `wireframe.html`). |
+| `backend/` | API em Java 21 + Spring Boot 3 (Maven), migrations Flyway e seed. |
+| `frontend/` | Interface em React + Vite + TypeScript. |
 | [`docs/ai-log/`](docs/ai-log/) | Registo do uso de IA em cada exercício (prompts, análise e revisão humana). |
+
+## Como executar
+
+### Requisitos
+
+- **Java 21** (o Maven não é preciso: o backend traz o `mvnw`, que o descarrega).
+- **Node.js 22** e npm.
+- **Docker** com Docker Compose, para a base de dados PostgreSQL 16. Em alternativa, um PostgreSQL 16 instalado localmente.
+
+### 1. Configuração
+
+```bash
+cp .env.example .env
+```
+
+Altera pelo menos `POSTGRES_PASSWORD` no `.env`. O `.env` não entra no Git; o `.env.example` só tem valores fictícios. O backend lê o `.env` da raiz do repositório.
+
+### 2. Base de dados
+
+```bash
+docker compose up -d          # PostgreSQL em localhost:5432 (porta em POSTGRES_PORTA)
+docker compose ps             # deve mostrar "healthy"
+```
+
+O esquema é criado pelo **Flyway** quando o backend arranca (scripts em `backend/src/main/resources/db/migration`). Não há passo manual.
+
+Para apagar todos os dados e recomeçar: `docker compose down -v` (apaga o volume da base de dados).
+
+### 3. Backend
+
+```bash
+cd backend
+./mvnw spring-boot:run        # Windows: mvnw.cmd spring-boot:run
+```
+
+A API fica em `http://localhost:8080/api/v1`. Para confirmar que arrancou e que a base de dados responde:
+
+```bash
+curl http://localhost:8080/actuator/health
+# {"status":"UP","components":{"db":{"status":"UP"},...}}
+```
+
+### 4. Dados de demonstração
+
+No primeiro arranque, se a base de dados não tiver utilizadores, o backend cria três contas fictícias e três projetos. Nos arranques seguintes não cria nem apaga nada. A password das três contas é o valor de `MATRIZ_SEED_PASSWORD` no `.env`.
+
+| Conta | Gestor de | Membro de | Sem acesso a |
+|-------|-----------|-----------|--------------|
+| `ana@matriz.local` | Website institucional | Formação interna | App móvel |
+| `rui@matriz.local` | App móvel | Website institucional | Formação interna |
+| `joana@matriz.local` | Formação interna | App móvel | Website institucional |
+
+### 5. Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev                   # http://localhost:5173 (os pedidos a /api seguem para o backend)
+```
+
+### Testes e verificações
+
+```bash
+cd backend && ./mvnw test     # precisa do Docker: os testes usam um PostgreSQL temporário (Testcontainers)
+cd frontend && npm run build && npm run lint
+```
 
 ## Estado atual
 
 - ✅ **Fase 1 — Especificação (Ficha PL 01):** requisitos, backlog e restrições.
 - ✅ **Fase 2 — Conceção (Ficha PL 02):** arquitetura, modelo de dados, contrato da API e wireframe.
-- ⏭️ **Fase 3 — Desenvolvimento (Aula 03):** escolha da stack (D-01, D-02, D-05) e implementação.
-
-Ainda não há código.
+- 🚧 **Fase 3 — Desenvolvimento (Ficha PL 03):** stack escolhida e estrutura criada (backend, base de dados, migrations, seed e frontend inicial). Seguem-se autenticação, projetos, tarefas, responsáveis, comentários e interface. Progresso em [`docs/implementation-plan.md`](docs/implementation-plan.md).

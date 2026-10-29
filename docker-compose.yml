@@ -1,0 +1,22 @@
+# Base de dados de desenvolvimento da Matriz.
+# Lê as credenciais do ficheiro .env (copiado de .env.example). Arrancar com: docker compose up -d
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: matriz-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-matriz}
+      POSTGRES_USER: ${POSTGRES_USER:-matriz}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD no .env}
+    ports:
+      - "${POSTGRES_PORTA:-5432}:5432"
+    volumes:
+      - matriz-dados:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  matriz-dados:
