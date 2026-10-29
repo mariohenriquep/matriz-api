@@ -25,3 +25,93 @@
 body {
   margin: 0;
 }
+
+.suave {
+  color: var(--texto-suave);
+}
+
+.cartao-login {
+  max-width: 360px;
+  margin: 5rem auto;
+  padding: 0 1rem;
+}
+
+.conteudo {
+  max-width: 960px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.barra {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--borda);
+}
+
+.barra span {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+form {
+  display: grid;
+  gap: 1rem;
+}
+
+label {
+  display: grid;
+  gap: 0.25rem;
+  font-weight: 600;
+}
+
+input {
+  font: inherit;
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  background: var(--fundo);
+  color: var(--texto);
+}
+
+button {
+  font: inherit;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--destaque);
+  border-radius: 6px;
+  background: var(--destaque);
+  color: #fff;
+  cursor: pointer;
+}
+
+button.secundario {
+  background: transparent;
+  color: var(--destaque);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.erro,
+.aviso {
+  padding: 0.625rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid;
+}
+
+.erro {
+  color: #b3261e;
+  border-color: #b3261e;
+  background: rgba(179, 38, 30, 0.08);
+}
+
+.aviso {
+  color: #7a5b00;
+  border-color: #c99a00;
+  background: rgba(201, 154, 0, 0.1);
+}

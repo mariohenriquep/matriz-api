@@ -17,6 +17,10 @@ spring:
       ddl-auto: validate
   flyway:
     locations: classpath:db/migration
+  jackson:
+    deserialization:
+      # Campos desconhecidos no JSON dão 400 (additionalProperties: false no contrato)
+      fail-on-unknown-properties: true
 
 server:
   port: ${MATRIZ_PORTA:8080}
@@ -28,9 +32,18 @@ management:
         include: health
   endpoint:
     health:
-      show-components: always
+      # Sem token só se vê {"status":"UP"} (que já inclui a base de dados); os detalhes exigem sessão
+      show-components: when-authorized
 
 matriz:
+  jwt:
+    # Segredo para assinar os tokens (HS256), com pelo menos 32 caracteres. Obrigatório.
+    segredo: ${MATRIZ_JWT_SEGREDO:}
+    # Validade fixa contada a partir do login (P-28)
+    validade: PT8H
+  cors:
+    # Origens do frontend autorizadas a chamar a API, separadas por vírgulas
+    origens: ${MATRIZ_CORS_ORIGENS:http://localhost:5173}
   seed:
     # Cria as contas e os projetos de demonstração se a base de dados não tiver utilizadores.
     ativo: ${MATRIZ_SEED_ATIVO:true}

@@ -1,12 +1,11 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-// Em desenvolvimento, os pedidos a /api seguem para o backend (evita configurar CORS).
+// O frontend chama a API diretamente (VITE_API_URL); o backend autoriza esta origem por CORS.
 export default defineConfig({
   plugins: [react()],
   server: {
-    proxy: {
-      '/api': 'http://localhost:8080',
-    },
+    port: 5173,
+    strictPort: true,
   },
 })

@@ -10,7 +10,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,10 +33,13 @@ public class DadosDemonstracao implements ApplicationRunner {
     private static final Logger log = LoggerFactory.getLogger(DadosDemonstracao.class);
 
     private final JdbcTemplate jdbc;
+    private final PasswordEncoder passwords;
     private final String password;
 
-    public DadosDemonstracao(JdbcTemplate jdbc, @Value("${matriz.seed.password:}") String password) {
+    public DadosDemonstracao(JdbcTemplate jdbc, PasswordEncoder passwords,
+            @Value("${matriz.seed.password:}") String password) {
         this.jdbc = jdbc;
+        this.passwords = passwords;
         this.password = password;
     }
 
@@ -53,7 +56,7 @@ public class DadosDemonstracao implements ApplicationRunner {
                     "MATRIZ_SEED_PASSWORD não está definida. Define-a no .env ou desativa o seed com MATRIZ_SEED_ATIVO=false.");
         }
 
-        String hash = new BCryptPasswordEncoder().encode(password);
+        String hash = passwords.encode(password);
         long ana = criarUtilizador("Ana Silva", "ana@matriz.local", hash);
         long rui = criarUtilizador("Rui Costa", "rui@matriz.local", hash);
         long joana = criarUtilizador("Joana Lopes", "joana@matriz.local", hash);

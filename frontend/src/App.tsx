@@ -1,10 +1,27 @@
-// Página provisória (Ficha 03, Exercício 2). Os ecrãs de login, painel e projetos chegam nos exercícios seguintes.
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
+import { ProvedorSessao } from './auth/ProvedorSessao'
+import { RotaProtegida } from './auth/RotaProtegida'
+import { Inicio } from './paginas/Inicio'
+import { Login } from './paginas/Login'
+
 function App() {
   return (
-    <main style={{ maxWidth: 640, margin: '4rem auto', padding: '0 1rem' }}>
-      <h1>Matriz</h1>
-      <p style={{ color: 'var(--texto-suave)' }}>Gestão de projetos e tarefas. Interface em construção.</p>
-    </main>
+    <BrowserRouter>
+      <ProvedorSessao>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/"
+            element={
+              <RotaProtegida>
+                <Inicio />
+              </RotaProtegida>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </ProvedorSessao>
+    </BrowserRouter>
   )
 }
 
