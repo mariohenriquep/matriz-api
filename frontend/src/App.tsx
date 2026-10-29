@@ -3,6 +3,7 @@ import { ProvedorSessao } from './auth/ProvedorSessao'
 import { RotaProtegida } from './auth/RotaProtegida'
 import { Inicio } from './paginas/Inicio'
 import { Login } from './paginas/Login'
+import { ProjetoDetalhe } from './paginas/ProjetoDetalhe'
 
 function App() {
   return (
@@ -15,6 +16,14 @@ function App() {
             element={
               <RotaProtegida>
                 <Inicio />
+              </RotaProtegida>
+            }
+          />
+          <Route
+            path="/projetos/:projetoId"
+            element={
+              <RotaProtegida>
+                <ProjetoDetalhe />
               </RotaProtegida>
             }
           />

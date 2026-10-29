@@ -1,7 +1,7 @@
 # Modelo de dados — Matriz
 
 > Ficha 02, Exercício 2. **Atualizado na Ficha 03, Exercício 1** (vários responsáveis, comentários, eliminação de projetos, PostgreSQL); ver `docs/implementation-plan.md` §4. Modelo lógico para PostgreSQL 16 (D-03 ✅).
-> Implementado em `backend/src/main/resources/db/migration/V1__esquema_inicial.sql` (Ficha 03, Ex. 2), sem as entidades e colunas dos extras.
+> Implementado em `backend/src/main/resources/db/migration/V1__esquema_inicial.sql` (Ficha 03, Ex. 2), sem as entidades e colunas dos extras. `V2__pesquisa_sem_acentos.sql` ativa a extensão `unaccent` para a pesquisa de projetos (Ex. 4).
 > **[P-xx]** = pressuposto (ver `docs/constraints.md`).
 
 ## 1. Entidades
