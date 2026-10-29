@@ -22,10 +22,10 @@
 | P-04 | Três estados fixos (`Por fazer`, `Em curso`, `Concluída`), qualquer transição permitida. | ✅ | Regras das tarefas e progresso. |
 | P-05 | Progresso = % de tarefas `Concluída` sobre o total do projeto, arredondado às unidades. | Por confirmar | Painel de progresso. |
 | P-06 | Prioridades `Baixa`, `Média` (por defeito), `Alta`. | Por confirmar | Modelo de dados. |
-| P-07 | Uma tarefa tem no máximo um responsável. | Por confirmar | Modelo de dados. |
+| P-07 | ~~Uma tarefa tem no máximo um responsável.~~ **Revisto na Ficha 03:** uma tarefa pode ter vários responsáveis (C-01). | ✅ | Modelo de dados. |
 | P-08 | Só se adicionam a projetos pessoas que já têm conta. | Por confirmar | US-04. |
 | P-09 | Interface só em português. | Por confirmar | Internacionalização. |
-| P-10 | Os projetos arquivam-se (e podem ser reativados); não se apagam. | ✅ | Retenção de dados. |
+| P-10 | Os projetos arquivam-se (e podem ser reativados). **Revisto na Ficha 03:** também podem ser eliminados pelo Gestor, com cascata (C-03). | ✅ | Retenção de dados. |
 | P-11 | Em edições simultâneas da mesma tarefa, prevalece a última gravação. | Por confirmar | Integridade dos dados. |
 | P-12 | Os valores de desempenho do RNF-08 são uma estimativa nossa, não do cliente. | Por confirmar | Testes de desempenho. |
 | P-13 | Uma tarefa pertence sempre a um projeto; campos: título, descrição, prioridade, responsável, data limite, estado. | Por confirmar | Modelo de dados. |
@@ -48,6 +48,7 @@
 | P-30 | Consultar as notificações a cada 30 segundos é suficiente (sem tempo real). | Por confirmar | RF-16, arquitetura. |
 | P-31 | Frontend e backend são publicados no mesmo domínio. | Por confirmar | Autenticação, arquitetura. |
 | P-32 | Eliminar uma tarefa é definitivo; as notificações que apontavam para ela perdem a ligação. | ✅ | Modelo de dados. |
+| P-33 | Descrição do projeto até 1000 caracteres; descrição da tarefa até 2000; comentário de 1 a 2000. | Por confirmar | Validação (Ficha 03). |
 
 ## 3. Segurança e privacidade
 
@@ -74,11 +75,11 @@
 
 | ID | Decisão | Quando | Notas |
 |----|---------|--------|-------|
-| D-01 | Linguagem e framework do backend. | Aula 02/03 | O `.gitignore` inicial do repositório é de Java, mas isso não é uma decisão tomada. |
-| D-02 | Framework do frontend. | Aula 02/03 | — |
-| D-03 | Base de dados. | Aula 02 | ✅ Relacional (`docs/architecture.md` §5). Motor concreto ainda pendente. |
+| D-01 | Linguagem e framework do backend. | Aula 03 | ✅ Java 21 + Spring Boot 3 (`docs/implementation-plan.md` §2). |
+| D-02 | Framework do frontend. | Aula 03 | ✅ React + Vite + TypeScript. |
+| D-03 | Base de dados. | Aula 02/03 | ✅ PostgreSQL 16, com migrations Flyway. |
 | D-04 | Estilo de arquitetura (monólito, monólito modular, microservices). | Aula 02 | ✅ Monólito modular (`docs/architecture.md` §3). |
-| D-05 | Mecanismo de autenticação (sessão com cookie ou token). | Aula 02/03 | — |
+| D-05 | Mecanismo de autenticação (sessão com cookie ou token). | Aula 03 | ✅ JWT bearer com validade de 8 h; logout invalida tokens por versão. |
 | D-06 | Política de apagamento de contas e retenção de dados. | Antes de produção | — |
 | D-07 | Como entregar as notificações in-app (consulta periódica ou tempo real). | Aula 02/03 | ✅ Consulta periódica (`docs/architecture.md` §5). |
 | D-08 | Alojamento e ambiente de produção. | Mais tarde | — |

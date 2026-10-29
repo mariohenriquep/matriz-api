@@ -33,6 +33,8 @@
 | US-14 | Receber notificações | F-14 | S |
 | US-15 | As minhas tarefas | F-10 | S |
 | US-16 | Arquivar projeto | F-11 | S |
+| US-17 | Comentar uma tarefa | RF-20 (Ficha 03) | M |
+| US-18 | Eliminar projeto | RF-21 (Ficha 03) | M |
 
 ---
 
@@ -61,6 +63,7 @@
 1. **Dado** que sou membro de P1 e P2 e não sou membro de P3, **quando** abro a lista de projetos, **então** vejo P1 e P2 e não vejo P3.
 2. **Dado** que sou administrador global, **quando** abro a lista de projetos, **então** vejo todos os projetos ativos, incluindo os que não integro, e em "Projetos arquivados" vejo todos os arquivados.
 3. **Dado** que não participo em nenhum projeto, **quando** abro a lista, **então** vejo "Ainda não participas em nenhum projeto" e a opção "Criar projeto".
+4. **Dado** que participo em "Website 2027" e "App interna", **quando** pesquiso "web", **então** só vejo "Website 2027" (sem distinguir maiúsculas).
 
 ## US-04 — Adicionar membro a um projeto (M)
 
@@ -98,14 +101,17 @@
 3. **Dado** que sou Gestor de P ou administrador global, **quando** elimino uma tarefa criada por outra pessoa, **então** a operação é aceite.
 4. **Dado** que sou só Membro de P e não criei T, **quando** tento eliminar T, **então** a operação é recusada com "Sem permissão".
 
-## US-08 — Atribuir responsável (M)
+## US-08 — Atribuir responsáveis (M)
 
-**Como** membro de projeto, **quero** atribuir uma tarefa a um membro, **para** que fique claro quem a faz.
+**Como** membro de projeto, **quero** atribuir uma tarefa a um ou mais membros, **para** que fique claro quem a faz.
+
+> Atualizado na Ficha 03: vários responsáveis por tarefa (C-01).
 
 1. **Dado** que a tarefa T pertence a P e o Rui é membro de P, **quando** atribuo T ao Rui, **então** o Rui aparece como responsável de T e recebe uma notificação.
 2. **Dado** que a Joana não é membro de P, **quando** tento atribuir T à Joana, **então** a operação é recusada com "O responsável tem de ser membro do projeto".
-3. **Dado** que T está atribuída ao Rui, **quando** removo o responsável, **então** T fica "Sem responsável".
+3. **Dado** que T está atribuída ao Rui e à Joana, **quando** removo o Rui, **então** a Joana continua responsável; **quando** removo também a Joana, T fica "Sem responsável".
 4. **Dado** que a Ana é administradora global mas não é membro de P, **quando** tento atribuir-lhe T, **então** a operação é recusada com "O responsável tem de ser membro do projeto".
+5. **Dado** que o Rui já é responsável por T, **quando** o tento atribuir outra vez, **então** a operação é recusada com "Este utilizador já é responsável pela tarefa" e a atribuição não é duplicada.
 
 ## US-09 — Alterar o estado de uma tarefa (M)
 
@@ -123,6 +129,7 @@
 1. **Dado** que P tem 3 tarefas `Por fazer` e 2 `Concluída`, **quando** filtro por `Por fazer`, **então** vejo exatamente as 3 tarefas `Por fazer`.
 2. **Dado** que filtro por responsável "Rui" e estado `Em curso`, **então** só vejo tarefas que cumprem os dois filtros.
 3. **Dado** que nenhuma tarefa cumpre os filtros, **então** vejo "Sem tarefas para os filtros escolhidos".
+4. **Dado** que P tem 2 tarefas `Alta` e 3 `Média`, **quando** filtro por prioridade `Alta`, **então** vejo exatamente as 2 tarefas `Alta`.
 
 ## US-11 — Promover e despromover administradores (M)
 
@@ -175,6 +182,23 @@ As notificações são dentro da aplicação **[P-21]**.
 1. **Dado** que sou Gestor de P (ou administrador global), **quando** arquivo P, **então** P sai da lista de projetos ativos e aparece em "Projetos arquivados".
 2. **Dado** que P está arquivado, **quando** qualquer pessoa tenta criar, editar ou mudar o estado de uma tarefa de P, **então** a operação é recusada com "O projeto está arquivado".
 3. **Dado** que sou Gestor de P (ou administrador global) e P está arquivado, **quando** o reativo, **então** P volta à lista de projetos ativos.
+
+## US-17 — Comentar uma tarefa (M)
+
+**Como** membro de projeto, **quero** comentar uma tarefa, **para** partilhar informação com a equipa.
+
+1. **Dado** que sou membro de P, **quando** escrevo "Já enviei a primeira versão" na tarefa T, **então** o comentário aparece com o meu nome e a data e hora atuais.
+2. **Dado** que tento enviar um comentário vazio ou só com espaços, **então** é recusado com "O comentário é obrigatório" e o texto escrito não se perde.
+3. **Dado** que T tem 2 comentários, **quando** fecho e volto a abrir T, **então** vejo os 2 comentários do mais antigo para o mais recente.
+4. **Dado** que envio um pedido à API com outro `autor` no corpo, **então** o autor guardado é sempre o utilizador autenticado.
+
+## US-18 — Eliminar projeto (M)
+
+**Como** gestor de projeto, **quero** eliminar um projeto que já não é preciso, **para** manter a lista limpa.
+
+1. **Dado** que sou Gestor de P, **quando** escolho "Eliminar" e confirmo, **então** P e todas as suas tarefas, atribuições e comentários deixam de existir.
+2. **Dado** que escolho "Eliminar" e depois "Cancelar", **então** nada é apagado.
+3. **Dado** que sou só Membro de P, **quando** tento eliminar P (na interface ou diretamente na API), **então** a operação é recusada com "Só o gestor do projeto pode fazer esta operação".
 
 ---
 
