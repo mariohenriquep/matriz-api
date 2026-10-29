@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+
 /** Converte as exceções em respostas Problem Details com mensagens em português (RNF-06). */
 @RestControllerAdvice
 public class TratamentoErros {
@@ -52,6 +55,16 @@ public class TratamentoErros {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     ProblemDetail corpoIlegivel(HttpMessageNotReadableException erro) {
+        // Valor com tipo errado (ex.: estado inexistente, data mal formada) ou campo desconhecido: indica o campo
+        if (erro.getCause() instanceof JsonMappingException mapeamento && !mapeamento.getPath().isEmpty()) {
+            String campo = mapeamento.getPath().getFirst().getFieldName();
+            if (campo != null) {
+                String mensagem = erro.getCause() instanceof UnrecognizedPropertyException
+                        ? "Campo não permitido: " + campo
+                        : "Valor inválido para " + campo;
+                return Problemas.validacao(mensagem, List.of(Map.of("campo", campo, "mensagem", mensagem)));
+            }
+        }
         return Problemas.validacao("O corpo do pedido não é JSON válido ou tem campos com tipo errado", List.of());
     }
 }

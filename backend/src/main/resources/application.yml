@@ -36,6 +36,8 @@ management:
       show-components: when-authorized
 
 matriz:
+  # Fuso usado para saber se uma tarefa está atrasada (a data limite é um dia, sem hora)
+  fuso-horario: ${MATRIZ_FUSO_HORARIO:Europe/Lisbon}
   jwt:
     # Segredo para assinar os tokens (HS256), com pelo menos 32 caracteres. Obrigatório.
     segredo: ${MATRIZ_JWT_SEGREDO:}

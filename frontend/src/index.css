@@ -298,3 +298,110 @@ button.pequeno {
 .linha label {
   flex: 1 1 240px;
 }
+
+select {
+  font: inherit;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  background: var(--fundo);
+  color: var(--texto);
+}
+
+h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: end;
+  margin: 1rem 0;
+}
+
+.filtros label {
+  flex: 1 1 160px;
+  font-weight: 400;
+}
+
+.tarefas {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tarefas > li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--borda);
+}
+
+.tarefas > li.cartao {
+  padding: 1rem;
+  margin: 0.5rem 0;
+}
+
+.tarefas .descricao,
+.tarefas .suave {
+  margin: 0.25rem 0;
+}
+
+.tarefa-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  overflow-wrap: anywhere;
+}
+
+.etiqueta.prioridade-alta {
+  border-color: #b3261e;
+  color: #b3261e;
+}
+
+.etiqueta.prioridade-baixa {
+  border-color: var(--texto-suave);
+  color: var(--texto-suave);
+}
+
+.etiqueta.atrasada {
+  background: #b3261e;
+  border-color: #b3261e;
+  color: #fff;
+}
+
+label.em-linha {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 400;
+}
+
+.responsaveis {
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+}
+
+.responsaveis legend {
+  font-weight: 600;
+  padding: 0 0.25rem;
+}
+
+label.opcao {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 400;
+}
+
+@media (prefers-color-scheme: dark) {
+  .etiqueta.prioridade-alta {
+    border-color: #f47067;
+    color: #f47067;
+  }
+}
