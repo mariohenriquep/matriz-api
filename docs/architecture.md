@@ -41,6 +41,7 @@
 
 - A aplicação escala só como um todo (suficiente para RNF-09).
 - É preciso disciplina para respeitar as fronteiras entre módulos: um módulo só usa outro através da sua interface pública, nunca acedendo diretamente às suas tabelas.
+- Dentro do backend, o código segue a clean architecture descrita na §6.
 
 ## 4. Componentes
 
@@ -92,7 +93,55 @@ flowchart LR
 | Autenticação (D-05) | JWT em `Authorization: Bearer`, válido 8 h; passwords com BCrypt. | ✅ Decidido (Ficha 03) |
 | Linguagem e frameworks (D-01, D-02) | Backend: Java 21 + Spring Boot 3 (Web, Security, Data JPA, Validation, Flyway). Frontend: React + Vite + TypeScript. Base de dados: PostgreSQL 16. Detalhe em `docs/implementation-plan.md` §2. | ✅ Decidido (Ficha 03) |
 
-## 6. Pressupostos e pendentes desta fase
+## 6. Organização do código no backend: clean architecture ✅
+
+> Extra pedido pelo Mário a 2026-10-29, antes do Exercício 5 da Ficha 03 (não faz parte do enunciado).
+
+Os módulos da §4 continuam a ser a divisão funcional. Dentro do backend, o código está organizado por **camadas**, cada uma num pacote de `pt.matriz`. Cada módulo tem as suas classes em várias camadas (por exemplo, Projetos e membros = `ControladorProjetos`, `ServicoProjetos`, `ProjetoRepositorio`, `ProjetoMapper` e os DTOs de projetos).
+
+```mermaid
+flowchart LR
+    HTTP([Pedido HTTP]) --> C[controllers]
+    C --> M[mappers]
+    M --> D2[dtos]
+    C --> D2
+    C --> S[services]
+    S --> R[repositories]
+    S --> DOM[domain]
+    R --> DOM
+    M --> DOM
+    R --> BD[(PostgreSQL)]
+```
+
+| Pacote | Responsabilidade | Exemplos |
+|--------|------------------|----------|
+| `domain` | Entidades, valores e enums do negócio. Não conhece HTTP, DTOs nem serviços. | `Utilizador`, `Projeto`, `Membro`, `Papel`, `ContagensTarefas`, `EdicaoProjeto` |
+| `repositories` | Acesso à base de dados (SQL explícito com `NamedParameterJdbcTemplate`; Spring Data JPA só para `Utilizador`). Devolve objetos do domínio. | `ProjetoRepositorio`, `UtilizadorRepositorio` |
+| `services` | Casos de uso e regras de negócio: validações, regras de acesso, transações. Recebem e devolvem objetos do domínio. | `ServicoProjetos`, `ServicoAutenticacao`, `ControloAcesso` |
+| `controllers` | Só HTTP: rotas, códigos de estado, validação do formato do pedido. Recebem DTOs, chamam serviços e devolvem DTOs. | `ControladorProjetos`, `ControladorAutenticacao` |
+| `dtos` | Formato dos pedidos e respostas, igual aos schemas do `openapi.yaml`. Só dados. | `NovoProjeto`, `AlteracaoProjeto`, `ProjetoResposta`, `Lista` |
+| `mappers` | Conversão entre domínio e DTOs, nos dois sentidos. | `ProjetoMapper`, `UtilizadorMapper` |
+| `security` | Spring Security, emissão e validação de JWT, utilizador autenticado. | `ConfiguracaoSeguranca`, `ServicoTokens`, `UtilizadorAtual` |
+| `exceptions` | Erros da API e conversão para Problem Details. | `ErroApi`, `TratamentoErros` |
+| `config` | Configuração geral e dados de demonstração. | `ConfiguracaoComum`, `DadosDemonstracao` |
+
+**Regra de dependências.** As dependências só apontam para dentro: `controllers → services → repositories → domain`. Em concreto:
+
+- `domain` não depende de nenhuma outra camada da aplicação;
+- `controllers` nunca usam `repositories` diretamente;
+- `services` não conhecem `controllers`, `dtos` nem `mappers` (não sabem que existe HTTP);
+- `repositories` só conhecem o `domain`;
+- `dtos` são só dados e `mappers` não acedem a serviços nem à base de dados.
+
+A regra é verificada automaticamente pelo teste `ArquiteturaTest` (ArchUnit), que corre com `./mvnw test`: uma dependência proibida faz falhar o build.
+
+**Compromissos aceites**
+
+- `Utilizador` continua a ser uma entidade JPA dentro de `domain` (decisão do Mário). O domínio fica assim ligado às anotações `jakarta.persistence`, mas não ao Spring.
+- `ErroApi` (em `exceptions`) é usado pelos serviços para indicar 404, 403, 409 ou 422. O código HTTP fica decidido no serviço; o controlador não traduz erros.
+- Não há interfaces separadas para os repositórios ("portas"): com uma só implementação por repositório, seriam código a mais sem benefício nesta fase.
+
+## 7. Pressupostos e pendentes desta fase
 
 - A consulta periódica das notificações (30 s) é suficiente para os utilizadores [P-30, por confirmar].
 - O frontend e o backend podem ser publicados no mesmo domínio, o que simplifica a autenticação [P-31, por confirmar].
