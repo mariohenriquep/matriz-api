@@ -65,6 +65,7 @@ React + Vite + TypeScript. O Mário tem Docker no Mac.
 - **Actuator `/actuator/health`** para confirmar que a aplicação e a base de dados respondem. No Exercício 3 decide-se se fica público.
 - **Proxy do Vite para `/api`** em vez de configurar CORS no backend: em desenvolvimento, o frontend e a API parecem a mesma origem.
 - **Limites que não estavam documentados:** `nome` do utilizador até 100 caracteres e `email` até 254 (máximo habitual de um endereço de email). Propostos aqui; não mudam o contrato.
+- **Porta 5433 para o PostgreSQL** (decisão do Mário: a 5432 já está ocupada por outro projeto no Mac dele).
 - **Colunas dos extras não criadas** (`is_admin_global`, `tentativas_falhadas`, `bloqueado_ate`, `arquivado_em`, NOTIFICACAO, REGISTO_ADMIN), como previsto no plano §4.
 
 ## Problemas no ambiente de desenvolvimento

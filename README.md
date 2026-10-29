@@ -69,9 +69,11 @@ Altera pelo menos `POSTGRES_PASSWORD` no `.env`. O `.env` não entra no Git; o `
 ### 2. Base de dados
 
 ```bash
-docker compose up -d          # PostgreSQL em localhost:5432 (porta em POSTGRES_PORTA)
+docker compose up -d          # PostgreSQL em localhost:5433 (porta em POSTGRES_PORTA)
 docker compose ps             # deve mostrar "healthy"
 ```
+
+A base de dados usa a porta **5433** do computador local, para não colidir com outro PostgreSQL na 5432. Se a 5433 também estiver ocupada, muda a porta no `.env`, em `POSTGRES_PORTA` e em `MATRIZ_DB_URL`.
 
 O esquema é criado pelo **Flyway** quando o backend arranca (scripts em `backend/src/main/resources/db/migration`). Não há passo manual.
 

@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-matriz}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD no .env}
     ports:
-      - "${POSTGRES_PORTA:-5432}:5432"
+      - "${POSTGRES_PORTA:-5433}:5432"
     volumes:
       - matriz-dados:/var/lib/postgresql/data
     healthcheck:

@@ -8,7 +8,7 @@ spring:
       - optional:file:../.env[.properties]
       - optional:file:.env[.properties]
   datasource:
-    url: ${MATRIZ_DB_URL:jdbc:postgresql://localhost:5432/matriz}
+    url: ${MATRIZ_DB_URL:jdbc:postgresql://localhost:5433/matriz}
     username: ${POSTGRES_USER:matriz}
     password: ${POSTGRES_PASSWORD}
   jpa:
