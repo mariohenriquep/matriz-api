@@ -64,7 +64,7 @@ Prioridade MoSCoW. A coluna "US" liga cada requisito ao backlog em `docs/user-st
 | ID | Categoria | Requisito | Prioridade |
 |----|-----------|-----------|-----------|
 | RNF-01 | Segurança | Passwords guardadas apenas com hash e salt, usando bcrypt ou Argon2 (ver `docs/constraints.md` §3). | M |
-| RNF-02 | Segurança | Todas as operações, exceto registo e login, exigem sessão autenticada; a sessão expira após 8 horas de inatividade [P-28]. | M |
+| RNF-02 | Segurança | Todas as operações, exceto registo e login, exigem sessão autenticada; a sessão expira 8 horas depois do login [P-28]. | M |
 | RNF-03 | Autorização | As permissões (Membro, Gestor, Administrador) são verificadas no servidor em cada pedido. | M |
 | RNF-04 | Segurança | Comunicação cifrada (HTTPS) em produção. | M |
 | RNF-05 | Privacidade | Dados pessoais limitados a nome e email; cumprimento do RGPD [P-18]. | M |

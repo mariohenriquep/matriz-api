@@ -43,7 +43,7 @@
 | P-25 | Quem faz uma ação não recebe notificação dela. | ✅ | Notificações. |
 | P-26 | As notificações não lidas mantêm-se até serem abertas; não expiram no MVP. | ✅ | Armazenamento. |
 | P-27 | Uma tarefa com data limite no passado e não concluída aparece como "Atrasada". | ✅ | US-06, interface. |
-| P-28 | A sessão expira após 8 horas de inatividade (a rever com D-05). | Por confirmar | RNF-02. |
+| P-28 | A sessão expira 8 horas depois do login (validade fixa do token JWT, D-05). | ✅ | RNF-02. |
 | P-29 | Após 5 tentativas de login falhadas seguidas, a conta fica bloqueada para login durante 15 minutos. | Por confirmar | RNF-11. |
 | P-30 | Consultar as notificações a cada 30 segundos é suficiente (sem tempo real). | Por confirmar | RF-16, arquitetura. |
 | P-31 | Frontend e backend são publicados no mesmo domínio. | Por confirmar | Autenticação, arquitetura. |

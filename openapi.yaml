@@ -1,17 +1,29 @@
 openapi: 3.1.0
 info:
   title: Matriz API
-  version: 0.2.0
+  version: 0.2.1
   summary: Contrato REST do MVP da Matriz (Ficha 03).
   description: |
     Contrato completo para o âmbito da Ficha 03: autenticação, projetos e membros, tarefas,
     responsáveis e comentários. Os nomes seguem `docs/database.md`; as regras de acesso estão em
     `docs/implementation-plan.md` §3.
 
-    **Autenticação (D-05):** `POST /auth/login` devolve um token JWT que o cliente envia em
-    `Authorization: Bearer <token>`. O token expira 8 horas depois de emitido (P-28).
-    `POST /auth/logout` invalida todos os tokens já emitidos para o utilizador (o servidor guarda
-    uma versão de token por utilizador e incrementa-a).
+    **Autenticação (D-05):** ciclo do token.
+
+    1. `POST /auth/login` com email e password devolve um token JWT (HS256) e a data `expiraEm`.
+    2. O cliente envia o token em `Authorization: Bearer <token>` em todos os outros pedidos.
+       O frontend guarda-o no `sessionStorage` do browser.
+    3. O token expira 8 horas depois do login (P-28), com ou sem atividade. Não há renovação:
+       depois disso é preciso novo login.
+    4. `POST /auth/logout` invalida todos os tokens já emitidos para o utilizador (o servidor guarda
+       uma versão de token por utilizador e incrementa-a).
+    5. Token em falta, adulterado, expirado ou anterior a um logout dá `401`.
+
+    O utilizador é sempre obtido do token: a API nunca aceita do cliente o Gestor de um projeto, o
+    criador de uma tarefa nem o autor de um comentário.
+
+    Fora deste contrato, `GET /actuator/health` é público e devolve só `{"status":"UP"}`.
+    O browser só pode chamar a API a partir das origens em `MATRIZ_CORS_ORIGENS` (CORS).
 
     **Erros:** formato *Problem Details* (RFC 9457) com mensagens em português.
 
@@ -67,7 +79,7 @@ paths:
                   minLength: 1
             example:
               email: ana@matriz.local
-              password: demo1234
+              password: demo-matriz-2026
       responses:
         '200':
           description: Sessão iniciada.
@@ -87,7 +99,7 @@ paths:
                 type: /erros/credenciais-invalidas
                 title: Não autenticado
                 status: 401
-                detail: Credenciais inválidas
+                detail: Email ou password incorretos
 
   /auth/eu:
     get:
@@ -874,7 +886,7 @@ components:
             type: /erros/nao-autenticado
             title: Não autenticado
             status: 401
-            detail: A sessão expirou. Inicia sessão novamente.
+            detail: A sessão expirou ou já não é válida. Inicia sessão novamente.
     SemPermissao:
       description: Membro do projeto sem o papel necessário.
       content:

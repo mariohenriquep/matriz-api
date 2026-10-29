@@ -7,28 +7,15 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import pt.matriz.comum.DadosDemonstracao;
 
 /** Verifica as migrations e o seed contra um PostgreSQL real (Ficha 03, Exercício 2). */
-@SpringBootTest(properties = "matriz.seed.password=" + EsquemaESeedTest.PASSWORD_DEMO)
-@Testcontainers
-class EsquemaESeedTest {
-
-    static final String PASSWORD_DEMO = "password-de-teste";
-
-    @Container
-    @ServiceConnection
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
+class EsquemaESeedTest extends TesteIntegracao {
 
     @Autowired
     JdbcTemplate jdbc;

@@ -64,7 +64,12 @@ Detalhe em [`docs/requirements.md`](docs/requirements.md) e [`docs/user-stories.
 cp .env.example .env
 ```
 
-Altera pelo menos `POSTGRES_PASSWORD` no `.env`. O `.env` não entra no Git; o `.env.example` só tem valores fictícios. O backend lê o `.env` da raiz do repositório.
+No `.env`:
+
+- altera `POSTGRES_PASSWORD`;
+- gera o segredo dos tokens, que é obrigatório: `openssl rand -base64 48` e cola o resultado em `MATRIZ_JWT_SEGREDO`. Sem ele, o backend não arranca.
+
+O `.env` não entra no Git; o `.env.example` só tem valores fictícios. O backend lê o `.env` da raiz do repositório.
 
 ### 2. Base de dados
 
@@ -90,7 +95,7 @@ A API fica em `http://localhost:8080/api/v1`. Para confirmar que arrancou e que 
 
 ```bash
 curl http://localhost:8080/actuator/health
-# {"status":"UP","components":{"db":{"status":"UP"},...}}
+# {"status":"UP"}   (inclui a ligação à base de dados)
 ```
 
 ### 4. Dados de demonstração
@@ -108,7 +113,27 @@ No primeiro arranque, se a base de dados não tiver utilizadores, o backend cria
 ```bash
 cd frontend
 npm install
-npm run dev                   # http://localhost:5173 (os pedidos a /api seguem para o backend)
+npm run dev                   # http://localhost:5173
+```
+
+O frontend chama a API em `http://localhost:8080/api/v1`. Para outro endereço, copia `frontend/.env.example` para `frontend/.env` e altera `VITE_API_URL`. O backend só aceita pedidos do browser vindos das origens em `MATRIZ_CORS_ORIGENS` (por defeito `http://localhost:5173`); por isso o Vite usa sempre a porta 5173 e recusa arrancar se estiver ocupada.
+
+### Sessão e autenticação
+
+1. O login (`POST /api/v1/auth/login`) devolve um token JWT, válido durante **8 horas a partir do login**, com ou sem atividade.
+2. O frontend guarda o token no `sessionStorage`: a sessão sobrevive a recarregar a página e termina quando o separador fecha.
+3. Todos os pedidos à API, exceto o login, levam `Authorization: Bearer <token>`. Sem token, ou com um token inválido ou expirado, a API responde `401` e o frontend volta ao login com a mensagem "A tua sessão terminou".
+4. "Terminar sessão" (`POST /api/v1/auth/logout`) invalida no servidor todos os tokens desse utilizador, incluindo os de outros separadores.
+5. As passwords são guardadas só como hash BCrypt.
+
+Exemplo com `curl`:
+
+```bash
+TOKEN=$(curl -s -H 'Content-Type: application/json' \
+  -d '{"email":"ana@matriz.local","password":"<MATRIZ_SEED_PASSWORD>"}' \
+  http://localhost:8080/api/v1/auth/login | python3 -c 'import json,sys; print(json.load(sys.stdin)["token"])')
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/v1/auth/eu
+curl -X POST -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/v1/auth/logout
 ```
 
 ### Testes e verificações
@@ -122,4 +147,4 @@ cd frontend && npm run build && npm run lint
 
 - ✅ **Fase 1 — Especificação (Ficha PL 01):** requisitos, backlog e restrições.
 - ✅ **Fase 2 — Conceção (Ficha PL 02):** arquitetura, modelo de dados, contrato da API e wireframe.
-- 🚧 **Fase 3 — Desenvolvimento (Ficha PL 03):** stack escolhida e estrutura criada (backend, base de dados, migrations, seed e frontend inicial). Seguem-se autenticação, projetos, tarefas, responsáveis, comentários e interface. Progresso em [`docs/implementation-plan.md`](docs/implementation-plan.md).
+- 🚧 **Fase 3 — Desenvolvimento (Ficha PL 03):** estrutura, base de dados, seed e autenticação feitos. Seguem-se projetos, tarefas, responsáveis, comentários e interface. Progresso em [`docs/implementation-plan.md`](docs/implementation-plan.md).
