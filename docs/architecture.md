@@ -89,11 +89,11 @@ flowchart LR
 | Erros | Formato uniforme baseado em *Problem Details* (RFC 9457), com mensagens em português. | Proposto |
 | Entrega de notificações (D-07) | O frontend consulta o contador de não lidas periodicamente (ex.: a cada 30 s) e ao mudar de ecrã. Sem WebSockets no MVP. | ✅ Decidido |
 | Base de dados (D-03) | Relacional, pela natureza das relações e regras de integridade. Motor concreto por decidir. | ✅ Decidido (motor pendente) |
-| Autenticação (D-05) | Por decidir na Aula 03, junto com a stack. | Pendente |
-| Linguagem e frameworks (D-01, D-02) | Por decidir. O `.gitignore` de Java sugere Java no backend, mas não foi confirmado. | Pendente |
+| Autenticação (D-05) | JWT em `Authorization: Bearer`, válido 8 h; passwords com BCrypt. | ✅ Decidido (Ficha 03) |
+| Linguagem e frameworks (D-01, D-02) | Backend: Java 21 + Spring Boot 3 (Web, Security, Data JPA, Validation, Flyway). Frontend: React + Vite + TypeScript. Base de dados: PostgreSQL 16. Detalhe em `docs/implementation-plan.md` §2. | ✅ Decidido (Ficha 03) |
 
 ## 6. Pressupostos e pendentes desta fase
 
 - A consulta periódica das notificações (30 s) é suficiente para os utilizadores [P-30, por confirmar].
 - O frontend e o backend podem ser publicados no mesmo domínio, o que simplifica a autenticação [P-31, por confirmar].
-- D-01, D-02 e D-05 continuam pendentes.
+- D-01, D-02, D-03 e D-05 foram fechadas na Ficha 03 (Exercício 1).

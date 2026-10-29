@@ -22,3 +22,34 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# Maven wrapper (o jar do wrapper tem de ser versionado)
+!.mvn/wrapper/maven-wrapper.jar
+
+# Build (backend)
+backend/target/
+target/
+
+# Frontend (Node / Vite)
+node_modules/
+frontend/dist/
+dist/
+*.tsbuildinfo
+npm-debug.log*
+.vite/
+coverage/
+
+# Variáveis de ambiente (segredos nunca no Git; usar .env.example)
+.env
+.env.*
+!.env.example
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

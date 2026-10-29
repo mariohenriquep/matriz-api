@@ -1,6 +1,6 @@
 # Requisitos — Matriz
 
-> Ficha 01, Exercício 4. Consolida a análise do Exercício 2 e o backlog do Exercício 3.
+> Ficha 01, Exercício 4. **Atualizado na Ficha 03, Exercício 1:** conciliação com o âmbito da Ficha 03 (RF-05, RF-10, RF-12, RF-20, RF-21) e indicação do que fica como extra (ver `docs/implementation-plan.md` §1). Consolida a análise do Exercício 2 e o backlog do Exercício 3.
 > **[P-xx]** = depende de um pressuposto (lista completa em `docs/constraints.md`). ✅ = decisão confirmada pelo Mário.
 > Neste trabalho académico, o Mário faz o papel de cliente: as decisões dele contam como confirmações do cliente, além da frase original abaixo.
 
@@ -37,25 +37,27 @@ Prioridade MoSCoW. A coluna "US" liga cada requisito ao backlog em `docs/user-st
 
 | ID | Requisito | Prioridade | Justificação | US |
 |----|-----------|-----------|--------------|----|
-| RF-01 | Registar conta com nome, email e password; iniciar e terminar sessão. | M | Sem identidade não há controlo de acesso nem atribuição. | US-01 |
+| RF-01 | Iniciar e terminar sessão e consultar o utilizador autenticado. Na Ficha 03 usam-se contas de demonstração criadas por seed; o registo público fica como extra (C-06). | M | Sem identidade não há controlo de acesso nem atribuição. | US-01 |
 | RF-02 | O primeiro administrador global é criado na instalação, por configuração, e não pelo primeiro registo. | M | Garante que existe um administrador sem permitir que um estranho o seja primeiro (Ex. 6, R-12). ✅ P-20 | US-01 |
 | RF-03 | Criar projeto (nome obrigatório, descrição opcional); o criador fica Gestor. | M | OBJ-1. | US-02 |
 | RF-04 | Editar nome e descrição do projeto (Gestor ou administrador). | M | Os projetos evoluem. | US-02 |
-| RF-05 | Listar os projetos ativos do utilizador; o administrador vê todos os ativos. Os arquivados aparecem numa lista à parte, "Projetos arquivados", com a mesma regra de acesso. | M | Ponto de entrada da aplicação. | US-03 |
+| RF-05 | Listar os projetos ativos do utilizador, com contagens de tarefas por estado e **pesquisa pelo nome** (C-04); o administrador vê todos os ativos. Os arquivados aparecem numa lista à parte, "Projetos arquivados", com a mesma regra de acesso. | M | Ponto de entrada da aplicação. | US-03 |
 | RF-06 | Adicionar um utilizador registado a um projeto, por email (Gestor ou administrador). | M | Trabalho em equipa. | US-04 |
 | RF-07 | Remover membro de um projeto (Gestor ou administrador); as suas tarefas ficam sem responsável. O Gestor não pode ser removido nem sair do projeto. | M | Controlo de acesso. | US-05 |
 | RF-08 | Criar tarefa (título obrigatório; descrição, prioridade, responsável e data limite opcionais). Uma tarefa com data limite ultrapassada e não concluída aparece como "Atrasada" (✅ P-27). | M | OBJ-2. | US-06 |
 | RF-09 | Editar tarefa; eliminar tarefa (criador, Gestor ou administrador). | M | Manter a informação correta. | US-07 |
-| RF-10 | Atribuir ou retirar o responsável de uma tarefa. O responsável tem de ser membro do projeto; um administrador global que não seja membro não pode ser responsável. | M | Saber quem faz o quê. | US-08 |
+| RF-10 | Atribuir **um ou mais responsáveis** a uma tarefa e remover cada atribuição (C-01). Cada responsável tem de ser membro do projeto e não pode ser atribuído duas vezes; um administrador global que não seja membro não pode ser responsável. | M | Saber quem faz o quê. | US-08 |
 | RF-11 | Alterar o estado da tarefa entre `Por fazer`, `Em curso` e `Concluída`, com qualquer transição. | M | Base do progresso (OBJ-3). ✅ P-04 | US-09 |
-| RF-12 | Listar tarefas de um projeto com filtros por estado e responsável. | M | Encontrar trabalho. | US-10 |
+| RF-12 | Listar tarefas de um projeto com filtros por estado, **prioridade** (C-05) e responsável. | M | Encontrar trabalho. | US-10 |
 | RF-13 | Promover e despromover administradores globais; tem de existir sempre pelo menos um. | M | Pedido do cliente (Mário). ✅ | US-11 |
 | RF-14 | Painel de progresso: tarefas por estado e % concluída. | M | OBJ-3. | US-12 |
 | RF-15 | Quadro Kanban com uma coluna por estado; mover uma tarefa de coluna muda o estado. | S | Visão rápida do trabalho. ✅ | US-13 |
 | RF-16 | Notificações in-app quando: me atribuem uma tarefa, me adicionam a um projeto, ou muda o estado de uma tarefa minha. Contador de não lidas. | S | Pedido do cliente (Mário). ✅ [P-21] | US-14 |
 | RF-17 | Lista "As minhas tarefas" com as tarefas atribuídas ao utilizador em todos os projetos ativos. | S | Ver o trabalho de todos os projetos num só sítio, o que o filtro do RF-12 não permite (só filtra dentro de um projeto). | US-15 |
-| RF-18 | Arquivar e reativar projeto (Gestor ou administrador); um projeto arquivado fica só de leitura. |
-| RF-19 | Registar cada promoção e despromoção de administrador (quem fez, a quem, quando); os administradores podem consultar este registo. | S | É uma ação sensível e deve deixar rasto (Ex. 6, R-15). | US-11 | S | Não perder histórico. ✅ P-10 | US-16 |
+| RF-18 | Arquivar e reativar projeto (Gestor ou administrador); um projeto arquivado fica só de leitura. *(Extra, depois da Ficha 03.)* | S | Não perder histórico. ✅ P-10 | US-16 |
+| RF-19 | Registar cada promoção e despromoção de administrador (quem fez, a quem, quando); os administradores podem consultar este registo. | S | É uma ação sensível e deve deixar rasto (Ex. 6, R-15). | US-11 |
+| RF-20 | Adicionar e listar comentários de uma tarefa; o autor e a data são definidos pelo servidor. Conteúdo com 1 a 2000 caracteres, não só espaços. | M | Âmbito da Ficha 03 (C-02). | US-17 |
+| RF-21 | Eliminar projeto (só Gestor), após confirmação, eliminando também membros, tarefas, atribuições e comentários. | M | Âmbito da Ficha 03 (C-03). | US-18 |
 
 ## 5. Requisitos não funcionais
 
