@@ -37,6 +37,19 @@ public class ErroApi extends RuntimeException {
         return new ErroApi(HttpStatus.FORBIDDEN, "/erros/sem-permissao", "Sem permissão", detalhe);
     }
 
+    public static ErroApi conflito(String detalhe) {
+        return new ErroApi(HttpStatus.CONFLICT, "/erros/conflito", "Conflito", detalhe);
+    }
+
+    public static ErroApi regraDeNegocio(String tipo, String detalhe) {
+        return new ErroApi(HttpStatus.UNPROCESSABLE_ENTITY, tipo, "Regra de negócio", detalhe);
+    }
+
+    /** 400 para validações feitas no serviço (as anotações de Bean Validation dão o mesmo formato). */
+    public static ErroValidacao validacao(String campo, String mensagem) {
+        return new ErroValidacao(campo, mensagem);
+    }
+
     public HttpStatus estado() {
         return estado;
     }

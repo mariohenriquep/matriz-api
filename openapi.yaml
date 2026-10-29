@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Matriz API
-  version: 0.2.1
+  version: 0.2.2
   summary: Contrato REST do MVP da Matriz (Ficha 03).
   description: |
     Contrato completo para o âmbito da Ficha 03: autenticação, projetos e membros, tarefas,
@@ -282,6 +282,9 @@ paths:
       tags: [Membros]
       operationId: adicionarMembro
       summary: Adicionar membro por email (só Gestor)
+      description: |
+        O email não distingue maiúsculas. `409` se o utilizador já for membro; `422` se não existir
+        conta com esse email (US-04).
       requestBody:
         required: true
         content:
