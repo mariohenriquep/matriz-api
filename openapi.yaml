@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Matriz API
-  version: 0.2.2
+  version: 0.2.3
   summary: Contrato REST do MVP da Matriz (Ficha 03).
   description: |
     Contrato completo para o âmbito da Ficha 03: autenticação, projetos e membros, tarefas,
@@ -467,7 +467,9 @@ paths:
       tags: [Tarefas]
       operationId: eliminarTarefa
       summary: Eliminar tarefa (criador ou Gestor)
-      description: Elimina também as atribuições e os comentários da tarefa (RN-10).
+      description: >-
+        Elimina também as atribuições e os comentários da tarefa (RN-10). Um membro que não criou a tarefa
+        nem é Gestor recebe 403 "Só quem criou a tarefa ou o gestor do projeto a pode eliminar".
       responses:
         '204':
           description: Tarefa eliminada.
@@ -816,7 +818,7 @@ components:
           format: date
         atrasada:
           type: boolean
-          description: 'Calculado: dataLimite já passou e estado diferente de CONCLUIDA (P-27).'
+          description: 'Calculado: dataLimite já passou e estado diferente de CONCLUIDA (P-27). "Hoje" é a data no fuso de MATRIZ_FUSO_HORARIO (por omissão Europe/Lisbon).'
         totalComentarios:
           type: integer
         criadoEm:

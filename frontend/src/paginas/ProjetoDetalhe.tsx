@@ -15,6 +15,7 @@ import { Barra } from '../componentes/Barra'
 import { Contagens } from '../componentes/Contagens'
 import { ACarregar, MensagemErro, MensagemSucesso } from '../componentes/Estados'
 import { FormularioProjeto } from '../componentes/FormularioProjeto'
+import { Tarefas } from '../componentes/Tarefas'
 
 type Estado =
   | { tipo: 'a-carregar' }
@@ -22,7 +23,7 @@ type Estado =
   | { tipo: 'erro'; mensagem: string }
   | { tipo: 'pronto'; projeto: Projeto; membros: Membro[] }
 
-/** Detalhe do projeto: dados, edição e eliminação (só Gestor) e membros. As tarefas chegam no Exercício 5. */
+/** Detalhe do projeto: dados, edição e eliminação (só Gestor), membros e tarefas. */
 export function ProjetoDetalhe() {
   const { projetoId = '' } = useParams()
   const navegar = useNavigate()
@@ -83,6 +84,17 @@ export function ProjetoDetalhe() {
     setEstado({ tipo: 'pronto', projeto: atualizado, membros })
     setAEditar(false)
     setSucesso('Alterações guardadas.')
+  }
+
+  /** Depois de mudar tarefas: volta a pedir o projeto só para as contagens, sem recarregar o ecrã. */
+  function atualizarContagens() {
+    obterProjeto(projeto.id)
+      .then((atual) =>
+        setEstado((anterior) => (anterior.tipo === 'pronto' ? { ...anterior, projeto: atual } : anterior)),
+      )
+      .catch(() => {
+        // As contagens ficam como estavam; a lista de tarefas já mostra o resultado
+      })
   }
 
   async function eliminar() {
@@ -171,10 +183,7 @@ export function ProjetoDetalhe() {
           aoMudar={(novos) => setEstado({ tipo: 'pronto', projeto, membros: novos })}
         />
 
-        <section className="cartao">
-          <h2>Tarefas</h2>
-          <p className="suave">A lista de tarefas está em construção.</p>
-        </section>
+        <Tarefas projeto={projeto} membros={membros} aoMudar={atualizarContagens} />
       </main>
     </>
   )
