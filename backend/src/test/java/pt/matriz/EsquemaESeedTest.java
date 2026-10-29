@@ -12,7 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
-import pt.matriz.comum.DadosDemonstracao;
+import pt.matriz.config.DadosDemonstracao;
 
 /** Verifica as migrations e o seed contra um PostgreSQL real (Ficha 03, Exercício 2). */
 class EsquemaESeedTest extends TesteIntegracao {

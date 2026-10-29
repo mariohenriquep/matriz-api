@@ -41,14 +41,30 @@ Detalhe em [`docs/requirements.md`](docs/requirements.md) e [`docs/user-stories.
 | [`docs/requirements.md`](docs/requirements.md) | Visão, utilizadores, requisitos funcionais e não funcionais, âmbito do MVP. |
 | [`docs/user-stories.md`](docs/user-stories.md) | Backlog do MVP: user stories, prioridades, critérios de aceitação e casos-limite. |
 | [`docs/constraints.md`](docs/constraints.md) | Restrições, pressupostos, segurança e privacidade, decisões técnicas pendentes. |
-| [`docs/architecture.md`](docs/architecture.md) | Arquitetura (monólito modular), componentes e decisões transversais. |
+| [`docs/architecture.md`](docs/architecture.md) | Arquitetura (monólito modular), componentes, decisões transversais e camadas do código (clean architecture). |
 | [`docs/database.md`](docs/database.md) | Modelo de dados, diagrama ER (Mermaid) e regras de negócio. |
 | [`openapi.yaml`](openapi.yaml) | Contrato REST (OpenAPI 3.1) de todas as operações do MVP. |
 | [`docs/implementation-plan.md`](docs/implementation-plan.md) | Plano de implementação da Ficha 03: stack, regras de acesso e incrementos. |
 | [`docs/ui/`](docs/ui/) | Wireframe do painel do projeto (`wireframe.png`, fonte em `wireframe.html`). |
-| `backend/` | API em Java 21 + Spring Boot 3 (Maven), migrations Flyway e seed. |
+| `backend/` | API em Java 21 + Spring Boot 3 (Maven), em clean architecture; migrations Flyway e seed. |
 | `frontend/` | Interface em React + Vite + TypeScript. |
 | [`docs/ai-log/`](docs/ai-log/) | Registo do uso de IA em cada exercício (prompts, análise e revisão humana). |
+
+## Arquitetura do código
+
+O backend segue uma **clean architecture** em camadas, cada uma num pacote de `backend/src/main/java/pt/matriz/`:
+
+| Pacote | O que contém |
+|--------|--------------|
+| `domain` | Entidades e regras do negócio (`Utilizador`, `Projeto`, `Membro`, `Papel`…), sem dependências das outras camadas. |
+| `repositories` | Acesso à base de dados; devolve objetos do domínio. |
+| `services` | Casos de uso: validações, regras de acesso e transações. |
+| `controllers` | Endpoints REST; só tratam de HTTP. |
+| `dtos` | Pedidos e respostas da API, iguais aos schemas do `openapi.yaml`. |
+| `mappers` | Conversão entre domínio e DTOs. |
+| `security`, `exceptions`, `config` | Autenticação JWT, erros em Problem Details, configuração e seed. |
+
+As dependências só apontam para dentro (`controllers → services → repositories → domain`), e o teste `ArquiteturaTest` falha se alguém quebrar esta regra. Detalhe em [`docs/architecture.md`](docs/architecture.md) §6.
 
 ## Como executar
 
@@ -139,7 +155,8 @@ curl -X POST -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/v1/auth
 ### Testes e verificações
 
 ```bash
-cd backend && ./mvnw test     # precisa do Docker: os testes usam um PostgreSQL temporário (Testcontainers)
+cd backend && ./mvnw test     # precisa do Docker: os testes usam um PostgreSQL temporário (Testcontainers);
+                              # inclui ArquiteturaTest, que verifica as dependências entre camadas
 cd frontend && npm run build && npm run lint
 ```
 
@@ -147,4 +164,4 @@ cd frontend && npm run build && npm run lint
 
 - ✅ **Fase 1 — Especificação (Ficha PL 01):** requisitos, backlog e restrições.
 - ✅ **Fase 2 — Conceção (Ficha PL 02):** arquitetura, modelo de dados, contrato da API e wireframe.
-- 🚧 **Fase 3 — Desenvolvimento (Ficha PL 03):** estrutura, base de dados, seed, autenticação e projetos (com membros) feitos. Seguem-se tarefas, responsáveis, comentários e interface. Progresso em [`docs/implementation-plan.md`](docs/implementation-plan.md).
+- 🚧 **Fase 3 — Desenvolvimento (Ficha PL 03):** estrutura, base de dados, seed, autenticação e projetos (com membros) feitos; backend reorganizado em clean architecture. Seguem-se tarefas, responsáveis, comentários e interface. Progresso em [`docs/implementation-plan.md`](docs/implementation-plan.md).
