@@ -56,6 +56,8 @@ O backend segue uma clean architecture (`docs/architecture.md` §6). Ao criar ou
 - a conversão entre DTOs e domínio faz-se nos `mappers`, não nos controladores nem nos serviços;
 - corre `./mvnw test` antes de terminar: o `ArquiteturaTest` falha se a regra de dependências for quebrada. Não o desligues nem alteres as suas regras sem aprovação.
 
+No frontend, corre `npm test`, `npm run build` e `npm run lint` antes de terminar.
+
 ## 6. Manter-se no âmbito da tarefa
 
 - Altera só os ficheiros necessários para a tarefa pedida.

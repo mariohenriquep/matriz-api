@@ -6,20 +6,12 @@ import {
   LIMITE_DESCRICAO_TAREFA,
   LIMITE_TITULO,
   PRIORIDADES,
+  type DadosTarefa,
   type EstadoTarefa,
   type Prioridade,
   type Tarefa,
 } from '../api/tarefas'
 import { ErroCampo, MensagemErro } from './Estados'
-
-export interface DadosTarefa {
-  titulo: string
-  descricao: string | null
-  prioridade: Prioridade
-  dataLimite: string | null
-  estado: EstadoTarefa
-  responsavelIds: string[]
-}
 
 interface Props {
   /** Sem tarefa inicial é uma criação: escolhem-se os responsáveis e o estado começa em "Por fazer". */

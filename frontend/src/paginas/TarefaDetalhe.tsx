@@ -1,11 +1,15 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import { ErroApi } from '../api/cliente'
 import { listarMembros, obterProjeto, type Membro, type Projeto } from '../api/projetos'
 import {
+  ESTADOS,
   LIMITE_COMENTARIO,
+  PRIORIDADES,
   atribuirResponsavel,
   comentar,
+  editarTarefa,
+  eliminarTarefa,
   formatarData,
   formatarDataHora,
   listarComentarios,
@@ -13,11 +17,18 @@ import {
   nomePrioridade,
   obterTarefa,
   removerResponsavel,
+  alteracoesDe,
+  type AlteracaoTarefa,
+  type DadosTarefa,
   type Comentario,
+  type EstadoTarefa,
+  type Prioridade,
   type Tarefa,
 } from '../api/tarefas'
+import { useSessao } from '../auth/useSessao'
 import { Barra } from '../componentes/Barra'
 import { ACarregar, ErroCampo, MensagemErro, MensagemSucesso } from '../componentes/Estados'
+import { FormularioTarefa } from '../componentes/FormularioTarefa'
 
 type Estado =
   | { tipo: 'a-carregar' }
@@ -25,7 +36,7 @@ type Estado =
   | { tipo: 'erro'; mensagem: string }
   | { tipo: 'pronto'; tarefa: Tarefa; projeto: Projeto; membros: Membro[]; comentarios: Comentario[] }
 
-/** Detalhe da tarefa: dados, responsáveis (atribuir e remover) e comentários. */
+/** Detalhe da tarefa: dados (editar, estado, prioridade, eliminar), responsáveis e comentários. */
 export function TarefaDetalhe() {
   const { tarefaId = '' } = useParams()
   const [estado, setEstado] = useState<Estado>({ tipo: 'a-carregar' })
@@ -89,23 +100,12 @@ export function TarefaDetalhe() {
         <p>
           <Link to={`/projetos/${projeto.id}`}>← {projeto.nome}</Link>
         </p>
-        <section>
-          <div className="tarefa-topo">
-            <h1>{tarefa.titulo}</h1>
-          </div>
-          <p>
-            <span className="etiqueta">{nomeEstado(tarefa.estado)}</span>
-            <span className={`etiqueta prioridade-${tarefa.prioridade.toLowerCase()}`}>
-              Prioridade {nomePrioridade(tarefa.prioridade).toLowerCase()}
-            </span>
-            {tarefa.atrasada && <span className="etiqueta atrasada">Atrasada</span>}
-          </p>
-          {tarefa.descricao ? <p className="descricao">{tarefa.descricao}</p> : <p className="suave">Sem descrição.</p>}
-          <p className="suave">
-            {tarefa.dataLimite ? `Data limite: ${formatarData(tarefa.dataLimite)} · ` : 'Sem data limite · '}
-            Criada por {tarefa.criador.nome} em {formatarDataHora(tarefa.criadoEm)}
-          </p>
-        </section>
+        <DadosDaTarefa
+          tarefa={tarefa}
+          projeto={projeto}
+          membros={membros}
+          aoMudar={(atual) => setEstado({ ...estado, tarefa: atual })}
+        />
 
         <Responsaveis
           tarefa={tarefa}
@@ -126,6 +126,148 @@ export function TarefaDetalhe() {
         />
       </main>
     </>
+  )
+}
+
+function DadosDaTarefa({
+  tarefa,
+  projeto,
+  membros,
+  aoMudar,
+}: {
+  tarefa: Tarefa
+  projeto: Projeto
+  membros: Membro[]
+  aoMudar: (tarefa: Tarefa) => void
+}) {
+  const { utilizador } = useSessao()
+  const navegar = useNavigate()
+  const [aEditar, setAEditar] = useState(false)
+  const [aConfirmar, setAConfirmar] = useState(false)
+  const [ocupada, setOcupada] = useState(false)
+  const [erro, setErro] = useState<string | null>(null)
+  const [sucesso, setSucesso] = useState<string | null>(null)
+  const podeEliminar = projeto.meuPapel === 'GESTOR' || tarefa.criador.id === utilizador?.id
+
+  async function guardar(dados: DadosTarefa) {
+    const alteracao = alteracoesDe(tarefa, dados)
+    if (Object.keys(alteracao).length > 0) aoMudar(await editarTarefa(tarefa.id, alteracao))
+    setAEditar(false)
+    setSucesso('Alterações guardadas.')
+  }
+
+  async function mudar(alteracao: AlteracaoTarefa, mensagem: string) {
+    if (ocupada) return
+    setOcupada(true)
+    setErro(null)
+    setSucesso(null)
+    try {
+      aoMudar(await editarTarefa(tarefa.id, alteracao))
+      setSucesso(mensagem)
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível guardar a alteração.')
+    } finally {
+      setOcupada(false)
+    }
+  }
+
+  async function eliminar() {
+    if (ocupada) return
+    setOcupada(true)
+    setErro(null)
+    try {
+      await eliminarTarefa(tarefa.id)
+      navegar(`/projetos/${projeto.id}`, { replace: true, state: { mensagem: `Tarefa "${tarefa.titulo}" eliminada.` } })
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível eliminar a tarefa.')
+      setOcupada(false)
+    }
+  }
+
+  if (aEditar) {
+    return (
+      <section className="cartao" aria-labelledby="titulo-editar">
+        <h1 id="titulo-editar">Editar tarefa</h1>
+        <FormularioTarefa inicial={tarefa} membros={membros} aoSubmeter={guardar} aoCancelar={() => setAEditar(false)} />
+      </section>
+    )
+  }
+
+  return (
+    <section>
+      <div className="tarefa-topo">
+        <h1>{tarefa.titulo}</h1>
+      </div>
+      <p>
+        <span className="etiqueta">{nomeEstado(tarefa.estado)}</span>
+        <span className={`etiqueta prioridade-${tarefa.prioridade.toLowerCase()}`}>
+          Prioridade {nomePrioridade(tarefa.prioridade).toLowerCase()}
+        </span>
+        {tarefa.atrasada && <span className="etiqueta atrasada">Atrasada</span>}
+      </p>
+      {tarefa.descricao ? <p className="descricao">{tarefa.descricao}</p> : <p className="suave">Sem descrição.</p>}
+      <p className="suave">
+        {tarefa.dataLimite ? `Data limite: ${formatarData(tarefa.dataLimite)} · ` : 'Sem data limite · '}
+        Criada por {tarefa.criador.nome} em {formatarDataHora(tarefa.criadoEm)}
+      </p>
+      {sucesso && <MensagemSucesso>{sucesso}</MensagemSucesso>}
+      {erro && <MensagemErro texto={erro} />}
+      <div className="acoes">
+        <label className="em-linha">
+          Estado
+          <select
+            value={tarefa.estado}
+            disabled={ocupada}
+            onChange={(e) => {
+              const novo = e.target.value as EstadoTarefa
+              void mudar({ estado: novo }, `A tarefa passou para ${nomeEstado(novo)}.`)
+            }}
+          >
+            {ESTADOS.map((e) => (
+              <option key={e.valor} value={e.valor}>
+                {e.nome}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="em-linha">
+          Prioridade
+          <select
+            value={tarefa.prioridade}
+            disabled={ocupada}
+            onChange={(e) => {
+              const nova = e.target.value as Prioridade
+              void mudar({ prioridade: nova }, `Prioridade alterada para ${nomePrioridade(nova).toLowerCase()}.`)
+            }}
+          >
+            {PRIORIDADES.map((p) => (
+              <option key={p.valor} value={p.valor}>
+                {p.nome}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="button" className="secundario pequeno" onClick={() => { setAEditar(true); setSucesso(null) }}>
+          Editar
+        </button>
+        {podeEliminar &&
+          (aConfirmar ? (
+            <>
+              <span>Eliminar a tarefa e os comentários?</span>
+              <button type="button" className="perigo pequeno" onClick={() => void eliminar()} disabled={ocupada}>
+                {ocupada ? 'A eliminar…' : 'Eliminar'}
+              </button>
+              <button type="button" className="secundario pequeno" onClick={() => setAConfirmar(false)} disabled={ocupada}>
+                Cancelar
+              </button>
+            </>
+          ) : (
+            <button type="button" className="perigo pequeno" onClick={() => { setAConfirmar(true); setSucesso(null) }}>
+              Eliminar
+            </button>
+          ))}
+      </div>
+    </section>
   )
 }
 

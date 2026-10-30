@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { ErroApi } from '../api/cliente'
 import {
   adicionarMembro,
@@ -12,7 +12,7 @@ import {
   type Projeto,
 } from '../api/projetos'
 import { Barra } from '../componentes/Barra'
-import { Contagens } from '../componentes/Contagens'
+import { Contagens, Progresso } from '../componentes/Contagens'
 import { ACarregar, MensagemErro, MensagemSucesso } from '../componentes/Estados'
 import { FormularioProjeto } from '../componentes/FormularioProjeto'
 import { Tarefas } from '../componentes/Tarefas'
@@ -27,14 +27,23 @@ type Estado =
 export function ProjetoDetalhe() {
   const { projetoId = '' } = useParams()
   const navegar = useNavigate()
+  const localizacao = useLocation()
   const [estado, setEstado] = useState<Estado>({ tipo: 'a-carregar' })
   const [aEditar, setAEditar] = useState(false)
   const [aConfirmarEliminar, setAConfirmarEliminar] = useState(false)
   const [aEliminar, setAEliminar] = useState(false)
   const [erroAcao, setErroAcao] = useState<string | null>(null)
-  const [sucesso, setSucesso] = useState<string | null>(null)
+  // Mensagem deixada por outra página (por exemplo, depois de eliminar uma tarefa no detalhe)
+  const [sucesso, setSucesso] = useState<string | null>(
+    (localizacao.state as { mensagem?: string } | null)?.mensagem ?? null,
+  )
 
   const [versao, setVersao] = useState(0)
+
+  // Limpa a mensagem do histórico para não reaparecer ao recarregar a página
+  useEffect(() => {
+    if (localizacao.state) navegar(localizacao.pathname, { replace: true, state: null })
+  }, [localizacao, navegar])
 
   useEffect(() => {
     let ativo = true
@@ -155,6 +164,7 @@ export function ProjetoDetalhe() {
               Gestor: {projeto.gestor.nome} · O teu papel: {souGestor ? 'Gestor' : 'Membro'}
             </p>
             {projeto.descricao ? <p className="descricao">{projeto.descricao}</p> : <p className="suave">Sem descrição.</p>}
+            <Progresso contagens={projeto.contagens} />
             <Contagens contagens={projeto.contagens} />
           </section>
         )}

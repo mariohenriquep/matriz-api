@@ -10,15 +10,16 @@ import {
   formatarData,
   listarTarefas,
   nomePrioridade,
-  type AlteracaoTarefa,
   type EstadoTarefa,
+  alteracoesDe,
+  type DadosTarefa,
   type FiltrosTarefas,
   type Prioridade,
   type Tarefa,
 } from '../api/tarefas'
 import { useSessao } from '../auth/useSessao'
 import { ACarregar, MensagemErro, MensagemSucesso } from './Estados'
-import { FormularioTarefa, type DadosTarefa } from './FormularioTarefa'
+import { FormularioTarefa } from './FormularioTarefa'
 
 type Estado =
   | { tipo: 'a-carregar' }
@@ -91,12 +92,7 @@ export function Tarefas({ projeto, membros, aoMudar }: Props) {
   }
 
   async function guardar(tarefa: Tarefa, dados: DadosTarefa) {
-    const alteracao: AlteracaoTarefa = {}
-    if (dados.titulo !== tarefa.titulo) alteracao.titulo = dados.titulo
-    if (dados.descricao !== tarefa.descricao) alteracao.descricao = dados.descricao
-    if (dados.estado !== tarefa.estado) alteracao.estado = dados.estado
-    if (dados.prioridade !== tarefa.prioridade) alteracao.prioridade = dados.prioridade
-    if (dados.dataLimite !== tarefa.dataLimite) alteracao.dataLimite = dados.dataLimite
+    const alteracao = alteracoesDe(tarefa, dados)
     if (Object.keys(alteracao).length > 0) await editarTarefa(tarefa.id, alteracao)
     await depoisDeMudar('Alterações guardadas.')
     setAEditar(null)
@@ -211,6 +207,11 @@ export function Tarefas({ projeto, membros, aoMudar }: Props) {
       {estado.tipo === 'pronto' && estado.tarefas.length === 0 && (
         <p className="vazio">
           {filtrosAtivos ? 'Nenhuma tarefa corresponde aos filtros.' : 'Ainda não há tarefas neste projeto.'}
+        </p>
+      )}
+      {estado.tipo === 'pronto' && estado.tarefas.length > 0 && filtrosAtivos && (
+        <p className="suave" aria-live="polite">
+          A mostrar {estado.tarefas.length} de {projeto.contagens.total} tarefa{projeto.contagens.total === 1 ? '' : 's'}
         </p>
       )}
       {estado.tipo === 'pronto' && estado.tarefas.length > 0 && (

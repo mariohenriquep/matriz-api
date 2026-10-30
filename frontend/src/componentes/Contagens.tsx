@@ -18,3 +18,28 @@ export function Contagens({ contagens }: { contagens: ContagensProjeto }) {
     </dl>
   )
 }
+
+/** Barra de progresso do wireframe: percentagem de tarefas concluídas. */
+export function Progresso({ contagens }: { contagens: ContagensProjeto }) {
+  const percentagem = contagens.total === 0 ? 0 : Math.round((contagens.CONCLUIDA / contagens.total) * 100)
+  const texto =
+    contagens.total === 0
+      ? 'Ainda sem tarefas'
+      : `${percentagem}% concluído · ${contagens.CONCLUIDA} de ${contagens.total} tarefa${contagens.total === 1 ? '' : 's'}`
+  return (
+    <div className="progresso">
+      <div
+        className="progresso-barra"
+        role="progressbar"
+        aria-label="Tarefas concluídas"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={percentagem}
+        aria-valuetext={texto}
+      >
+        <span style={{ width: `${percentagem}%` }} />
+      </div>
+      <p className="suave">{texto}</p>
+    </div>
+  )
+}
