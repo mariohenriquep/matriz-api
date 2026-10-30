@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Matriz API
-  version: 0.2.3
+  version: 0.2.4
   summary: Contrato REST do MVP da Matriz (Ficha 03).
   description: |
     Contrato completo para o âmbito da Ficha 03: autenticação, projetos e membros, tarefas,
@@ -487,6 +487,9 @@ paths:
       tags: [Responsáveis]
       operationId: atribuirResponsavel
       summary: Atribuir um responsável
+      description: >-
+        Qualquer membro do projeto pode atribuir. O utilizador tem de ser membro do projeto (422); um id que não
+        existe dá a mesma resposta, para não revelar que contas existem. Atribuir de novo a mesma pessoa dá 409.
       requestBody:
         required: true
         content:
@@ -524,6 +527,7 @@ paths:
       tags: [Responsáveis]
       operationId: removerResponsavel
       summary: Remover uma atribuição
+      description: Qualquer membro do projeto pode remover. Se o utilizador não for responsável pela tarefa, dá 404.
       responses:
         '204':
           description: Atribuição removida.
@@ -563,7 +567,9 @@ paths:
       tags: [Comentários]
       operationId: adicionarComentario
       summary: Adicionar comentário
-      description: O autor e a data são definidos pelo backend; o cliente só envia o conteúdo.
+      description: >-
+        O autor e a data são definidos pelo backend; o cliente só envia o conteúdo, guardado sem espaços nas pontas.
+        Os comentários não se editam nem se apagam no MVP.
       requestBody:
         required: true
         content:

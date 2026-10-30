@@ -25,13 +25,14 @@ import pt.matriz.domain.Prioridade;
 import pt.matriz.domain.Tarefa;
 import pt.matriz.dtos.AlteracaoTarefa;
 import pt.matriz.dtos.Lista;
+import pt.matriz.dtos.NovaAtribuicao;
 import pt.matriz.dtos.NovaTarefa;
 import pt.matriz.dtos.TarefaResposta;
 import pt.matriz.mappers.TarefaMapper;
 import pt.matriz.security.UtilizadorAtual;
 import pt.matriz.services.ServicoTarefas;
 
-/** {@code /projetos/{id}/tarefas} e {@code /tarefas/{id}} do openapi.yaml. */
+/** {@code /projetos/{id}/tarefas}, {@code /tarefas/{id}} e {@code /tarefas/{id}/responsaveis} do openapi.yaml. */
 @RestController
 @RequestMapping("/api/v1")
 public class ControladorTarefas {
@@ -82,6 +83,19 @@ public class ControladorTarefas {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@PathVariable long tarefaId) {
         servico.eliminar(tarefaId, utilizadorAtual.id());
+    }
+
+    @PostMapping("/tarefas/{tarefaId}/responsaveis")
+    @ResponseStatus(HttpStatus.CREATED)
+    public TarefaResposta atribuir(@PathVariable long tarefaId, @RequestBody NovaAtribuicao pedido) {
+        return TarefaMapper.paraResposta(
+                servico.atribuir(tarefaId, utilizadorAtual.id(), TarefaMapper.paraResponsavel(pedido)), hoje());
+    }
+
+    @DeleteMapping("/tarefas/{tarefaId}/responsaveis/{utilizadorId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removerResponsavel(@PathVariable long tarefaId, @PathVariable long utilizadorId) {
+        servico.removerResponsavel(tarefaId, utilizadorAtual.id(), utilizadorId);
     }
 
     /** "Hoje" no fuso da equipa, para a marcação "atrasada". */

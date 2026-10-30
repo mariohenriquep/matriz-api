@@ -90,3 +90,52 @@ export function formatarData(data: string) {
   const [ano, mes, dia] = data.split('-')
   return `${dia}/${mes}/${ano}`
 }
+
+export interface Comentario {
+  id: string
+  conteudo: string
+  autor: Pessoa
+  criadoEm: string
+}
+
+export const LIMITE_COMENTARIO = 2000
+
+export function obterTarefa(id: string) {
+  return pedido<Tarefa>(`/tarefas/${encodeURIComponent(id)}`)
+}
+
+export function atribuirResponsavel(tarefaId: string, utilizadorId: string) {
+  return pedido<Tarefa>(`/tarefas/${encodeURIComponent(tarefaId)}/responsaveis`, {
+    metodo: 'POST',
+    corpo: { utilizadorId },
+  })
+}
+
+export function removerResponsavel(tarefaId: string, utilizadorId: string) {
+  return pedido<void>(
+    `/tarefas/${encodeURIComponent(tarefaId)}/responsaveis/${encodeURIComponent(utilizadorId)}`,
+    { metodo: 'DELETE' },
+  )
+}
+
+export function listarComentarios(tarefaId: string) {
+  return pedido<Lista<Comentario>>(`/tarefas/${encodeURIComponent(tarefaId)}/comentarios`)
+}
+
+export function comentar(tarefaId: string, conteudo: string) {
+  return pedido<Comentario>(`/tarefas/${encodeURIComponent(tarefaId)}/comentarios`, {
+    metodo: 'POST',
+    corpo: { conteudo },
+  })
+}
+
+/** Data e hora locais do browser, ex.: "29/10/2026, 21:30". */
+export function formatarDataHora(instante: string) {
+  return new Date(instante).toLocaleString('pt-PT', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}

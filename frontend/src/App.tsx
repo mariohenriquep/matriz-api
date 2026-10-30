@@ -4,6 +4,7 @@ import { RotaProtegida } from './auth/RotaProtegida'
 import { Inicio } from './paginas/Inicio'
 import { Login } from './paginas/Login'
 import { ProjetoDetalhe } from './paginas/ProjetoDetalhe'
+import { TarefaDetalhe } from './paginas/TarefaDetalhe'
 
 function App() {
   return (
@@ -24,6 +25,14 @@ function App() {
             element={
               <RotaProtegida>
                 <ProjetoDetalhe />
+              </RotaProtegida>
+            }
+          />
+          <Route
+            path="/tarefas/:tarefaId"
+            element={
+              <RotaProtegida>
+                <TarefaDetalhe />
               </RotaProtegida>
             }
           />

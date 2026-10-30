@@ -165,6 +165,7 @@ h2 {
 
 .descricao {
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .contagens {
@@ -404,4 +405,19 @@ label.opcao {
     border-color: #f47067;
     color: #f47067;
   }
+}
+
+.comentarios {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+
+.comentarios li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--borda);
+}
+
+.comentarios p {
+  margin: 0.15rem 0;
 }

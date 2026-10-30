@@ -8,6 +8,7 @@ import pt.matriz.domain.EdicaoTarefa;
 import pt.matriz.domain.Pessoa;
 import pt.matriz.domain.Tarefa;
 import pt.matriz.dtos.AlteracaoTarefa;
+import pt.matriz.dtos.NovaAtribuicao;
 import pt.matriz.dtos.NovaTarefa;
 import pt.matriz.dtos.ResumoUtilizador;
 import pt.matriz.dtos.TarefaResposta;
@@ -37,6 +38,18 @@ public final class TarefaMapper {
         return new EdicaoTarefa(alteracao.temTitulo(), alteracao.titulo(), alteracao.temDescricao(),
                 alteracao.descricao(), alteracao.temEstado(), alteracao.estado(), alteracao.temPrioridade(),
                 alteracao.prioridade(), alteracao.temDataLimite(), alteracao.dataLimite());
+    }
+
+    /** Id do responsável a atribuir; em falta ou não numérico é um pedido inválido. */
+    public static long paraResponsavel(NovaAtribuicao pedido) {
+        if (pedido.utilizadorId() == null || pedido.utilizadorId().isBlank()) {
+            throw ErroApi.validacao("utilizadorId", "Indica o utilizador a atribuir");
+        }
+        try {
+            return Long.parseLong(pedido.utilizadorId().trim());
+        } catch (NumberFormatException e) {
+            throw ErroApi.validacao("utilizadorId", "Identificador de utilizador inválido");
+        }
     }
 
     private static ResumoUtilizador paraResumo(Pessoa pessoa) {
