@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Matriz API
-  version: 0.2.4
+  version: 0.3.0
   summary: Contrato REST do MVP da Matriz (Ficha 03).
   description: |
     Contrato completo para o âmbito da Ficha 03: autenticação, projetos e membros, tarefas,
@@ -35,6 +35,10 @@ info:
     | 404 | O recurso não existe **ou** o utilizador não é membro do projeto (não se revela a existência, CE-07). |
     | 409 | Conflito com o estado atual (ex.: responsável já atribuído, utilizador já é membro). |
     | 422 | Pedido bem formado que viola uma regra de negócio (ex.: responsável não é membro). |
+
+    Em qualquer endereço, a API pode ainda responder, no mesmo formato e sem estar repetido em cada
+    operação: `404` para uma rota inexistente, `405` para um método não suportado, `415` para um corpo
+    que não é JSON e `500` para um erro inesperado (sem detalhes internos).
 
     **Paginação:** não existe no MVP (P-01, RNF-08). As listas vêm em `{ itens, total }`, para se
     poder acrescentar paginação sem quebrar o contrato.
@@ -160,6 +164,8 @@ paths:
                   total:
                     type: integer
                     minimum: 0
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
         '401':
           $ref: '#/components/responses/NaoAutenticado'
     post:
