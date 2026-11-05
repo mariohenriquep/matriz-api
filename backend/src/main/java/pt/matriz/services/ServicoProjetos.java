@@ -33,7 +33,7 @@ public class ServicoProjetos {
         if (pesquisa != null && pesquisa.length() > MAX_PESQUISA) {
             throw ErroApi.validacao("pesquisa", "A pesquisa tem no máximo " + MAX_PESQUISA + " caracteres");
         }
-        String texto = pesquisa == null || pesquisa.isBlank() ? null : pesquisa.trim();
+        String texto = Texto.limpo(pesquisa);
         return projetos.listar(utilizador, texto);
     }
 
@@ -107,10 +107,10 @@ public class ServicoProjetos {
     }
 
     private static String nomeValido(String nome) {
-        if (nome == null || nome.isBlank()) {
+        String limpo = Texto.limpo(nome);
+        if (limpo == null) {
             throw ErroApi.validacao("nome", "O nome é obrigatório");
         }
-        String limpo = nome.trim();
         if (limpo.length() > MAX_NOME) {
             throw ErroApi.validacao("nome", "O nome tem no máximo " + MAX_NOME + " caracteres");
         }
@@ -119,10 +119,10 @@ public class ServicoProjetos {
 
     /** Descrição vazia ou só com espaços fica sem descrição. */
     private static String descricaoValida(String descricao) {
-        if (descricao == null || descricao.isBlank()) {
+        String limpa = Texto.limpo(descricao);
+        if (limpa == null) {
             return null;
         }
-        String limpa = descricao.trim();
         if (limpa.length() > MAX_DESCRICAO) {
             throw ErroApi.validacao("descricao", "A descrição tem no máximo " + MAX_DESCRICAO + " caracteres");
         }
