@@ -53,13 +53,13 @@ backend para a persistência; corrigir o que falhar; escrever a verificação.
 3. **Localização:** `ServicoTarefas.tituloValido`, `ServicoProjetos.nomeValido`/`descricaoValida` e `ServicoComentarios.conteudoValido` usam `isBlank()` + `trim()`.
 4. **Causa confirmada:** `String.trim()` só retira caracteres ≤ U+0020 e `String.isBlank()` usa `Character.isWhitespace`, que exclui os espaços não separáveis (U+00A0, U+2007, U+202F). No frontend o `trim()` do JavaScript já os retira, por isso só a API estava exposta.
 5. **Teste de regressão primeiro:** acrescentei os casos aos três testes de validação e corri-os: 3 falhas (`Status expected:<400> but was:<201>`).
-6. **Correção limitada:** `Texto.limpo` retira das pontas o mesmo que o `trim()` mais `\p{Z}` e o BOM. Os 74 testes passam e o pedido manual passou a dar `400`; `" Com NBSP "` fica guardado como `"Com NBSP"`.
+6. **Correção limitada:** `Texto.limpo` retira das pontas o mesmo que o `trim()` mais `\p{Z}` e o BOM. Os 71 testes passam e o pedido manual passou a dar `400`; `" Com NBSP "` fica guardado como `"Com NBSP"`.
 
 ## Validação
 
 | Verificação | Resultado |
 |-------------|-----------|
-| `./mvnw test` | ✅ 74 testes, 0 falhas (71 + 3 casos de regressão nos testes de validação) |
+| `./mvnw test` | ✅ 71 testes, 0 falhas (os casos de regressão entraram nos 3 testes de validação existentes). *Corrigido no Ex. 9: dizia "74" por engano.* |
 | `npm test` | ✅ 22 testes, 0 falhas |
 | `npm run build`, `npm run lint` | ✅ sem erros nem avisos |
 | 9 cenários | ✅ todos, o 04 depois da correção; ver `docs/verification.md` |

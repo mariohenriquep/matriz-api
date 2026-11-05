@@ -159,7 +159,7 @@ Browser: Eliminar → Cancelar → Eliminar → "Eliminar definitivamente" → p
 | **Observado** | `201`; a tarefa ficou com o título `"  "`, invisível na lista. O mesmo acontecia com o nome do projeto, a descrição e os comentários |
 | **Causa (confirmada)** | Os serviços validavam com `String.isBlank()` e limpavam com `String.trim()`. Em Java, `trim()` só retira caracteres até U+0020 e `isBlank()` usa `Character.isWhitespace`, que exclui de propósito os espaços não separáveis (U+00A0, U+2007, U+202F). O frontend não deixava passar este caso, porque o `trim()` do JavaScript já os retira; o problema era só da API |
 | **Correção** | Nova classe `services/Texto` com `limpo(String)`: retira das pontas o que o `trim()` já retirava, mais os separadores Unicode (`\p{Z}`) e o BOM, e devolve `null` se não sobrar nada. `ServicoTarefas`, `ServicoProjetos` (nome, descrição e pesquisa) e `ServicoComentarios` passaram a usá-la. Sem outras alterações de comportamento. No Ex. 9 esta classe passou a `CampoTexto` (refatoração, §9) |
-| **Regressão** | Novos casos em `TarefasTest.validacaoDoTituloEDaDescricao` (U+00A0, U+2007, U+202F e U+3000 recusados; `"  Rever  "` guardado como `"Rever"`), `ProjetosTest.validacaoDoNomeEDaDescricao` e `ResponsaveisEComentariosTest.validacaoDoConteudo`. Antes da correção falhavam os 3 testes (`Status expected:<400> but was:<201>`); depois, os 74 testes passam |
+| **Regressão** | Novos casos em `TarefasTest.validacaoDoTituloEDaDescricao` (U+00A0, U+2007, U+202F e U+3000 recusados; `"  Rever  "` guardado como `"Rever"`), `ProjetosTest.validacaoDoNomeEDaDescricao` e `ResponsaveisEComentariosTest.validacaoDoConteudo`. Antes da correção falhavam os 3 testes (`Status expected:<400> but was:<201>`); depois, os 71 testes passam (os casos novos entraram em testes que já existiam) |
 
 ## 6. Testes automáticos
 
@@ -175,7 +175,7 @@ Execução completa:
 
 | Comando | Resultado |
 |---------|-----------|
-| `cd backend && ./mvnw test` | ✅ 74 testes, 0 falhas (`ArquiteturaTest` 6, `EsquemaESeedTest` 6, `ProjetosTest` 17, `ResponsaveisEComentariosTest` 10, `TarefasTest` 13, `AutenticacaoTest` 14, `ControloAcessoTest` 5). Antes da correção: 71 a passar e 3 novas regressões a falhar |
+| `cd backend && ./mvnw test` | ✅ 71 testes, 0 falhas (`ArquiteturaTest` 6, `EsquemaESeedTest` 6, `ProjetosTest` 17, `ResponsaveisEComentariosTest` 10, `TarefasTest` 13, `AutenticacaoTest` 14, `ControloAcessoTest` 5). Antes da correção falhavam 3 destes testes, por causa dos novos casos de regressão. *Correção no Ex. 9: esta linha dizia "74 testes" por engano; os casos de regressão foram acrescentados a testes que já existiam, por isso o total continuou em 71.* |
 | `cd frontend && npm test` | ✅ 22 testes, 0 falhas (5 ficheiros) |
 | `cd frontend && npm run build && npm run lint` | ✅ sem erros nem avisos |
 
@@ -208,7 +208,7 @@ Verificações feitas depois da revisão do código e das alterações do Ex. 9,
 | Filtros no URL | `ProjetoDetalhe.test.tsx`, `calculos.test.ts`; browser | ✅ `?estado=POR_FAZER` mantém "A mostrar 1 de 3 tarefas" ao abrir uma tarefa e voltar atrás e ao recarregar; valores desconhecidos no URL são ignorados |
 | Mensagem ao eliminar projeto | `ProjetoDetalhe.test.tsx`; browser | ✅ O painel mostra "Projeto … eliminado." e a mensagem não reaparece ao recarregar; se a eliminação falhar, fica no projeto com o erro e sem mensagem de sucesso (`ex9-projeto-eliminado.png`) |
 | Refatoração `CampoTexto` | Testes existentes sem alterações; script de contrato; pedidos manuais | ✅ Mesmas mensagens e códigos ("O nome é obrigatório", "O nome tem no máximo 100 caracteres", descrição só com espaços guardada como `null`) |
-| Testes | `./mvnw test`, `npm test`, `npm run build`, `npm run lint` | ✅ 78 testes no backend e 28 no frontend, 0 falhas; build e lint sem avisos |
+| Testes | `./mvnw test`, `npm test`, `npm run build`, `npm run lint` | ✅ 75 testes no backend (71 + 4 do `TratamentoErrosTest`) e 28 no frontend, 0 falhas; build e lint sem avisos |
 | Cópia limpa | `git clone` para uma pasta nova, seguir só o README | Ver §11 |
 
 ## 10. Três exemplos de utilização da IA
@@ -221,5 +221,17 @@ Verificações feitas depois da revisão do código e das alterações do Ex. 9,
 
 ## 11. Execução a partir de uma cópia limpa
 
-_A preencher com o resultado do teste a partir de uma cópia limpa._
+Feito a 2026-11-05: `git clone` do repositório para uma pasta nova, seguindo só os passos do README, com a base de dados anterior parada e um volume Docker novo.
+
+| Passo do README | Resultado |
+|-----------------|-----------|
+| `cp .env.example .env`; alterar `POSTGRES_PASSWORD` e gerar `MATRIZ_JWT_SEGREDO` com `openssl rand -base64 48` | ✅ Com uma password diferente da do exemplo, o backend usou-a sem mais configuração |
+| `docker compose up -d`; `docker compose ps` | ✅ `matriz-postgres` "healthy" na porta 5433 |
+| `cd backend && ./mvnw spring-boot:run` | ✅ Flyway aplicou as migrations V1 e V2 na base de dados vazia; log "Seed criado: 3 utilizadores, 3 projetos e 6 tarefas de demonstração." |
+| `curl http://localhost:8080/actuator/health` | ✅ `{"status":"UP"}` |
+| `cd frontend && npm install && npm run dev` | ✅ http://localhost:5173 responde; login com `ana@matriz.local`, painel, filtros no URL e eliminação de projeto a funcionar no browser, sem erros na consola |
+| `python3 scripts/verificar-contrato.py` | ✅ 76 combinações, sem divergências |
+| `./mvnw test`; `npm test`; `npm run build`; `npm run lint` | ✅ 75 + 28 testes, 0 falhas; build e lint limpos |
+
+**Limitações:** foi feito no ambiente Linux da cloud, não no Mac nem em Windows. Os pacotes Maven e npm vieram da cache local e de um espelho do Maven Central (o Maven Central limita os pedidos neste ambiente), por isso o tempo da primeira transferência num computador novo não foi medido.
 
