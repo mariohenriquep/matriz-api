@@ -157,6 +157,7 @@ curl -X POST -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/v1/auth
 ```bash
 cd backend && ./mvnw test     # precisa do Docker: os testes usam um PostgreSQL temporário (Testcontainers);
                               # inclui ArquiteturaTest, que verifica as dependências entre camadas
+cd frontend && npm test       # testes de componentes e do cliente da API (Vitest + Testing Library, sem backend)
 cd frontend && npm run build && npm run lint
 ```
 
@@ -164,4 +165,4 @@ cd frontend && npm run build && npm run lint
 
 - ✅ **Fase 1 — Especificação (Ficha PL 01):** requisitos, backlog e restrições.
 - ✅ **Fase 2 — Conceção (Ficha PL 02):** arquitetura, modelo de dados, contrato da API e wireframe.
-- 🚧 **Fase 3 — Desenvolvimento (Ficha PL 03):** estrutura, base de dados, seed, autenticação, projetos (com membros), tarefas (com filtros), responsáveis e comentários feitos; backend reorganizado em clean architecture. Seguem-se a interface completa, a verificação e a entrega. Progresso em [`docs/implementation-plan.md`](docs/implementation-plan.md).
+- 🚧 **Fase 3 — Desenvolvimento (Ficha PL 03):** estrutura, base de dados, seed, autenticação, projetos (com membros), tarefas (com filtros), responsáveis, comentários e a interface completa (painel, projeto e detalhe da tarefa) feitos; backend reorganizado em clean architecture. Seguem-se a verificação e a entrega. Progresso em [`docs/implementation-plan.md`](docs/implementation-plan.md).

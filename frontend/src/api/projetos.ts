@@ -68,3 +68,16 @@ export function removerMembro(projetoId: string, utilizadorId: string) {
     metodo: 'DELETE',
   })
 }
+
+/** Soma as contagens de todos os projetos para o resumo do painel. */
+export function somarContagens(projetos: Projeto[]): Contagens {
+  return projetos.reduce(
+    (soma, p) => ({
+      POR_FAZER: soma.POR_FAZER + p.contagens.POR_FAZER,
+      EM_CURSO: soma.EM_CURSO + p.contagens.EM_CURSO,
+      CONCLUIDA: soma.CONCLUIDA + p.contagens.CONCLUIDA,
+      total: soma.total + p.contagens.total,
+    }),
+    { POR_FAZER: 0, EM_CURSO: 0, CONCLUIDA: 0, total: 0 },
+  )
+}

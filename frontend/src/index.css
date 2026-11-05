@@ -421,3 +421,47 @@ label.opcao {
 .comentarios p {
   margin: 0.15rem 0;
 }
+
+.progresso {
+  margin: 0.75rem 0 0;
+}
+
+.progresso p {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+}
+
+.progresso-barra {
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--borda);
+  overflow: hidden;
+}
+
+.progresso-barra span {
+  display: block;
+  height: 100%;
+  background: var(--destaque);
+}
+
+.barra nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.barra nav a[aria-current='page'] {
+  font-weight: 600;
+}
+
+.resumo {
+  margin: 0 0 1.5rem;
+}
+
+.barra {
+  flex-wrap: wrap;
+}
+
+.barra button {
+  white-space: nowrap;
+}

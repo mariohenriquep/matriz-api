@@ -139,3 +139,24 @@ export function formatarDataHora(instante: string) {
     minute: '2-digit',
   })
 }
+
+/** Valores de um formulário de tarefa (criar ou editar). */
+export interface DadosTarefa {
+  titulo: string
+  descricao: string | null
+  prioridade: Prioridade
+  dataLimite: string | null
+  estado: EstadoTarefa
+  responsavelIds: string[]
+}
+
+/** Só os campos que mudaram, para o PATCH não reescrever valores que outra pessoa alterou entretanto. */
+export function alteracoesDe(tarefa: Tarefa, dados: DadosTarefa): AlteracaoTarefa {
+  const alteracao: AlteracaoTarefa = {}
+  if (dados.titulo !== tarefa.titulo) alteracao.titulo = dados.titulo
+  if (dados.descricao !== tarefa.descricao) alteracao.descricao = dados.descricao
+  if (dados.estado !== tarefa.estado) alteracao.estado = dados.estado
+  if (dados.prioridade !== tarefa.prioridade) alteracao.prioridade = dados.prioridade
+  if (dados.dataLimite !== tarefa.dataLimite) alteracao.dataLimite = dados.dataLimite
+  return alteracao
+}

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { Link, NavLink } from 'react-router'
 import { useSessao } from '../auth/useSessao'
 
 export function Barra() {
@@ -13,9 +13,14 @@ export function Barra() {
 
   return (
     <header className="barra">
-      <Link to="/" className="marca">
-        Matriz
-      </Link>
+      <nav aria-label="Principal">
+        <Link to="/" className="marca">
+          Matriz
+        </Link>
+        <NavLink to="/" end>
+          Projetos
+        </NavLink>
+      </nav>
       <span>
         {utilizador?.nome}
         <button type="button" className="secundario" onClick={terminar} disabled={aSair}>
