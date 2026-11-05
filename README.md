@@ -165,4 +165,4 @@ cd frontend && npm run build && npm run lint
 
 - ✅ **Fase 1 — Especificação (Ficha PL 01):** requisitos, backlog e restrições.
 - ✅ **Fase 2 — Conceção (Ficha PL 02):** arquitetura, modelo de dados, contrato da API e wireframe.
-- 🚧 **Fase 3 — Desenvolvimento (Ficha PL 03):** estrutura, base de dados, seed, autenticação, projetos (com membros), tarefas (com filtros), responsáveis, comentários e a interface completa (painel, projeto e detalhe da tarefa) feitos; backend reorganizado em clean architecture. Seguem-se a verificação e a entrega. Progresso em [`docs/implementation-plan.md`](docs/implementation-plan.md).
+- 🚧 **Fase 3 — Desenvolvimento (Ficha PL 03):** estrutura, base de dados, seed, autenticação, projetos (com membros), tarefas (com filtros), responsáveis, comentários e a interface completa (painel, projeto e detalhe da tarefa) feitos; backend reorganizado em clean architecture; MVP verificado nos 9 cenários da ficha ([`docs/verification.md`](docs/verification.md)). Segue-se a entrega. Progresso em [`docs/implementation-plan.md`](docs/implementation-plan.md).

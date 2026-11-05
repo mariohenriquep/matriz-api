@@ -117,6 +117,7 @@ class ProjetosTest extends ApiTeste {
         criarInvalido(Map.of("descricao", "sem nome"), "nome");
         criarInvalido(Map.of("nome", ""), "nome");
         criarInvalido(Map.of("nome", "   "), "nome");
+        criarInvalido(Map.of("nome", "\u00a0\u00a0"), "nome"); // regressão (Ex. 8)
         criarInvalido(Map.of("nome", "x".repeat(101)), "nome");
         criarInvalido(Map.of("nome", "Válido", "descricao", "d".repeat(1001)), "descricao");
 

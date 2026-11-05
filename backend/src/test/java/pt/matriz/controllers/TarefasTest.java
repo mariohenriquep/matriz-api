@@ -147,6 +147,9 @@ class TarefasTest extends ApiTeste {
     void validacaoDoTituloEDaDescricao() throws Exception {
         criarInvalido(Map.of(), "titulo");
         criarInvalido(Map.of("titulo", "   "), "titulo");
+        // Regressão (Ex. 8): espaços não separáveis (como os que vêm de copiar e colar) também contam como vazio
+        criarInvalido(Map.of("titulo", "\u00a0\u00a0"), "titulo");
+        criarInvalido(Map.of("titulo", " \u2007\u202f\u3000 "), "titulo");
         criarInvalido(Map.of("titulo", "x".repeat(201)), "titulo");
         criarInvalido(Map.of("titulo", "Válido", "descricao", "x".repeat(2001)), "descricao");
         criarInvalido(Map.of("titulo", "Válido", "prioridade", "URGENTE"), "prioridade");
@@ -154,6 +157,10 @@ class TarefasTest extends ApiTeste {
         // 200 caracteres é o limite
         mvc.perform(como(ana, post("/api/v1/projetos/" + website + "/tarefas"), Map.of("titulo", "x".repeat(200))))
                 .andExpect(status().isCreated());
+        // Espaços não separáveis nas pontas são retirados, como os espaços normais
+        mvc.perform(como(ana, post("/api/v1/projetos/" + website + "/tarefas"), Map.of("titulo", "\u00a0 Rever \u00a0")))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.titulo").value("Rever"));
     }
 
     @Test

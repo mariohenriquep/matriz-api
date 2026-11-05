@@ -139,10 +139,10 @@ public class ServicoTarefas {
     }
 
     private static String tituloValido(String titulo) {
-        if (titulo == null || titulo.isBlank()) {
+        String limpo = Texto.limpo(titulo);
+        if (limpo == null) {
             throw ErroApi.validacao("titulo", "O título é obrigatório");
         }
-        String limpo = titulo.trim();
         if (limpo.length() > MAX_TITULO) {
             throw ErroApi.validacao("titulo", "O título tem no máximo " + MAX_TITULO + " caracteres");
         }
@@ -150,10 +150,10 @@ public class ServicoTarefas {
     }
 
     private static String descricaoValida(String descricao) {
-        if (descricao == null || descricao.isBlank()) {
+        String limpa = Texto.limpo(descricao);
+        if (limpa == null) {
             return null;
         }
-        String limpa = descricao.trim();
         if (limpa.length() > MAX_DESCRICAO) {
             throw ErroApi.validacao("descricao", "A descrição tem no máximo " + MAX_DESCRICAO + " caracteres");
         }

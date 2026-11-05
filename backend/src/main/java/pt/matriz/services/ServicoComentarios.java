@@ -39,10 +39,10 @@ public class ServicoComentarios {
 
     /** Guardado sem espaços nas pontas; só espaços conta como vazio. */
     private static String conteudoValido(String conteudo) {
-        if (conteudo == null || conteudo.isBlank()) {
+        String limpo = Texto.limpo(conteudo);
+        if (limpo == null) {
             throw ErroApi.validacao("conteudo", "O comentário não pode estar vazio");
         }
-        String limpo = conteudo.trim();
         if (limpo.length() > MAX_CONTEUDO) {
             throw ErroApi.validacao("conteudo", "O comentário tem no máximo " + MAX_CONTEUDO + " caracteres");
         }

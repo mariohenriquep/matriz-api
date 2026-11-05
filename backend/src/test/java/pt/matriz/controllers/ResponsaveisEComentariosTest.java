@@ -165,6 +165,7 @@ class ResponsaveisEComentariosTest extends ApiTeste {
         comentarInvalido(Map.of(), "conteudo");
         comentarInvalido(Map.of("conteudo", ""), "conteudo");
         comentarInvalido(Map.of("conteudo", "   \n  "), "conteudo");
+        comentarInvalido(Map.of("conteudo", "\u00a0\n\u00a0"), "conteudo"); // regressão (Ex. 8)
         comentarInvalido(Map.of("conteudo", "x".repeat(2001)), "conteudo");
         mvc.perform(como(ana, post("/api/v1/tarefas/" + textos + "/comentarios"), Map.of("conteudo", "x".repeat(2000))))
                 .andExpect(status().isCreated());
