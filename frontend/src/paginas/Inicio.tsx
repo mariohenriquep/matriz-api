@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import { criarProjeto, listarProjetos, somarContagens, type Contagens as ContagensProjeto, type Projeto } from '../api/projetos'
 import { useSessao } from '../auth/useSessao'
 import { Barra } from '../componentes/Barra'
@@ -19,11 +19,21 @@ export function Inicio() {
   const [pesquisaAplicada, setPesquisaAplicada] = useState('')
   const [estado, setEstado] = useState<Estado>({ tipo: 'a-carregar' })
   const [aCriar, setACriar] = useState(false)
-  const [sucesso, setSucesso] = useState<string | null>(null)
+  const localizacao = useLocation()
+  const navegar = useNavigate()
+  // Mensagem deixada por outra página (por exemplo, depois de eliminar um projeto)
+  const [sucesso, setSucesso] = useState<string | null>(
+    (localizacao.state as { mensagem?: string } | null)?.mensagem ?? null,
+  )
   // O resumo conta todos os projetos, por isso só se atualiza com a lista sem pesquisa
   const [resumo, setResumo] = useState<{ projetos: number; contagens: ContagensProjeto } | null>(null)
 
   const [versao, setVersao] = useState(0)
+
+  // Limpa a mensagem do histórico para não reaparecer ao recarregar a página
+  useEffect(() => {
+    if (localizacao.state) navegar(localizacao.pathname, { replace: true, state: null })
+  }, [localizacao, navegar])
 
   // Pesquisa ao escrever, com uma pequena pausa para não fazer um pedido por tecla
   useEffect(() => {

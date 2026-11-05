@@ -42,7 +42,9 @@ export function ProjetoDetalhe() {
 
   // Limpa a mensagem do histórico para não reaparecer ao recarregar a página
   useEffect(() => {
-    if (localizacao.state) navegar(localizacao.pathname, { replace: true, state: null })
+    if (localizacao.state) {
+      navegar({ pathname: localizacao.pathname, search: localizacao.search }, { replace: true, state: null })
+    }
   }, [localizacao, navegar])
 
   useEffect(() => {
@@ -112,7 +114,7 @@ export function ProjetoDetalhe() {
     setErroAcao(null)
     try {
       await eliminarProjeto(projeto.id)
-      navegar('/', { replace: true })
+      navegar('/', { replace: true, state: { mensagem: `Projeto "${projeto.nome}" eliminado.` } })
     } catch (e) {
       setErroAcao(e instanceof Error ? e.message : 'Não foi possível eliminar o projeto.')
       setAEliminar(false)

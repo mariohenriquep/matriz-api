@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useSearchParams } from 'react-router'
 import type { Membro, Projeto } from '../api/projetos'
 import {
   ESTADOS,
@@ -8,6 +8,8 @@ import {
   editarTarefa,
   eliminarTarefa,
   formatarData,
+  filtrosDoUrl,
+  filtrosParaUrl,
   listarTarefas,
   nomePrioridade,
   type EstadoTarefa,
@@ -36,7 +38,10 @@ interface Props {
 /** Lista de tarefas do projeto com filtros, criação, edição, mudança rápida de estado e eliminação. */
 export function Tarefas({ projeto, membros, aoMudar }: Props) {
   const { utilizador } = useSessao()
-  const [filtros, setFiltros] = useState<FiltrosTarefas>({})
+  // Os filtros vivem no URL: mantêm-se ao voltar do detalhe de uma tarefa, ao recarregar e ao partilhar o link
+  const [parametros, setParametros] = useSearchParams()
+  const chaveFiltros = filtrosParaUrl(filtrosDoUrl(parametros)).toString()
+  const filtros = useMemo(() => filtrosDoUrl(new URLSearchParams(chaveFiltros)), [chaveFiltros])
   const [estado, setEstado] = useState<Estado>({ tipo: 'a-carregar' })
   const [versao, setVersao] = useState(0)
   const [aCriar, setACriar] = useState(false)
@@ -61,7 +66,8 @@ export function Tarefas({ projeto, membros, aoMudar }: Props) {
 
   function mudarFiltro(novos: FiltrosTarefas) {
     setEstado({ tipo: 'a-carregar' })
-    setFiltros(novos)
+    // replace: mudar de filtro não cria entradas no histórico, por isso "Voltar" sai da página do projeto
+    setParametros(filtrosParaUrl(novos), { replace: true })
   }
 
   /**

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { umProjeto, umaTarefa } from '../testes/dados'
 import { somarContagens } from './projetos'
-import { alteracoesDe, type DadosTarefa } from './tarefas'
+import { alteracoesDe, filtrosDoUrl, filtrosParaUrl, type DadosTarefa } from './tarefas'
 
 describe('alteracoesDe', () => {
   const tarefa = umaTarefa()
@@ -38,5 +38,25 @@ describe('somarContagens', () => {
 
   it('sem projetos dá zero', () => {
     expect(somarContagens([])).toEqual({ POR_FAZER: 0, EM_CURSO: 0, CONCLUIDA: 0, total: 0 })
+  })
+})
+
+describe('filtros no URL', () => {
+  it('lê os filtros válidos e ignora valores desconhecidos', () => {
+    expect(filtrosDoUrl(new URLSearchParams('estado=EM_CURSO&prioridade=ALTA&responsavelId=7'))).toEqual({
+      estado: 'EM_CURSO',
+      prioridade: 'ALTA',
+      responsavelId: '7',
+    })
+    expect(filtrosDoUrl(new URLSearchParams('estado=FEITA&prioridade=urgente&responsavelId=%20'))).toEqual({})
+    expect(filtrosDoUrl(new URLSearchParams(''))).toEqual({})
+  })
+
+  it('escreve só os filtros preenchidos e volta a ler o mesmo', () => {
+    const filtros = { estado: 'POR_FAZER' as const, responsavelId: '2' }
+    const url = filtrosParaUrl(filtros)
+    expect(url.toString()).toBe('estado=POR_FAZER&responsavelId=2')
+    expect(filtrosDoUrl(url)).toEqual(filtros)
+    expect(filtrosParaUrl({}).toString()).toBe('')
   })
 })
