@@ -15,6 +15,10 @@ public class ServicoComentarios {
 
     static final int MAX_CONTEUDO = 2000;
 
+    /** Guardado sem espaços nas pontas; só espaços conta como vazio. */
+    private static final CampoTexto CONTEUDO =
+            CampoTexto.obrigatorio("conteudo", "O comentário", MAX_CONTEUDO, "O comentário não pode estar vazio");
+
     private final ComentarioRepositorio comentarios;
     private final ControloAcesso acesso;
 
@@ -33,19 +37,7 @@ public class ServicoComentarios {
     @Transactional
     public Comentario criar(long tarefa, long utilizador, String conteudo) {
         acesso.exigirMembroDaTarefa(tarefa, utilizador);
-        long id = comentarios.criar(tarefa, utilizador, conteudoValido(conteudo));
+        long id = comentarios.criar(tarefa, utilizador, CONTEUDO.validar(conteudo));
         return comentarios.obter(id).orElseThrow();
-    }
-
-    /** Guardado sem espaços nas pontas; só espaços conta como vazio. */
-    private static String conteudoValido(String conteudo) {
-        String limpo = Texto.limpo(conteudo);
-        if (limpo == null) {
-            throw ErroApi.validacao("conteudo", "O comentário não pode estar vazio");
-        }
-        if (limpo.length() > MAX_CONTEUDO) {
-            throw ErroApi.validacao("conteudo", "O comentário tem no máximo " + MAX_CONTEUDO + " caracteres");
-        }
-        return limpo;
     }
 }
