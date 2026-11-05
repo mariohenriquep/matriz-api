@@ -14,23 +14,21 @@ Descrição do cliente:
 - Organizar o trabalho em projetos com membros.
 - Criar, atribuir e atualizar tarefas.
 - Acompanhar o progresso de cada projeto.
-- Garantir que cada pessoa só vê os projetos que lhe dizem respeito *(pressuposto P-14, por confirmar)*.
+- Garantir que cada pessoa só vê os projetos que lhe dizem respeito *(pressuposto P-14)*.
 
-## Funcionalidades previstas para o MVP
+## Funcionalidades implementadas (versão entregue na Ficha 03)
 
-- Registo e início de sessão; o primeiro administrador global é criado na instalação.
-- Criação de projetos por qualquer utilizador, que fica Gestor do projeto.
-- Gestão de membros de cada projeto.
-- Tarefas com título, descrição, prioridade, responsável e data limite; as que passam do prazo aparecem como "Atrasada".
-- Três estados: `Por fazer`, `Em curso`, `Concluída`.
-- Lista de tarefas com filtros e quadro Kanban.
-- Painel de progresso por projeto.
-- Notificações dentro da aplicação.
-- "As minhas tarefas".
-- Arquivo e reativação de projetos.
-- Administração global: promover e despromover administradores, com registo dessas ações.
+- **Acesso:** início e fim de sessão com email e password; contas de demonstração criadas por seed.
+- **Projetos:** criar (quem cria fica Gestor), pesquisar pelo nome, editar e eliminar (só o Gestor, com confirmação; apaga também as tarefas, atribuições e comentários).
+- **Membros:** o Gestor adiciona membros pelo email e remove-os.
+- **Tarefas:** título, descrição, prioridade, data limite e estado (`Por fazer`, `Em curso`, `Concluída`); as que passam do prazo aparecem como "Atrasada". Qualquer membro cria e edita; só quem criou a tarefa ou o Gestor a elimina.
+- **Filtros** por estado, prioridade e responsável, guardados no endereço da página, e contagens e progresso do projeto sempre atualizados.
+- **Vários responsáveis** por tarefa, sem duplicados, escolhidos entre os membros.
+- **Comentários** com autor e data definidos pelo servidor; não se editam nem se apagam.
+- **Painel inicial** com os projetos acessíveis e o total de tarefas por estado.
+- Cada utilizador só vê e altera os projetos de que é membro, também em pedidos diretos à API.
 
-Detalhe em [`docs/requirements.md`](docs/requirements.md) e [`docs/user-stories.md`](docs/user-stories.md).
+Ficaram para incrementos seguintes, como extras do MVP original: registo público, administração global, quadro Kanban, notificações, "As minhas tarefas", arquivo de projetos e bloqueio após tentativas de login falhadas. Detalhe em [`docs/requirements.md`](docs/requirements.md), [`docs/user-stories.md`](docs/user-stories.md) e [`docs/implementation-plan.md`](docs/implementation-plan.md).
 
 ## Organização da documentação
 
@@ -45,9 +43,11 @@ Detalhe em [`docs/requirements.md`](docs/requirements.md) e [`docs/user-stories.
 | [`docs/database.md`](docs/database.md) | Modelo de dados, diagrama ER (Mermaid) e regras de negócio. |
 | [`openapi.yaml`](openapi.yaml) | Contrato REST (OpenAPI 3.1) de todas as operações do MVP. |
 | [`docs/implementation-plan.md`](docs/implementation-plan.md) | Plano de implementação da Ficha 03: stack, regras de acesso e incrementos. |
+| [`docs/verification.md`](docs/verification.md) | Verificação do MVP: 9 cenários com evidência, testes, contrato, limitações e exemplos de uso da IA. |
 | [`docs/ui/`](docs/ui/) | Wireframe do painel do projeto (`wireframe.png`, fonte em `wireframe.html`). |
 | `backend/` | API em Java 21 + Spring Boot 3 (Maven), em clean architecture; migrations Flyway e seed. |
 | `frontend/` | Interface em React + Vite + TypeScript. |
+| `scripts/verificar-contrato.py` | Verifica a API em execução contra o `openapi.yaml`. |
 | [`docs/ai-log/`](docs/ai-log/) | Registo do uso de IA em cada exercício (prompts, análise e revisão humana). |
 
 ## Arquitetura do código
@@ -72,7 +72,17 @@ As dependências só apontam para dentro (`controllers → services → reposito
 
 - **Java 21** (o Maven não é preciso: o backend traz o `mvnw`, que o descarrega).
 - **Node.js 22** e npm.
-- **Docker** com Docker Compose, para a base de dados PostgreSQL 16. Em alternativa, um PostgreSQL 16 instalado localmente.
+- **Docker** com Docker Compose, para a base de dados PostgreSQL 16 e para os testes do backend. Em alternativa à base de dados em Docker, um PostgreSQL 16 instalado localmente (ajusta `MATRIZ_DB_URL`, `POSTGRES_USER` e `POSTGRES_PASSWORD`).
+- Opcional, para verificar o contrato: Python 3 com `pyyaml` e `jsonschema`.
+
+Resumo, a partir de uma cópia limpa (cada passo está explicado abaixo):
+
+```bash
+cp .env.example .env              # e editar: POSTGRES_PASSWORD e MATRIZ_JWT_SEGREDO
+docker compose up -d
+cd backend && ./mvnw spring-boot:run          # num terminal
+cd frontend && npm install && npm run dev     # noutro terminal; abrir http://localhost:5173
+```
 
 ### 1. Configuração
 
@@ -161,8 +171,18 @@ cd frontend && npm test       # testes de componentes e do cliente da API (Vites
 cd frontend && npm run build && npm run lint
 ```
 
+Com o backend a correr sobre os dados de demonstração, o script de contrato percorre todas as operações do `openapi.yaml` e confirma os códigos e os corpos das respostas:
+
+```bash
+pip install pyyaml jsonschema
+MATRIZ_SEED_PASSWORD=<valor do .env> python3 scripts/verificar-contrato.py
+```
+
+Os resultados da última verificação, com os 9 cenários da Ficha 03, estão em [`docs/verification.md`](docs/verification.md).
+
 ## Estado atual
 
 - ✅ **Fase 1 — Especificação (Ficha PL 01):** requisitos, backlog e restrições.
 - ✅ **Fase 2 — Conceção (Ficha PL 02):** arquitetura, modelo de dados, contrato da API e wireframe.
-- 🚧 **Fase 3 — Desenvolvimento (Ficha PL 03):** estrutura, base de dados, seed, autenticação, projetos (com membros), tarefas (com filtros), responsáveis, comentários e a interface completa (painel, projeto e detalhe da tarefa) feitos; backend reorganizado em clean architecture; MVP verificado nos 9 cenários da ficha ([`docs/verification.md`](docs/verification.md)). Segue-se a entrega. Progresso em [`docs/implementation-plan.md`](docs/implementation-plan.md).
+- ✅ **Fase 3 — Desenvolvimento (Ficha PL 03):** MVP full-stack implementado (autenticação, projetos e membros, tarefas com filtros, responsáveis, comentários e interface completa), backend em clean architecture, verificado nos 9 cenários da ficha ([`docs/verification.md`](docs/verification.md)) e revisto para entrega. Progresso em [`docs/implementation-plan.md`](docs/implementation-plan.md).
+- ⏭️ **Seguinte:** os extras do MVP original, começando pelo quadro Kanban e pelo arquivo de projetos.

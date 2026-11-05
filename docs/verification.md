@@ -158,7 +158,7 @@ Browser: Eliminar → Cancelar → Eliminar → "Eliminar definitivamente" → p
 | **Esperado** | `400`, "O título é obrigatório" (cenário 04: só com espaços) |
 | **Observado** | `201`; a tarefa ficou com o título `"  "`, invisível na lista. O mesmo acontecia com o nome do projeto, a descrição e os comentários |
 | **Causa (confirmada)** | Os serviços validavam com `String.isBlank()` e limpavam com `String.trim()`. Em Java, `trim()` só retira caracteres até U+0020 e `isBlank()` usa `Character.isWhitespace`, que exclui de propósito os espaços não separáveis (U+00A0, U+2007, U+202F). O frontend não deixava passar este caso, porque o `trim()` do JavaScript já os retira; o problema era só da API |
-| **Correção** | Nova classe `services/Texto` com `limpo(String)`: retira das pontas o que o `trim()` já retirava, mais os separadores Unicode (`\p{Z}`) e o BOM, e devolve `null` se não sobrar nada. `ServicoTarefas`, `ServicoProjetos` (nome, descrição e pesquisa) e `ServicoComentarios` passaram a usá-la. Sem outras alterações de comportamento |
+| **Correção** | Nova classe `services/Texto` com `limpo(String)`: retira das pontas o que o `trim()` já retirava, mais os separadores Unicode (`\p{Z}`) e o BOM, e devolve `null` se não sobrar nada. `ServicoTarefas`, `ServicoProjetos` (nome, descrição e pesquisa) e `ServicoComentarios` passaram a usá-la. Sem outras alterações de comportamento. No Ex. 9 esta classe passou a `CampoTexto` (refatoração, §9) |
 | **Regressão** | Novos casos em `TarefasTest.validacaoDoTituloEDaDescricao` (U+00A0, U+2007, U+202F e U+3000 recusados; `"  Rever  "` guardado como `"Rever"`), `ProjetosTest.validacaoDoNomeEDaDescricao` e `ResponsaveisEComentariosTest.validacaoDoConteudo`. Antes da correção falhavam os 3 testes (`Status expected:<400> but was:<201>`); depois, os 74 testes passam |
 
 ## 6. Testes automáticos
@@ -190,7 +190,36 @@ Os testes do backend correm contra um PostgreSQL verdadeiro (Testcontainers), po
 - **Mac do Mário:** a verificação correu no ambiente cloud. No Mac, os mesmos comandos devem dar o mesmo resultado (porta 5433, Docker para os testes).
 - **Percursos no browser:** foram feitos com scripts Playwright à aplicação real, mas esses scripts não ficaram na suíte automática. Passá-los a testes end-to-end seria um passo seguinte.
 
-## 8. Observações (não são bugs; ficam para decisão)
+## 8. Observações do Ex. 8 (decididas no Ex. 9)
 
 - Depois de **eliminar um projeto**, o painel não mostra mensagem de sucesso, ao contrário de eliminar uma tarefa, que volta ao projeto com "Tarefa … eliminada.". O projeto desaparece da lista, por isso o resultado é visível, mas o comportamento não é igual.
 - Os **filtros da lista de tarefas** não ficam guardados ao abrir uma tarefa e voltar atrás: a lista volta a "Todos". Guardá-los no URL resolveria isto.
+
+O Mário aprovou as duas melhorias, que foram feitas no Ex. 9 (§9).
+
+## 9. Revisão final (Ex. 9)
+
+Verificações feitas depois da revisão do código e das alterações do Ex. 9, sobre a versão entregue.
+
+| Verificação | Como | Resultado |
+|-------------|------|-----------|
+| Contrato = implementação | `scripts/verificar-contrato.py` com o backend a correr: provoca todos os códigos documentados das 20 operações e valida cada corpo contra o schema do `openapi.yaml` | ✅ 76 combinações operação/código, todas documentadas e com o corpo válido. Antes da revisão encontrou uma diferença: `GET /projetos` devolvia `400` (pesquisa acima de 100 caracteres) sem estar no contrato. O contrato passou a documentá-lo (versão 0.3.0) |
+| Erros fora das operações | Revisão do tratamento de erros; `TratamentoErrosTest` | ✅ Rota inexistente (`404`), método não suportado (`405`), corpo que não é JSON (`415`) e erro inesperado (`500`) respondiam no formato por defeito do Spring, em inglês. Passaram a usar Problem Details em português, como o resto da API; o `500` não revela detalhes internos |
+| Filtros no URL | `ProjetoDetalhe.test.tsx`, `calculos.test.ts`; browser | ✅ `?estado=POR_FAZER` mantém "A mostrar 1 de 3 tarefas" ao abrir uma tarefa e voltar atrás e ao recarregar; valores desconhecidos no URL são ignorados |
+| Mensagem ao eliminar projeto | `ProjetoDetalhe.test.tsx`; browser | ✅ O painel mostra "Projeto … eliminado." e a mensagem não reaparece ao recarregar; se a eliminação falhar, fica no projeto com o erro e sem mensagem de sucesso (`ex9-projeto-eliminado.png`) |
+| Refatoração `CampoTexto` | Testes existentes sem alterações; script de contrato; pedidos manuais | ✅ Mesmas mensagens e códigos ("O nome é obrigatório", "O nome tem no máximo 100 caracteres", descrição só com espaços guardada como `null`) |
+| Testes | `./mvnw test`, `npm test`, `npm run build`, `npm run lint` | ✅ 78 testes no backend e 28 no frontend, 0 falhas; build e lint sem avisos |
+| Cópia limpa | `git clone` para uma pasta nova, seguir só o README | Ver §11 |
+
+## 10. Três exemplos de utilização da IA
+
+| # | Objetivo do pedido | O que a IA propôs | Decisão do programador | Como foi verificado |
+|---|--------------------|-------------------|------------------------|---------------------|
+| 1 | **Ex. 3:** configurar o CORS para o frontend chamar a API | Duas opções: proxy no Vite ou CORS no backend. Depois, o código do CORS no Spring Security | O Mário escolheu o **CORS no backend**, com as origens no `.env` (`MATRIZ_CORS_ORIGENS`), em vez do proxy do Vite. **Sugestão corrigida:** o primeiro código da IA dava `403` a uma origem permitida, porque o bean não se chamava `corsConfigurationSource`, que é o nome que o Spring Security procura | Teste `AutenticacaoTest.corsSoAceitaAsOrigensConfiguradas`, que falhou com o código inicial e passou depois da correção. Também verifica que outra origem é recusada |
+| 2 | **Extra (antes do Ex. 5):** reorganizar o backend em clean architecture | Camadas `domain`…`mappers` e, além disso, tirar o JPA da entidade `Utilizador` para o domínio ficar sem anotações de persistência | **Sugestão rejeitada em parte:** o Mário aceitou as camadas, mas decidiu manter o `Utilizador` como entidade JPA dentro de `domain`, em vez de passar o seu acesso a dados para SQL explícito. O compromisso ficou registado em `docs/architecture.md` §6 | `ArquiteturaTest` (ArchUnit) passou a impor a regra de dependências; os testes da API mantiveram-se verdes, o que confirma que o comportamento não mudou |
+| 3 | **Ex. 8:** verificar a validação de dados (cenário 04) | Testar também espaços não separáveis. A IA encontrou o bug (um título só com U+00A0 era aceite), apresentou o diagnóstico e propôs uma correção limitada a uma função de limpeza | O Mário aceitou a correção e, no Ex. 9, a refatoração que juntou essa limpeza à validação de tamanho em `CampoTexto` | Teste de regressão escrito antes da correção: 3 falhas antes e 0 depois. O pedido manual passou de `201` para `400` |
+
+## 11. Execução a partir de uma cópia limpa
+
+_A preencher com o resultado do teste a partir de uma cópia limpa._
+
