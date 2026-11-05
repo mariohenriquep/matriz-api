@@ -56,12 +56,34 @@ export interface NovaTarefa {
 
 export type AlteracaoTarefa = Partial<Omit<NovaTarefa, 'responsavelIds'> & { estado: EstadoTarefa }>
 
-export function listarTarefas(projetoId: string, filtros: FiltrosTarefas = {}) {
+/** Os filtros como parâmetros de URL (`?estado=…&prioridade=…&responsavelId=…`); os vazios ficam de fora. */
+export function filtrosParaUrl(filtros: FiltrosTarefas): URLSearchParams {
   const consulta = new URLSearchParams()
   if (filtros.estado) consulta.set('estado', filtros.estado)
   if (filtros.prioridade) consulta.set('prioridade', filtros.prioridade)
   if (filtros.responsavelId) consulta.set('responsavelId', filtros.responsavelId)
-  const texto = consulta.toString()
+  return consulta
+}
+
+/**
+ * Lê os filtros do URL da página. Valores desconhecidos (um link antigo ou editado à mão) são ignorados,
+ * para a lista abrir sem filtro em vez de dar erro.
+ */
+export function filtrosDoUrl(parametros: URLSearchParams): FiltrosTarefas {
+  const filtros: FiltrosTarefas = {}
+  const estado = parametros.get('estado')
+  const prioridade = parametros.get('prioridade')
+  const responsavel = parametros.get('responsavelId')
+  const estadoValido = ESTADOS.find((e) => e.valor === estado)
+  const prioridadeValida = PRIORIDADES.find((p) => p.valor === prioridade)
+  if (estadoValido) filtros.estado = estadoValido.valor
+  if (prioridadeValida) filtros.prioridade = prioridadeValida.valor
+  if (responsavel?.trim()) filtros.responsavelId = responsavel.trim()
+  return filtros
+}
+
+export function listarTarefas(projetoId: string, filtros: FiltrosTarefas = {}) {
+  const texto = filtrosParaUrl(filtros).toString()
   return pedido<Lista<Tarefa>>(`/projetos/${encodeURIComponent(projetoId)}/tarefas${texto ? `?${texto}` : ''}`)
 }
 

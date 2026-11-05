@@ -20,6 +20,10 @@ public class ServicoProjetos {
     static final int MAX_DESCRICAO = 1000;
     static final int MAX_PESQUISA = 100;
 
+    private static final CampoTexto NOME = CampoTexto.obrigatorio("nome", "O nome", MAX_NOME);
+    /** Descrição vazia ou só com espaços fica sem descrição. */
+    private static final CampoTexto DESCRICAO = CampoTexto.opcional("descricao", "A descrição", MAX_DESCRICAO);
+
     private final ProjetoRepositorio projetos;
     private final ControloAcesso acesso;
 
@@ -33,7 +37,7 @@ public class ServicoProjetos {
         if (pesquisa != null && pesquisa.length() > MAX_PESQUISA) {
             throw ErroApi.validacao("pesquisa", "A pesquisa tem no máximo " + MAX_PESQUISA + " caracteres");
         }
-        String texto = Texto.limpo(pesquisa);
+        String texto = CampoTexto.limpo(pesquisa);
         return projetos.listar(utilizador, texto);
     }
 
@@ -46,7 +50,7 @@ public class ServicoProjetos {
     /** O utilizador autenticado fica Gestor; o cliente nunca indica o dono. */
     @Transactional
     public Projeto criar(long utilizador, String nome, String descricao) {
-        long id = projetos.criar(nomeValido(nome), descricaoValida(descricao), utilizador);
+        long id = projetos.criar(NOME.validar(nome), DESCRICAO.validar(descricao), utilizador);
         return obter(id, utilizador);
     }
 
@@ -57,10 +61,10 @@ public class ServicoProjetos {
             throw ErroApi.validacao("nome", "Indica pelo menos um campo a alterar");
         }
         if (edicao.alterarNome()) {
-            projetos.alterarNome(projeto, nomeValido(edicao.nome()));
+            projetos.alterarNome(projeto, NOME.validar(edicao.nome()));
         }
         if (edicao.alterarDescricao()) {
-            projetos.alterarDescricao(projeto, descricaoValida(edicao.descricao()));
+            projetos.alterarDescricao(projeto, DESCRICAO.validar(edicao.descricao()));
         }
         return obter(projeto, utilizador);
     }
@@ -104,28 +108,5 @@ public class ServicoProjetos {
         if (projetos.removerMembro(projeto, alvo) == 0) {
             throw ErroApi.naoEncontrado("Membro não encontrado");
         }
-    }
-
-    private static String nomeValido(String nome) {
-        String limpo = Texto.limpo(nome);
-        if (limpo == null) {
-            throw ErroApi.validacao("nome", "O nome é obrigatório");
-        }
-        if (limpo.length() > MAX_NOME) {
-            throw ErroApi.validacao("nome", "O nome tem no máximo " + MAX_NOME + " caracteres");
-        }
-        return limpo;
-    }
-
-    /** Descrição vazia ou só com espaços fica sem descrição. */
-    private static String descricaoValida(String descricao) {
-        String limpa = Texto.limpo(descricao);
-        if (limpa == null) {
-            return null;
-        }
-        if (limpa.length() > MAX_DESCRICAO) {
-            throw ErroApi.validacao("descricao", "A descrição tem no máximo " + MAX_DESCRICAO + " caracteres");
-        }
-        return limpa;
     }
 }

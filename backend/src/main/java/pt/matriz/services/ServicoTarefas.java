@@ -26,6 +26,9 @@ public class ServicoTarefas {
     static final int MAX_TITULO = 200;
     static final int MAX_DESCRICAO = 2000;
 
+    private static final CampoTexto TITULO = CampoTexto.obrigatorio("titulo", "O título", MAX_TITULO);
+    private static final CampoTexto DESCRICAO = CampoTexto.opcional("descricao", "A descrição", MAX_DESCRICAO);
+
     private final TarefaRepositorio tarefas;
     private final ControloAcesso acesso;
 
@@ -52,7 +55,7 @@ public class ServicoTarefas {
         acesso.exigirMembro(projeto, utilizador);
         List<Long> responsaveis = responsaveisValidos(projeto, nova.responsavelIds());
         Prioridade prioridade = nova.prioridade() == null ? Prioridade.MEDIA : nova.prioridade();
-        long id = tarefas.criar(projeto, tituloValido(nova.titulo()), descricaoValida(nova.descricao()), prioridade,
+        long id = tarefas.criar(projeto, TITULO.validar(nova.titulo()), DESCRICAO.validar(nova.descricao()), prioridade,
                 nova.dataLimite(), utilizador);
         responsaveis.forEach(responsavel -> tarefas.atribuir(id, responsavel));
         return tarefas.obter(id).orElseThrow();
@@ -66,10 +69,10 @@ public class ServicoTarefas {
             throw ErroApi.validacao("titulo", "Indica pelo menos um campo a alterar");
         }
         if (edicao.alterarTitulo()) {
-            tarefas.alterar(tarefa, Coluna.TITULO, tituloValido(edicao.titulo()));
+            tarefas.alterar(tarefa, Coluna.TITULO, TITULO.validar(edicao.titulo()));
         }
         if (edicao.alterarDescricao()) {
-            tarefas.alterar(tarefa, Coluna.DESCRICAO, descricaoValida(edicao.descricao()));
+            tarefas.alterar(tarefa, Coluna.DESCRICAO, DESCRICAO.validar(edicao.descricao()));
         }
         if (edicao.alterarEstado()) {
             tarefas.alterar(tarefa, Coluna.ESTADO, obrigatorio(edicao.estado(), "estado", "O estado é obrigatório"));
@@ -136,28 +139,6 @@ public class ServicoTarefas {
             throw ErroApi.regraDeNegocio("/erros/responsavel-nao-membro", "O responsável tem de ser membro do projeto");
         }
         return lista;
-    }
-
-    private static String tituloValido(String titulo) {
-        String limpo = Texto.limpo(titulo);
-        if (limpo == null) {
-            throw ErroApi.validacao("titulo", "O título é obrigatório");
-        }
-        if (limpo.length() > MAX_TITULO) {
-            throw ErroApi.validacao("titulo", "O título tem no máximo " + MAX_TITULO + " caracteres");
-        }
-        return limpo;
-    }
-
-    private static String descricaoValida(String descricao) {
-        String limpa = Texto.limpo(descricao);
-        if (limpa == null) {
-            return null;
-        }
-        if (limpa.length() > MAX_DESCRICAO) {
-            throw ErroApi.validacao("descricao", "A descrição tem no máximo " + MAX_DESCRICAO + " caracteres");
-        }
-        return limpa;
     }
 
     private static <T> T obrigatorio(T valor, String campo, String mensagem) {

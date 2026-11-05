@@ -102,7 +102,7 @@ Cada incremento segue o ciclo pedido pela ficha: análise e plano → validaçã
 | I-5 | 6 | Responsáveis e comentários | tarefas e comentários nas mesmas camadas + detalhe da tarefa | Vários responsáveis, sem duplicados, só membros; comentários com autor e data do backend; persistem ao reabrir | Testes de integração; manual | ✅ Feito; ver `docs/ai-log/f03-ex06-responsaveis-comentarios.md` |
 | I-6 | 7 | Frontend completo | Painel inicial, projetos, detalhe do projeto, detalhe da tarefa; componentes partilhados | Estados de carregamento, vazio, sucesso e erro; sem submissões duplicadas; dados do formulário mantidos em erro; redireciona para login quando a sessão expira | Manual no browser + testes Vitest | ✅ Feito; ver `docs/ai-log/f03-ex07-frontend.md` |
 | I-7 | 8 | Verificação | `docs/verification.md`, testes automáticos | 9 cenários registados (esperado / observado / evidência); ≥ 3 testes (validação, autorização, persistência) | `mvn test`, `npm test`, percursos manuais | ✅ Feito; ver `docs/verification.md` e `docs/ai-log/f03-ex08-verificacao.md` |
-| I-8 | 9 | Revisão e entrega | README, AGENTS.md, OpenAPI final, refatoração | README permite arrancar de uma cópia limpa; contrato = implementação | Clone limpo + seguir o README | Por fazer |
+| I-8 | 9 | Revisão e entrega | README, AGENTS.md, OpenAPI final, refatoração | README permite arrancar de uma cópia limpa; contrato = implementação | Clone limpo + seguir o README | ✅ Feito; ver `docs/verification.md` §9–11 e `docs/ai-log/f03-ex09-entrega.md` |
 
 ## 6. Como trabalhamos e onde corre
 

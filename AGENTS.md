@@ -20,6 +20,8 @@ Antes de qualquer tarefa, lê os documentos relevantes:
 | Base de dados, entidades e regras de integridade | `docs/database.md` |
 | Endpoints, pedidos, respostas e erros | `openapi.yaml` |
 | Ecrãs e interface | `docs/ui/` |
+| Plano, incrementos e regras de acesso | `docs/implementation-plan.md` |
+| O que já foi verificado e como | `docs/verification.md` |
 
 Se encontrares contradições entre documentos, não escolhas sozinho: assinala-as e pergunta.
 
@@ -28,7 +30,8 @@ Se encontrares contradições entre documentos, não escolhas sozinho: assinala-
 - Implementa só o que está no âmbito do MVP (`docs/requirements.md` §6). O que está em "Fora do âmbito" (§7) não se faz, mesmo que pareça simples.
 - Segue os critérios de aceitação das User Stories; não alteres o comportamento descrito sem aprovação.
 - Respeita as restrições e os requisitos de segurança de `docs/constraints.md`.
-- Não tomes decisões que estão como pendentes em `docs/constraints.md` §4 (ex.: linguagem, framework, base de dados). Propõe opções e espera a decisão.
+- A stack está decidida (`docs/constraints.md` §4 e `docs/implementation-plan.md` §2): Java 21 + Spring Boot 3, PostgreSQL 16 com Flyway, React + Vite + TypeScript, JWT. Não a mudes nem acrescentes frameworks sem aprovação.
+- Não tomes as decisões que ainda estão pendentes em `docs/constraints.md` §4 (ex.: alojamento, retenção de dados). Propõe opções e espera a decisão.
 
 ## 3. Não inventar
 
@@ -57,6 +60,25 @@ O backend segue uma clean architecture (`docs/architecture.md` §6). Ao criar ou
 - corre `./mvnw test` antes de terminar: o `ArquiteturaTest` falha se a regra de dependências for quebrada. Não o desligues nem alteres as suas regras sem aprovação.
 
 No frontend, corre `npm test`, `npm run build` e `npm run lint` antes de terminar.
+
+Se mudares a API, atualiza o `openapi.yaml` no mesmo passo e confirma com `scripts/verificar-contrato.py` que não ficaram divergências.
+
+## 5.1 Comandos
+
+Todos a partir da raiz do repositório. A configuração vem do `.env` (copiado de `.env.example`; nunca entra no Git).
+
+| Para… | Comando |
+|-------|---------|
+| Arrancar a base de dados (PostgreSQL 16, porta 5433) | `docker compose up -d` |
+| Apagar os dados e recomeçar | `docker compose down -v` |
+| Arrancar o backend (cria o esquema com Flyway e, na primeira vez, o seed) | `cd backend && ./mvnw spring-boot:run` |
+| Confirmar que o backend está de pé | `curl http://localhost:8080/actuator/health` |
+| Arrancar o frontend (http://localhost:5173) | `cd frontend && npm install && npm run dev` |
+| Testes do backend (precisam do Docker) | `cd backend && ./mvnw test` |
+| Testes, build e lint do frontend | `cd frontend && npm test && npm run build && npm run lint` |
+| Verificar a API contra o contrato (backend a correr) | `MATRIZ_SEED_PASSWORD=<do .env> python3 scripts/verificar-contrato.py` |
+
+Contas de demonstração: `ana@`, `rui@` e `joana@matriz.local`, com a password `MATRIZ_SEED_PASSWORD` do `.env` (papéis no `README.md`).
 
 ## 6. Manter-se no âmbito da tarefa
 
