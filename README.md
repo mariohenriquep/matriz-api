@@ -44,6 +44,7 @@ Ficaram para incrementos seguintes, como extras do MVP original: registo públic
 | [`openapi.yaml`](openapi.yaml) | Contrato REST (OpenAPI 3.1) de todas as operações do MVP. |
 | [`docs/implementation-plan.md`](docs/implementation-plan.md) | Plano de implementação da Ficha 03: stack, regras de acesso e incrementos. |
 | [`docs/verification.md`](docs/verification.md) | Verificação do MVP: 9 cenários com evidência, testes, contrato, limitações e exemplos de uso da IA. |
+| [`docs/test-plan.md`](docs/test-plan.md) | Plano de testes (Ficha 04): cenários de tarefas e permissões a partir dos requisitos, nível de teste e teste associado. |
 | [`docs/ui/`](docs/ui/) | Wireframe do painel do projeto (`wireframe.png`, fonte em `wireframe.html`). |
 | `backend/` | API em Java 21 + Spring Boot 3 (Maven), em clean architecture; migrations Flyway e seed. |
 | `frontend/` | Interface em React + Vite + TypeScript. |
@@ -185,4 +186,5 @@ Os resultados da última verificação, com os 9 cenários da Ficha 03, estão e
 - ✅ **Fase 1 — Especificação (Ficha PL 01):** requisitos, backlog e restrições.
 - ✅ **Fase 2 — Conceção (Ficha PL 02):** arquitetura, modelo de dados, contrato da API e wireframe.
 - ✅ **Fase 3 — Desenvolvimento (Ficha PL 03):** MVP full-stack implementado (autenticação, projetos e membros, tarefas com filtros, responsáveis, comentários e interface completa), backend em clean architecture, verificado nos 9 cenários da ficha ([`docs/verification.md`](docs/verification.md)) e revisto para entrega. Progresso em [`docs/implementation-plan.md`](docs/implementation-plan.md).
-- ⏭️ **Seguinte:** os extras do MVP original, começando pelo quadro Kanban e pelo arquivo de projetos.
+- 🔄 **Fase 4 — Testes e revisão (Ficha PL 04):** plano de testes ([`docs/test-plan.md`](docs/test-plan.md)); seguem-se testes unitários, de integração e E2E, e o Code Review e Security Review.
+- ⏭️ **Depois:** os extras do MVP original, começando pelo quadro Kanban e pelo arquivo de projetos.
