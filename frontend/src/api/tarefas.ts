@@ -78,7 +78,9 @@ export function filtrosDoUrl(parametros: URLSearchParams): FiltrosTarefas {
   const prioridadeValida = PRIORIDADES.find((p) => p.valor === prioridade)
   if (estadoValido) filtros.estado = estadoValido.valor
   if (prioridadeValida) filtros.prioridade = prioridadeValida.valor
-  if (responsavel?.trim()) filtros.responsavelId = responsavel.trim()
+  // Os ids são números; outro valor daria 400 na API e a lista abriria com erro (finding CR-03 da Ficha 04)
+  const responsavelValido = responsavel?.trim()
+  if (responsavelValido && /^\d+$/.test(responsavelValido)) filtros.responsavelId = responsavelValido
   return filtros
 }
 

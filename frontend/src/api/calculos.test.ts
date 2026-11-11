@@ -52,6 +52,12 @@ describe('filtros no URL', () => {
     expect(filtrosDoUrl(new URLSearchParams(''))).toEqual({})
   })
 
+  it('ignora um responsável que não é um id numérico (regressão do finding CR-03 da Ficha 04)', () => {
+    expect(filtrosDoUrl(new URLSearchParams('responsavelId=abc'))).toEqual({})
+    expect(filtrosDoUrl(new URLSearchParams('responsavelId=7abc&estado=CONCLUIDA'))).toEqual({ estado: 'CONCLUIDA' })
+    expect(filtrosDoUrl(new URLSearchParams('responsavelId=%207%20'))).toEqual({ responsavelId: '7' })
+  })
+
   it('escreve só os filtros preenchidos e volta a ler o mesmo', () => {
     const filtros = { estado: 'POR_FAZER' as const, responsavelId: '2' }
     const url = filtrosParaUrl(filtros)

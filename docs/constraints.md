@@ -44,7 +44,7 @@
 | P-26 | As notificações não lidas mantêm-se até serem abertas; não expiram no MVP. | ✅ | Armazenamento. |
 | P-27 | Uma tarefa com data limite no passado e não concluída aparece como "Atrasada". | ✅ | US-06, interface. |
 | P-28 | A sessão expira 8 horas depois do login (validade fixa do token JWT, D-05). | ✅ | RNF-02. |
-| P-29 | Após 5 tentativas de login falhadas seguidas, a conta fica bloqueada para login durante 15 minutos. | Por confirmar | RNF-11. |
+| P-29 | Após 5 tentativas de login falhadas seguidas, a conta fica bloqueada para login durante 15 minutos. | ✅ Confirmado pelo Mário (2026-11-11, Ficha 04 Ex. 5) | RNF-11. Implementado (finding SEC-01). |
 | P-30 | Consultar as notificações a cada 30 segundos é suficiente (sem tempo real). | Por confirmar | RF-16, arquitetura. |
 | P-31 | Frontend e backend são publicados no mesmo domínio. | Por confirmar | Autenticação, arquitetura. |
 | P-32 | Eliminar uma tarefa é definitivo; as notificações que apontavam para ela perdem a ligação. | ✅ | Modelo de dados. |

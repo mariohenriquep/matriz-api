@@ -1,5 +1,10 @@
 package pt.matriz.services;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,24 +24,43 @@ public class ServicoAutenticacao {
     private final ServicoTokens tokens;
     /** Usado quando o email não existe, para o login demorar o mesmo e não revelar que contas existem. */
     private final String hashFicticio;
+    private final Clock relogio;
 
-    public ServicoAutenticacao(UtilizadorRepositorio utilizadores, PasswordEncoder passwords, ServicoTokens tokens) {
+    /** RNF-11 (P-29): ao fim de 5 tentativas falhadas seguidas, o login da conta fica bloqueado 15 minutos. */
+    static final int MAXIMO_TENTATIVAS = 5;
+    static final Duration DURACAO_BLOQUEIO = Duration.ofMinutes(15);
+
+    public ServicoAutenticacao(UtilizadorRepositorio utilizadores, PasswordEncoder passwords, ServicoTokens tokens,
+            Clock relogio) {
         this.utilizadores = utilizadores;
         this.passwords = passwords;
         this.tokens = tokens;
+        this.relogio = relogio;
         this.hashFicticio = passwords.encode("sem-conta");
     }
 
-    @Transactional(readOnly = true)
+    /**
+     * Sem transação à volta de propósito: a tentativa falhada tem de ficar gravada mesmo quando o login termina
+     * com erro. Durante o bloqueio, a resposta é a mesma de uma password errada (não revela o bloqueio nem se a
+     * password estava certa) e a tentativa não prolonga o bloqueio (Ficha 04, Ex. 5, SEC-01).
+     */
     public SessaoIniciada entrar(String email, String password) {
         Utilizador utilizador = utilizadores.findByEmailIgnoreCase(email.trim()).orElse(null);
         if (utilizador == null) {
             passwords.matches(password, hashFicticio);
             throw ErroApi.credenciaisInvalidas();
         }
-        if (!passwords.matches(password, utilizador.getPasswordHash())) {
+        Instant agora = relogio.instant();
+        if (utilizador.bloqueadoEm(agora)) {
+            passwords.matches(password, hashFicticio); // o mesmo tempo de resposta
             throw ErroApi.credenciaisInvalidas();
         }
+        if (!passwords.matches(password, utilizador.getPasswordHash())) {
+            utilizadores.registarTentativaFalhada(utilizador.getId(), MAXIMO_TENTATIVAS,
+                    agora.plus(DURACAO_BLOQUEIO).atOffset(ZoneOffset.UTC));
+            throw ErroApi.credenciaisInvalidas();
+        }
+        utilizadores.limparTentativas(utilizador.getId());
         return new SessaoIniciada(tokens.emitir(utilizador), utilizador);
     }
 

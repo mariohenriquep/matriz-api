@@ -1,6 +1,6 @@
 # Code Review e Security Review da Matriz
 
-> Ficha PL 04, Exercício 5. Revisão feita a 2026-11-11 sobre o `main` 330a0c5 (depois dos PR #12 a #14), com a aplicação a correr localmente sobre uma base de dados nova (seed de demonstração). A revisão foi feita com IA (Claude Code, no papel de Senior Software Engineer e Application Security Reviewer). Cada conclusão foi verificada contra o código e, quando possível, contra a aplicação em execução. **Nenhuma correção foi aplicada:** as propostas da §5 esperam pela decisão do Mário.
+> Ficha PL 04, Exercício 5. Revisão feita a 2026-11-11 sobre o `main` 330a0c5 (depois dos PR #12 a #14), com a aplicação a correr localmente sobre uma base de dados nova (seed de demonstração). A revisão foi feita com IA (Claude Code, no papel de Senior Software Engineer e Application Security Reviewer). Cada conclusão foi verificada contra o código e, quando possível, contra a aplicação em execução. As correções foram aplicadas **só depois da decisão do Mário** (2026-11-11), cada uma com um teste de regressão (§5).
 
 ## 1. Âmbito e método
 
@@ -108,10 +108,23 @@ A ficha pede para corrigir **só os problemas confirmados e prioritários, depoi
 | SEC-02 Seed ligado por omissão | Baixa | Corrigir: mudar o valor por omissão, com teste |
 | SEC-03, SEC-04, CR-04 | Baixa / Info | Não corrigir agora; ficam registados |
 
-*(A preencher depois da decisão: o que foi corrigido, com que commits e testes.)*
+**Decisão do Mário (2026-11-11): corrigir os 4 recomendados.** O que foi feito:
+
+| Finding | Correção | Teste de regressão | Sem a correção |
+|---------|----------|--------------------|----------------|
+| SEC-01 | Migration `V3__bloqueio_login.sql` (colunas `tentativas_falhadas` e `bloqueado_ate`, já previstas em `docs/database.md`). `ServicoAutenticacao.entrar` regista cada falha com um `UPDATE` atómico no repositório (seguro com pedidos em paralelo) e, à 5.ª seguida, bloqueia 15 minutos. Durante o bloqueio responde o mesmo `401`, mesmo com a password certa, e a tentativa não prolonga o bloqueio. Um login com sucesso repõe a contagem. As colunas são só de leitura na entidade, para o logout não as sobrescrever. Contrato atualizado (`openapi.yaml` 0.3.1) e P-29 confirmada | `BloqueioLoginTest` (4 testes: bloqueio à 5.ª falha mesmo com a password certa e com a mesma resposta; fim do bloqueio; um login certo repõe a contagem; o bloqueio é por conta e emails inexistentes não bloqueiam nada) | 3 dos 4 testes falham (verificado) |
+| CR-02 | `ServicoProjetos.listar` limpa a pesquisa primeiro e conta code points | `ProjetosTest.oLimiteDaPesquisaContaDepoisDeRetirarOsEspacosEmCaracteres` | — |
+| CR-03 | `filtrosDoUrl` só aceita `responsavelId` numérico; outro valor é ignorado, como os estados e as prioridades desconhecidos | caso novo em `calculos.test.ts` | O teste falha (verificado) |
+| SEC-02 | `matriz.seed.ativo` passa a `false` por omissão no `application.yml`; o `.env.example` continua a ligá-lo para desenvolvimento, agora com um aviso; `TesteIntegracao` e a configuração do E2E ligam-no explicitamente | `SeedPorOmissaoTest` (2 testes, sem base de dados: lê o `application.yml` real) | O primeiro teste falha (verificado) |
+
+**Verificação depois das correções (execuções reais):** `./mvnw test` com 107 testes e 0 falhas (100 + 4 + 1 + 2); `npm test` com 32 testes e 0 falhas, `npm run build` e `npm run lint` sem erros; `npx playwright test` passa. Na aplicação a correr: 6 logins errados do Rui bloqueiam a conta (`bloqueado_ate` 15 minutos à frente) e o login certo a seguir dá `401`, enquanto a Ana continua a entrar; a pesquisa com 95 letras e espaços à volta dá `200`; `scripts/verificar-idor.sh` dá os mesmos resultados de antes (16 × `404`, 4 × `403`, 3 × `400`).
+
+**Ficam pendentes (não corrigidos, por decisão):** SEC-03 (token no `sessionStorage`, rever com a configuração de produção), SEC-04 (risco RK-02 aceite) e CR-04 (sem efeito atual).
+
+**Nota para quem usa uma base de dados já existente:** quem tiver um `.env` antigo sem `MATRIZ_SEED_ATIVO` deixa de ter o seed numa base de dados nova; basta acrescentar `MATRIZ_SEED_ATIVO=true`, como no `.env.example`.
 
 ## 6. Verificações executadas e por executar
 
-**Executadas (2026-11-11, ambiente cloud):** leitura do diff do PR #11 e de todas as regras de acesso; 29 pedidos de IDOR e de tokens (§3.1); 7 suspeitas testadas (§3.3); Semgrep, oxlint e `npm audit` (§4); suíte de testes existente verde antes da revisão (100 backend, 31 frontend, 1 E2E).
+**Executadas (2026-11-11, ambiente cloud), antes das correções:** leitura do diff do PR #11 e de todas as regras de acesso; 29 pedidos de IDOR e de tokens (§3.1); 7 suspeitas testadas (§3.3); Semgrep, oxlint e `npm audit` (§4); suíte de testes existente verde antes da revisão (100 backend, 31 frontend, 1 E2E).
 
 **Por executar ou validar:** análise de dependências do backend; revisão de uma configuração de produção (HTTPS, CSP, cabeçalhos), que ainda não existe; testes de carga (RNF-08); o caso CR-04, se alguma rota passar a ter parâmetros obrigatórios.

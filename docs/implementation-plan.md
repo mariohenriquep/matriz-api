@@ -17,7 +17,7 @@ A Ficha 03 define um âmbito funcional mínimo. Foi comparado com o MVP aprovado
 | C-06 | Registo público opcional; contas de demonstração por seed | ✅ Seed; registo público fica como extra | requirements RF-01 |
 | C-07 | Valores do exemplo da ficha (`TODO`, `LOW`…, título 3–150) | ✅ Mantemos os nossos (`POR_FAZER`, `BAIXA`…, título 1–200) | — |
 
-**Extras do nosso MVP adiados** (ficam para depois da Ficha 03, por esta ordem proposta): arquivo e reativação (RF-18), quadro Kanban (RF-15), "As minhas tarefas" (RF-17), marcação "Atrasada" na interface (o campo já vem da API), registo público (RF-01), administrador global e registo de promoções (RF-02, RF-13, RF-19), notificações (RF-16), bloqueio após tentativas falhadas (RNF-11).
+**Extras do nosso MVP adiados** (ficam para depois da Ficha 03, por esta ordem proposta): arquivo e reativação (RF-18), quadro Kanban (RF-15), "As minhas tarefas" (RF-17), marcação "Atrasada" na interface (o campo já vem da API), registo público (RF-01), administrador global e registo de promoções (RF-02, RF-13, RF-19), notificações (RF-16). O bloqueio após tentativas falhadas (RNF-11) foi implementado na Ficha 04, Ex. 5 (finding SEC-01).
 
 ## 2. Stack ✅
 
@@ -85,7 +85,7 @@ Identidade: o utilizador é **sempre** obtido do token. O backend nunca aceita d
 - `UTILIZADOR.versao_token` (inteiro) para invalidar tokens no logout.
 - `PROJETO.descricao` ≤ 1000; `TAREFA.descricao` ≤ 2000 (novos limites, P-33).
 - **RN-10:** eliminar um projeto elimina, na mesma transação, membros, tarefas, atribuições e comentários; eliminar uma tarefa elimina as suas atribuições e comentários (`ON DELETE CASCADE`).
-- Ficam por criar nesta fase (extras): NOTIFICACAO, REGISTO_ADMIN, campos de bloqueio de login, `arquivado_em`, `is_admin_global`.
+- Ficam por criar nesta fase (extras): NOTIFICACAO, REGISTO_ADMIN, `arquivado_em`, `is_admin_global`.
 
 ## 5. Incrementos
 

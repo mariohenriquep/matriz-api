@@ -13,6 +13,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
  * de demonstração. O contentor e o contexto Spring são partilhados por todas as classes de teste.
  */
 @SpringBootTest(properties = {
+        "matriz.seed.ativo=true",
         "matriz.seed.password=" + TesteIntegracao.PASSWORD_DEMO,
         "matriz.jwt.segredo=" + TesteIntegracao.SEGREDO_JWT
 })

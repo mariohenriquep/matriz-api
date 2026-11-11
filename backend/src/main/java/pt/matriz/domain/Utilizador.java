@@ -1,5 +1,6 @@
 package pt.matriz.domain;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 
 import jakarta.persistence.Column;
@@ -33,6 +34,16 @@ public class Utilizador {
     @Column(name = "criado_em", nullable = false, insertable = false, updatable = false)
     private OffsetDateTime criadoEm;
 
+    /**
+     * Bloqueio do login (RNF-11). Só de leitura na entidade: estas colunas mudam por atualizações atómicas no
+     * repositório, para um logout (que grava a entidade) nunca repor um valor antigo.
+     */
+    @Column(name = "tentativas_falhadas", nullable = false, insertable = false, updatable = false)
+    private int tentativasFalhadas;
+
+    @Column(name = "bloqueado_ate", insertable = false, updatable = false)
+    private OffsetDateTime bloqueadoAte;
+
     protected Utilizador() {
     }
 
@@ -54,6 +65,15 @@ public class Utilizador {
 
     public int getVersaoToken() {
         return versaoToken;
+    }
+
+    public int getTentativasFalhadas() {
+        return tentativasFalhadas;
+    }
+
+    /** O login está bloqueado neste instante. */
+    public boolean bloqueadoEm(Instant agora) {
+        return bloqueadoAte != null && agora.isBefore(bloqueadoAte.toInstant());
     }
 
     public void invalidarTokens() {

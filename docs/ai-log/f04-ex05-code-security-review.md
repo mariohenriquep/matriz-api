@@ -40,5 +40,10 @@ ServicoTokens, repositórios, contas de demonstração Ana / Rui / Joana, docs/r
   atribuir o mesmo responsável (dava `409`, não `500`), password acima de 72 bytes (dava `401`) e
   enumeração de contas no login (respostas iguais).
 - O CR-01 (contagem de caracteres) já tinha sido encontrado pelos testes unitários do Ex. 2 e corrigido.
-- Correções por decidir pelo Mário (`docs/quality-security-review.md` §5). Nenhum código de produção foi
-  alterado neste passo.
+- O Mário escolheu corrigir os 4 recomendados (SEC-01, CR-02, CR-03, SEC-02). Cada correção tem teste de
+  regressão, e três deles foram executados também sem a correção, para confirmar que falham.
+- Na revisão da correção do SEC-01, a IA acrescentou duas proteções que não estavam na primeira proposta:
+  as colunas do bloqueio são só de leitura na entidade JPA (senão um logout podia repor um contador antigo)
+  e a falha é registada com um `UPDATE` atómico (senão pedidos em paralelo podiam contar menos falhas).
+- Durante a verificação na aplicação, o bloqueio do Rui fez falhar o `scripts/verificar-idor.sh`, que usa
+  essa conta: era o comportamento esperado. As contas foram repostas e o script voltou a dar os mesmos resultados.

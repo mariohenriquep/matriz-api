@@ -45,6 +45,7 @@ Ficaram para incrementos seguintes, como extras do MVP original: registo públic
 | [`docs/implementation-plan.md`](docs/implementation-plan.md) | Plano de implementação da Ficha 03: stack, regras de acesso e incrementos. |
 | [`docs/verification.md`](docs/verification.md) | Verificação do MVP: 9 cenários com evidência, testes, contrato, limitações e exemplos de uso da IA. |
 | [`docs/test-plan.md`](docs/test-plan.md) | Plano de testes (Ficha 04): cenários de tarefas e permissões a partir dos requisitos, nível de teste e teste associado. |
+| [`docs/quality-security-review.md`](docs/quality-security-review.md) | Code Review e Security Review (Ficha 04): IDOR com contas de demonstração, findings com evidência e severidade, análise estática e correções. |
 | [`docs/ui/`](docs/ui/) | Wireframe do painel do projeto (`wireframe.png`, fonte em `wireframe.html`). |
 | `backend/` | API em Java 21 + Spring Boot 3 (Maven), em clean architecture; migrations Flyway e seed. |
 | `frontend/` | Interface em React + Vite + TypeScript. |
@@ -191,5 +192,5 @@ Os resultados da última verificação, com os 9 cenários da Ficha 03, estão e
 - ✅ **Fase 1 — Especificação (Ficha PL 01):** requisitos, backlog e restrições.
 - ✅ **Fase 2 — Conceção (Ficha PL 02):** arquitetura, modelo de dados, contrato da API e wireframe.
 - ✅ **Fase 3 — Desenvolvimento (Ficha PL 03):** MVP full-stack implementado (autenticação, projetos e membros, tarefas com filtros, responsáveis, comentários e interface completa), backend em clean architecture, verificado nos 9 cenários da ficha ([`docs/verification.md`](docs/verification.md)) e revisto para entrega. Progresso em [`docs/implementation-plan.md`](docs/implementation-plan.md).
-- 🔄 **Fase 4 — Testes e revisão (Ficha PL 04):** plano de testes ([`docs/test-plan.md`](docs/test-plan.md)), testes unitários da validação (com a correção da contagem de caracteres), teste de integração com gravação real e teste E2E com Playwright; segue-se o Code Review e Security Review.
+- ✅ **Fase 4 — Testes e revisão (Ficha PL 04):** plano de testes ([`docs/test-plan.md`](docs/test-plan.md)), testes unitários, de integração com gravação real e E2E com Playwright, e Code Review e Security Review ([`docs/quality-security-review.md`](docs/quality-security-review.md)) com as correções aprovadas, incluindo o bloqueio do login após 5 tentativas falhadas.
 - ⏭️ **Depois:** os extras do MVP original, começando pelo quadro Kanban e pelo arquivo de projetos.

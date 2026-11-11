@@ -34,10 +34,11 @@ public class ServicoProjetos {
 
     @Transactional(readOnly = true)
     public List<Projeto> listar(long utilizador, String pesquisa) {
-        if (pesquisa != null && pesquisa.length() > MAX_PESQUISA) {
+        // O limite conta depois de retirar os espaços das pontas e em caracteres, como nos outros campos (CR-02)
+        String texto = CampoTexto.limpo(pesquisa);
+        if (texto != null && texto.codePointCount(0, texto.length()) > MAX_PESQUISA) {
             throw ErroApi.validacao("pesquisa", "A pesquisa tem no máximo " + MAX_PESQUISA + " caracteres");
         }
-        String texto = CampoTexto.limpo(pesquisa);
         return projetos.listar(utilizador, texto);
     }
 
