@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { ErroApi } from '../api/cliente'
 import { LIMITE_DESCRICAO, LIMITE_NOME } from '../api/projetos'
 import { ErroCampo, MensagemErro } from './Estados'
+import { caracteres } from '../api/texto'
 
 interface Props {
   inicial?: { nome: string; descricao: string | null }
@@ -22,8 +23,8 @@ export function FormularioProjeto({ inicial, textoBotao, textoAEnviar, aoSubmete
   function validar() {
     const novos: Record<string, string> = {}
     if (!nome.trim()) novos.nome = 'O nome é obrigatório'
-    else if (nome.trim().length > LIMITE_NOME) novos.nome = `O nome tem no máximo ${LIMITE_NOME} caracteres`
-    if (descricao.trim().length > LIMITE_DESCRICAO)
+    else if (caracteres(nome.trim()) > LIMITE_NOME) novos.nome = `O nome tem no máximo ${LIMITE_NOME} caracteres`
+    if (caracteres(descricao.trim()) > LIMITE_DESCRICAO)
       novos.descricao = `A descrição tem no máximo ${LIMITE_DESCRICAO} caracteres`
     return novos
   }
@@ -74,7 +75,7 @@ export function FormularioProjeto({ inicial, textoBotao, textoAEnviar, aoSubmete
           aria-describedby="erro-descricao"
         />
         <span className="suave contador">
-          {descricao.trim().length}/{LIMITE_DESCRICAO}
+          {caracteres(descricao.trim())}/{LIMITE_DESCRICAO}
         </span>
         <ErroCampo id="erro-descricao" texto={erros.descricao} />
       </label>

@@ -15,7 +15,7 @@ import pt.matriz.exceptions.ErroApi;
  *
  * @param campo nome do campo no pedido, devolvido no erro de validação
  * @param nome como o campo aparece nas mensagens (ex.: "O título")
- * @param maximo número máximo de caracteres depois da limpeza
+ * @param maximo número máximo de caracteres (code points, não unidades UTF-16) depois da limpeza
  * @param seVazio mensagem quando o campo é obrigatório e vem vazio; {@code null} se for opcional
  */
 record CampoTexto(String campo, String nome, int maximo, String seVazio) {
@@ -48,7 +48,8 @@ record CampoTexto(String campo, String nome, int maximo, String seVazio) {
             }
             return null;
         }
-        if (limpo.length() > maximo) {
+        // Conta caracteres (code points), como o contrato e o PostgreSQL: um emoji é 1, não 2 (Ficha 04, Ex. 2)
+        if (limpo.codePointCount(0, limpo.length()) > maximo) {
             throw ErroApi.validacao(campo, nome + " tem no máximo " + maximo + " caracteres");
         }
         return limpo;

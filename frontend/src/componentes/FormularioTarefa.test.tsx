@@ -31,6 +31,18 @@ describe('FormularioTarefa', () => {
     expect(aoSubmeter).not.toHaveBeenCalled()
   })
 
+  it('aceita um título com o limite em emojis, que contam um caracter cada (regressão da Ficha 04, Ex. 2)', async () => {
+    const aoSubmeter = vi.fn().mockResolvedValue(undefined)
+    render(<FormularioTarefa membros={membros} aoSubmeter={aoSubmeter} aoCancelar={() => {}} />)
+
+    await userEvent.click(screen.getByLabelText('Título'))
+    await userEvent.paste('📌'.repeat(LIMITE_TITULO))
+    await userEvent.click(screen.getByRole('button', { name: 'Criar tarefa' }))
+
+    expect(screen.queryByText(`O título tem no máximo ${LIMITE_TITULO} caracteres`)).not.toBeInTheDocument()
+    expect(aoSubmeter).toHaveBeenCalledWith(expect.objectContaining({ titulo: '📌'.repeat(LIMITE_TITULO) }))
+  })
+
   it('envia os dados limpos e com os responsáveis escolhidos', async () => {
     const aoSubmeter = vi.fn().mockResolvedValue(undefined)
     render(<FormularioTarefa membros={membros} aoSubmeter={aoSubmeter} aoCancelar={() => {}} />)
