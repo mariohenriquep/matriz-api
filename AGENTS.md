@@ -76,6 +76,7 @@ Todos a partir da raiz do repositório. A configuração vem do `.env` (copiado 
 | Arrancar o frontend (http://localhost:5173) | `cd frontend && npm install && npm run dev` |
 | Testes do backend (precisam do Docker) | `cd backend && ./mvnw test` |
 | Testes, build e lint do frontend | `cd frontend && npm test && npm run build && npm run lint` |
+| Teste E2E (precisa de `docker compose up -d`) | `cd e2e && npx playwright test` |
 | Verificar a API contra o contrato (backend a correr) | `MATRIZ_SEED_PASSWORD=<do .env> python3 scripts/verificar-contrato.py` |
 
 Contas de demonstração: `ana@`, `rui@` e `joana@matriz.local`, com a password `MATRIZ_SEED_PASSWORD` do `.env` (papéis no `README.md`).

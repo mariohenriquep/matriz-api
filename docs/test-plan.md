@@ -39,7 +39,7 @@ Legenda da coluna **Teste**: nome do teste que já existe (Ficha 03) ou o exerc�
 | T-14 | RF-12, US-10 | Filtros por estado, prioridade e responsável, combinados; filtro inválido | Só as tarefas que cumprem todos; `400` | Integração | `TarefasTest.filtrosPorEstadoPrioridadeEResponsavelCombinam`, `filtroComValorInvalidoDa400` |
 | T-15 | RNF-02 | Pedido sem token ou com token inválido | `401` | Integração | `AutenticacaoTest` |
 | T-16 | RF-08, RNF-06 (interface) | No formulário: título vazio; título com mais de 200 caracteres | Mensagem no campo, nenhum pedido enviado | Unitário (componente) | `FormularioTarefa.test.tsx` |
-| T-17 ★ | US-06 CA1 (interface) | Ana entra → abre o *Website institucional* → cria uma tarefa → vê-a na lista | A tarefa aparece na lista, sem recarregar, com o título escrito | E2E | **Ex. 4** |
+| T-17 ★ | US-06 CA1 (interface) | Ana entra → abre o *Website institucional* → cria uma tarefa → vê-a na lista | A tarefa aparece na lista, sem recarregar, com o título escrito e prioridade Média; continua lá depois de recarregar | E2E | `e2e/tests/criar-tarefa.spec.ts` (Ex. 4) |
 
 ## 4. Cenários essenciais escolhidos
 
@@ -79,7 +79,8 @@ Só execuções reais, feitas no ambiente cloud (Java 21, Node 22, Docker com Po
 | Ex. 3 Integração (2026-11-11) | `cd backend && ./mvnw test -Dtest=CriarEConsultarTarefaTest` | 3 testes, 0 falhas, à primeira execução (cerca de 8 s, inclui arrancar o PostgreSQL) |
 | Ex. 3 Suíte completa, duas vezes seguidas | `cd backend && ./mvnw test` | **100 testes, 0 falhas**, nas duas execuções |
 | Ex. 3 Prova de isolamento | o teste novo seguido de `ProjetosTest` e `TarefasTest` (`-Dsurefire.runOrder=alphabetical`) | 33 testes, 0 falhas. **Sem a limpeza** (`@AfterEach` retirado de propósito, temporariamente): `ProjetosTest` falha 3 testes (ex.: `$.total` esperado 2, obtido 5), o que mostra que a limpeza é necessária e funciona. A limpeza foi reposta antes do commit |
-| Ex. 4 E2E | *(por executar)* | |
+| Ex. 4 E2E (2026-11-11) | `docker compose up -d` e depois `cd e2e && npm install && npx playwright test` | **1 teste, passa** (cerca de 19 s na 1.ª execução, incluindo arrancar o backend e o frontend; 9 s na 2.ª) |
+| Ex. 4 Repetição e isolamento | a mesma execução, segunda vez | Passa outra vez. A base de dados `matriz_e2e` só tem a tarefa E2E da última execução (foi recriada) e a base de dados de desenvolvimento `matriz` ficou com 0 tabelas, ou seja, intacta. No fim, as portas 8081 e 5174 ficam livres (o Playwright para os servidores) |
 
 ### 6.1 Análise da falha do Ex. 2
 
@@ -99,4 +100,12 @@ Não se alterou o teste nem o limite para ficar verde. Com autorização do Már
 - **Commit real:** `CriarEConsultarTarefaTest` não usa `@Transactional`, ao contrário dos outros testes da API. A tarefa é gravada com commit e lida por uma consulta SQL feita noutra ligação, que só a vê se o commit aconteceu.
 - **Dados próprios:** cada teste cria um projeto com nome único (UUID), junta o Rui como membro e trabalha só dentro dele, sem mexer nas tarefas do seed de que os outros testes dependem.
 - **Limpeza verificada:** no `@AfterEach` o projeto é eliminado (a cascata leva as tarefas e os membros) e o teste confirma que não ficou nenhuma tarefa nem membro desse projeto.
+
+### 6.3 Como o teste E2E se mantém reprodutível (Ex. 4)
+
+- **Ambiente próprio:** o Playwright arranca o backend na porta 8081 e o frontend na 5174, ligados a uma base de dados `matriz_e2e` que `e2e/preparar-bd.mjs` apaga e cria de novo antes de cada execução (no PostgreSQL do `docker compose`). O Flyway cria o esquema e o seed cria as contas. Como as portas são outras, os testes podem correr com o ambiente de desenvolvimento ligado, e os teus dados ficam intactos.
+- **Dados de teste:** a conta Ana do seed, com uma password só da base de dados de E2E e um segredo JWT gerado em cada execução. O título da tarefa leva a hora, para nunca depender de execuções anteriores.
+- **Seletores estáveis:** pelo papel e pelo nome acessível (`getByLabel('Email')`, `getByRole('button', { name: 'Entrar' })`, a região "Tarefas"). Não foi preciso mexer no frontend nem acrescentar `data-testid`.
+- **Sem esperas fixas:** as asserções do Playwright (`toBeVisible`, `toHaveCount`) esperam até a condição se cumprir. Não há `waitForTimeout`.
+- **Evidências só quando falha:** o trace e a captura de ecrã só são guardados em caso de falha (`e2e/test-results/`, relatório em `npx playwright show-report`). Como o teste passou, não foi preciso analisá-los.
 

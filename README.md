@@ -171,6 +171,9 @@ cd backend && ./mvnw test     # precisa do Docker: os testes usam um PostgreSQL 
 cd backend && ./mvnw test -Dtest=CampoTextoTest   # só os testes unitários da validação de texto (sem Docker)
 cd backend && ./mvnw test -Dtest=CriarEConsultarTarefaTest   # integração: criar e consultar com commit real e limpeza
 cd frontend && npm test       # testes de componentes e do cliente da API (Vitest + Testing Library, sem backend)
+cd e2e && npm install && npx playwright install chromium   # só da primeira vez
+cd e2e && npx playwright test # E2E: arranca backend (8081) e frontend (5174) sobre a BD matriz_e2e, criada de novo;
+                              # precisa do PostgreSQL do docker compose ligado (docker compose up -d)
 cd frontend && npm run build && npm run lint
 ```
 
@@ -188,5 +191,5 @@ Os resultados da última verificação, com os 9 cenários da Ficha 03, estão e
 - ✅ **Fase 1 — Especificação (Ficha PL 01):** requisitos, backlog e restrições.
 - ✅ **Fase 2 — Conceção (Ficha PL 02):** arquitetura, modelo de dados, contrato da API e wireframe.
 - ✅ **Fase 3 — Desenvolvimento (Ficha PL 03):** MVP full-stack implementado (autenticação, projetos e membros, tarefas com filtros, responsáveis, comentários e interface completa), backend em clean architecture, verificado nos 9 cenários da ficha ([`docs/verification.md`](docs/verification.md)) e revisto para entrega. Progresso em [`docs/implementation-plan.md`](docs/implementation-plan.md).
-- 🔄 **Fase 4 — Testes e revisão (Ficha PL 04):** plano de testes ([`docs/test-plan.md`](docs/test-plan.md)), testes unitários da validação (com a correção da contagem de caracteres) e teste de integração com gravação real; seguem-se o teste E2E e o Code Review e Security Review.
+- 🔄 **Fase 4 — Testes e revisão (Ficha PL 04):** plano de testes ([`docs/test-plan.md`](docs/test-plan.md)), testes unitários da validação (com a correção da contagem de caracteres), teste de integração com gravação real e teste E2E com Playwright; segue-se o Code Review e Security Review.
 - ⏭️ **Depois:** os extras do MVP original, começando pelo quadro Kanban e pelo arquivo de projetos.
