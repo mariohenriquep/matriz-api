@@ -109,3 +109,7 @@ Não se alterou o teste nem o limite para ficar verde. Com autorização do Már
 - **Sem esperas fixas:** as asserções do Playwright (`toBeVisible`, `toHaveCount`) esperam até a condição se cumprir. Não há `waitForTimeout`.
 - **Evidências só quando falha:** o trace e a captura de ecrã só são guardados em caso de falha (`e2e/test-results/`, relatório em `npx playwright show-report`). Como o teste passou, não foi preciso analisá-los.
 
+### 6.4 Depois das correções do Ex. 5 (2026-11-11)
+
+As correções aprovadas da revisão (`docs/quality-security-review.md` §5) acrescentaram 7 testes ao backend (`BloqueioLoginTest`, `SeedPorOmissaoTest`, um caso em `ProjetosTest`) e 1 ao frontend. Resultado: `./mvnw test` com **107 testes, 0 falhas**; `npm test` com **32 testes, 0 falhas**; `npx playwright test` **passa**.
+

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Matriz API
-  version: 0.3.0
+  version: 0.3.1
   summary: Contrato REST do MVP da Matriz (Ficha 03).
   description: |
     Contrato completo para o âmbito da Ficha 03: autenticação, projetos e membros, tarefas,
@@ -65,6 +65,10 @@ paths:
       tags: [Autenticação]
       operationId: iniciarSessao
       summary: Iniciar sessão
+      description: |
+        Após 5 tentativas falhadas seguidas para a mesma conta, o login dessa conta fica bloqueado durante
+        15 minutos (RNF-11). Durante o bloqueio a resposta é o mesmo `401` de uma password errada, mesmo com a
+        password certa, para não revelar o bloqueio. Um login com sucesso repõe a contagem.
       security: []
       requestBody:
         required: true

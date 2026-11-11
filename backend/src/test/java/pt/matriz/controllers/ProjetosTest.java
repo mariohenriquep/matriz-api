@@ -77,6 +77,18 @@ class ProjetosTest extends ApiTeste {
     }
 
     @Test
+    void oLimiteDaPesquisaContaDepoisDeRetirarOsEspacosEmCaracteres() throws Exception {
+        // Regressão do finding CR-02 (Ficha 04, Ex. 5): 100 caracteres com espaços à volta, ou 100 emojis, são aceites
+        mvc.perform(como(ana, get("/api/v1/projetos").param("pesquisa", "     " + "a".repeat(100) + "     ")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(0));
+        mvc.perform(como(ana, get("/api/v1/projetos").param("pesquisa", "📌".repeat(100))))
+                .andExpect(status().isOk());
+        mvc.perform(como(ana, get("/api/v1/projetos").param("pesquisa", "📌".repeat(101))))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void pesquisaComMaisDe100CaracteresDa400() throws Exception {
         mvc.perform(como(ana, get("/api/v1/projetos").param("pesquisa", "a".repeat(101))))
                 .andExpect(status().isBadRequest())

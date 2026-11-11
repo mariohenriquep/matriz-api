@@ -48,5 +48,7 @@ matriz:
     origens: ${MATRIZ_CORS_ORIGENS:http://localhost:5173}
   seed:
     # Cria as contas e os projetos de demonstração se a base de dados não tiver utilizadores.
-    ativo: ${MATRIZ_SEED_ATIVO:true}
+    # Desligado por omissão: só cria as contas de demonstração se MATRIZ_SEED_ATIVO=true (o .env.example liga-o
+    # para desenvolvimento). Ficha 04, Ex. 5, finding SEC-02.
+    ativo: ${MATRIZ_SEED_ATIVO:false}
     password: ${MATRIZ_SEED_PASSWORD:}
