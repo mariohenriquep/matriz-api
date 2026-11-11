@@ -29,6 +29,7 @@ import { useSessao } from '../auth/useSessao'
 import { Barra } from '../componentes/Barra'
 import { ACarregar, ErroCampo, MensagemErro, MensagemSucesso } from '../componentes/Estados'
 import { FormularioTarefa } from '../componentes/FormularioTarefa'
+import { caracteres } from '../api/texto'
 
 type Estado =
   | { tipo: 'a-carregar' }
@@ -393,7 +394,7 @@ function Comentarios({
     setErro(null)
     setSucesso(false)
     if (!conteudo.trim()) return setErroCampo('O comentário não pode estar vazio')
-    if (conteudo.trim().length > LIMITE_COMENTARIO)
+    if (caracteres(conteudo.trim()) > LIMITE_COMENTARIO)
       return setErroCampo(`O comentário tem no máximo ${LIMITE_COMENTARIO} caracteres`)
     setErroCampo(undefined)
     setAEnviar(true)
@@ -439,7 +440,7 @@ function Comentarios({
             aria-describedby="erro-comentario"
           />
           <span className="suave contador">
-            {conteudo.trim().length}/{LIMITE_COMENTARIO}
+            {caracteres(conteudo.trim())}/{LIMITE_COMENTARIO}
           </span>
           <ErroCampo id="erro-comentario" texto={erroCampo} />
         </label>

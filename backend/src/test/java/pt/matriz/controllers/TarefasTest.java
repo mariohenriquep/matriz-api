@@ -157,6 +157,11 @@ class TarefasTest extends ApiTeste {
         // 200 caracteres é o limite
         mvc.perform(como(ana, post("/api/v1/projetos/" + website + "/tarefas"), Map.of("titulo", "x".repeat(200))))
                 .andExpect(status().isCreated());
+        // 200 emojis são 200 caracteres: aceites e guardados no PostgreSQL (regressão da Ficha 04, Ex. 2)
+        mvc.perform(como(ana, post("/api/v1/projetos/" + website + "/tarefas"), Map.of("titulo", "📌".repeat(200))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.titulo").value("📌".repeat(200)));
+        criarInvalido(Map.of("titulo", "📌".repeat(201)), "titulo");
         // Espaços não separáveis nas pontas são retirados, como os espaços normais
         mvc.perform(como(ana, post("/api/v1/projetos/" + website + "/tarefas"), Map.of("titulo", "\u00a0 Rever \u00a0")))
                 .andExpect(status().isCreated())

@@ -26,7 +26,7 @@ Legenda da coluna **Teste**: nome do teste que já existe (Ficha 03) ou o exerc�
 | T-01 ★ | RF-08, US-06 CA3, RNF-06 | Criar tarefa sem título, com título vazio ou só com espaços (incluindo espaços não separáveis) | Recusada; `400` com erro no campo `titulo` ("O título é obrigatório"); nada fica gravado | Unitário + Integração | Ex. 2 (`CampoTextoTest`); `TarefasTest.validacaoDoTituloEDaDescricao`; Ex. 3 |
 | T-02 ★ | RF-08, `constraints.md` (1 a 200) | Título com 1 e com 200 caracteres; título com 201 caracteres | 1 e 200 aceites; 201 recusado com "O título tem no máximo 200 caracteres" | Unitário + Integração | Ex. 2; `TarefasTest.validacaoDoTituloEDaDescricao` |
 | T-03 | RF-08 | Título com espaços nas pontas, ex. `"  Rever  "` | Guardado sem os espaços: `"Rever"` | Unitário | Ex. 2 |
-| T-04 | RF-08 (limite em **caracteres**) | Título com 200 caracteres fora do plano básico do Unicode (ex.: 200 emojis) | Aceite: são 200 caracteres. **Hipótese a validar no Ex. 2**, ver §5 P-6 | Unitário | Ex. 2 |
+| T-04 | RF-08 (limite em **caracteres**) | Título com 200 caracteres fora do plano básico do Unicode (ex.: 200 emojis) | Aceite: são 200 caracteres; 201 recusado. **Defeito confirmado e corrigido no Ex. 2**, ver §5 P-6 e §6 | Unitário + Integração + componente | `CampoTextoTest.ValoresLimite`; `TarefasTest.validacaoDoTituloEDaDescricao`; `FormularioTarefa.test.tsx` |
 | T-05 ★ | RF-08, US-06 CA1 | Rui (membro) cria "Rever logótipo" só com o título e depois consulta-a por `GET /tarefas/{id}` e na lista do projeto | `201` com `Location`; estado `POR_FAZER`, prioridade `MEDIA`, sem responsável, criador Rui; o `GET` devolve os mesmos campos; a tarefa está **gravada na base de dados** e aparece na lista | Integração + E2E | `TarefasTest.membroCriaTarefaQueFicaPorFazerComEleComoCriador`; **Ex. 3** (com commit real); **Ex. 4** (pela interface) |
 | T-06 | US-06 CA2 | Criar com descrição, prioridade `ALTA`, responsável membro e data limite | Todos os campos guardados com esses valores | Integração | `TarefasTest.membroCriaTarefaQueFicaPorFazerComEleComoCriador` (parcial: sem descrição) |
 | T-07 | RF-08, CE-06 | Data limite no passado, tarefa não concluída | Aceite e marcada `atrasada: true` | Integração | `TarefasTest.listaAsTarefasDoProjetoComResponsaveisComentariosEAtrasada` |
@@ -62,16 +62,31 @@ A primeira matriz foi gerada pela IA (prompt em `docs/ai-log/f04-ex01-plano-test
 | P-3 | Testar que o administrador elimina tarefas de outros | Fora do âmbito: o administrador global não está implementado. Fica registado em §1. | `docs/implementation-plan.md` |
 | P-4 | Testar a notificação ao atribuir (US-08 CA1) | Fora do âmbito: notificações não implementadas. Testa-se só a atribuição. | idem |
 | P-5 | O teste de integração existente (`TarefasTest`) já prova a persistência | **Não chega**: corre dentro de uma transação que é desfeita no fim (`@Transactional`), por isso nunca faz commit. O Ex. 3 acrescenta um teste que grava a sério, confirma por uma consulta independente à base de dados e limpa no fim (decisão D-3). | `TarefasTest`, ficha 04 Ex. 3 |
-| P-6 | Valor-limite de 200 "caracteres" com texto simples (`"x".repeat(200)`) | Acrescentar T-04: o código mede o tamanho com `String.length()`, que conta unidades UTF-16 (um emoji conta 2), enquanto o PostgreSQL (`VARCHAR(200)`) e o requisito contam caracteres. **Hipótese, não confirmada:** um título com 101 a 200 emojis pode ser recusado indevidamente. Verificar no Ex. 2; se for um defeito, decides se se corrige. | `CampoTexto.validar`, `V1__esquema_inicial.sql` |
+| P-6 | Valor-limite de 200 "caracteres" com texto simples (`"x".repeat(200)`) | Acrescentar T-04: o código mede o tamanho com `String.length()`, que conta unidades UTF-16 (um emoji conta 2), enquanto o PostgreSQL (`VARCHAR(200)`) e o requisito contam caracteres. **Confirmado no Ex. 2:** um título com 101 a 200 emojis era recusado pelo backend e pelo formulário, embora o PostgreSQL o aceite. Corrigido com autorização do Mário (2026-11-11). | `CampoTexto.validar`, `V1__esquema_inicial.sql` |
 | P-7 | Seletores E2E por `data-testid` | Usar seletores acessíveis (`getByRole`, `getByLabel`) que já existem; só mexer no frontend com OK (decisão D-5). | Ficha 04 Ex. 4 |
 | P-8 | Medir a qualidade pela cobertura de código | Não usar a cobertura como critério: o critério é cada cenário estar ligado a um requisito e a um teste. | Ficha 04, orientações |
 
 ## 6. Execução e resultados
 
-Preenchido em cada exercício, só com execuções reais.
+Só execuções reais, feitas no ambiente cloud (Java 21, Node 22, Docker com PostgreSQL 16).
 
 | Exercício | Comando | Resultado |
 |-----------|---------|-----------|
-| Ex. 2 Unitários | *(por executar)* | |
+| Ex. 2 Unitários (1.ª execução, 2026-11-09) | `cd backend && ./mvnw test -Dtest=CampoTextoTest` | 22 testes, **21 passam, 1 falha**: `duzentosEmojisSaoDuzentosCaracteres` ("O título tem no máximo 200 caracteres"). Análise em §6.1 |
+| Ex. 2 Unitários (depois da correção, 2026-11-11) | `cd backend && ./mvnw test -Dtest=CampoTextoTest` | 22 testes, todos passam (menos de 0,1 s, sem Docker) |
+| Ex. 2 Suíte completa do backend | `cd backend && ./mvnw test` | **97 testes, 0 falhas** (75 da Ficha 03 + 22 novos) |
+| Ex. 2 Frontend | `cd frontend && npm test`, `npm run build`, `npm run lint` | **31 testes, 0 falhas** (28 + 3 novos); build e lint sem erros. Sem a correção, o teste novo do formulário falha (verificado) |
 | Ex. 3 Integração | *(por executar)* | |
 | Ex. 4 E2E | *(por executar)* | |
+
+### 6.1 Análise da falha do Ex. 2
+
+A falha era **um defeito da aplicação, não do teste**. Evidência:
+
+- O requisito e o contrato (`maxLength: 200`) falam em caracteres; `CampoTexto.validar` usava `String.length()`, que conta unidades UTF-16. `"📌".repeat(200)` tem 200 caracteres e `length()` 400.
+- No PostgreSQL 16, `char_length(repeat('📌',200)::varchar(200))` dá 200 e um `INSERT` com 200 emojis numa coluna `VARCHAR(200)` é aceite; com 201 dá `value too long for type character varying(200)`.
+- No frontend, `'📌'.repeat(200).length` dá 400 e `[...'📌'.repeat(200)].length` dá 200: o formulário tinha o mesmo defeito.
+
+Não se alterou o teste nem o limite para ficar verde. Com autorização do Mário, a contagem passou a ser feita em caracteres (code points) em `CampoTexto` (título, nome, descrições, comentário) e numa função `caracteres()` do frontend (validação e contadores dos formulários). Testes de regressão: `CampoTextoTest.duzentosEmojisSaoDuzentosCaracteres` e `duzentosEUmEmojisSaoRecusados`, uma linha nova em `TarefasTest.validacaoDoTituloEDaDescricao` (cria a tarefa com 200 emojis no PostgreSQL real), `texto.test.ts` e um caso em `FormularioTarefa.test.tsx`.
+
+**Limitação conhecida:** emojis compostos (ex.: 👨‍👩‍👧, feito de 5 code points) contam como vários caracteres. É o mesmo critério do PostgreSQL, por isso o backend e a base de dados ficam coerentes.

@@ -12,6 +12,7 @@ import {
   type Tarefa,
 } from '../api/tarefas'
 import { ErroCampo, MensagemErro } from './Estados'
+import { caracteres } from '../api/texto'
 
 interface Props {
   /** Sem tarefa inicial é uma criação: escolhem-se os responsáveis e o estado começa em "Por fazer". */
@@ -38,8 +39,8 @@ export function FormularioTarefa({ inicial, membros, aoSubmeter, aoCancelar }: P
   function validar() {
     const novos: Record<string, string> = {}
     if (!titulo.trim()) novos.titulo = 'O título é obrigatório'
-    else if (titulo.trim().length > LIMITE_TITULO) novos.titulo = `O título tem no máximo ${LIMITE_TITULO} caracteres`
-    if (descricao.trim().length > LIMITE_DESCRICAO_TAREFA)
+    else if (caracteres(titulo.trim()) > LIMITE_TITULO) novos.titulo = `O título tem no máximo ${LIMITE_TITULO} caracteres`
+    if (caracteres(descricao.trim()) > LIMITE_DESCRICAO_TAREFA)
       novos.descricao = `A descrição tem no máximo ${LIMITE_DESCRICAO_TAREFA} caracteres`
     return novos
   }
@@ -100,7 +101,7 @@ export function FormularioTarefa({ inicial, membros, aoSubmeter, aoCancelar }: P
           aria-describedby={`${prefixo}-erro-descricao`}
         />
         <span className="suave contador">
-          {descricao.trim().length}/{LIMITE_DESCRICAO_TAREFA}
+          {caracteres(descricao.trim())}/{LIMITE_DESCRICAO_TAREFA}
         </span>
         <ErroCampo id={`${prefixo}-erro-descricao`} texto={erros.descricao} />
       </label>
