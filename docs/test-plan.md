@@ -23,15 +23,15 @@ Legenda da coluna **Teste**: nome do teste que já existe (Ficha 03) ou o exerc�
 
 | ID | Requisito / CA | Cenário e entrada | Resultado esperado | Nível | Teste |
 |----|----------------|-------------------|--------------------|-------|-------|
-| T-01 ★ | RF-08, US-06 CA3, RNF-06 | Criar tarefa sem título, com título vazio ou só com espaços (incluindo espaços não separáveis) | Recusada; `400` com erro no campo `titulo` ("O título é obrigatório"); nada fica gravado | Unitário + Integração | Ex. 2 (`CampoTextoTest`); `TarefasTest.validacaoDoTituloEDaDescricao`; Ex. 3 |
+| T-01 ★ | RF-08, US-06 CA3, RNF-06 | Criar tarefa sem título, com título vazio ou só com espaços (incluindo espaços não separáveis) | Recusada; `400` com erro no campo `titulo` ("O título é obrigatório"); nada fica gravado | Unitário + Integração | `CampoTextoTest` (Ex. 2); `TarefasTest.validacaoDoTituloEDaDescricao`; `CriarEConsultarTarefaTest.tituloInvalidoDa400ENadaFicaGravado` (Ex. 3) |
 | T-02 ★ | RF-08, `constraints.md` (1 a 200) | Título com 1 e com 200 caracteres; título com 201 caracteres | 1 e 200 aceites; 201 recusado com "O título tem no máximo 200 caracteres" | Unitário + Integração | Ex. 2; `TarefasTest.validacaoDoTituloEDaDescricao` |
 | T-03 | RF-08 | Título com espaços nas pontas, ex. `"  Rever  "` | Guardado sem os espaços: `"Rever"` | Unitário | Ex. 2 |
 | T-04 | RF-08 (limite em **caracteres**) | Título com 200 caracteres fora do plano básico do Unicode (ex.: 200 emojis) | Aceite: são 200 caracteres; 201 recusado. **Defeito confirmado e corrigido no Ex. 2**, ver §5 P-6 e §6 | Unitário + Integração + componente | `CampoTextoTest.ValoresLimite`; `TarefasTest.validacaoDoTituloEDaDescricao`; `FormularioTarefa.test.tsx` |
-| T-05 ★ | RF-08, US-06 CA1 | Rui (membro) cria "Rever logótipo" só com o título e depois consulta-a por `GET /tarefas/{id}` e na lista do projeto | `201` com `Location`; estado `POR_FAZER`, prioridade `MEDIA`, sem responsável, criador Rui; o `GET` devolve os mesmos campos; a tarefa está **gravada na base de dados** e aparece na lista | Integração + E2E | `TarefasTest.membroCriaTarefaQueFicaPorFazerComEleComoCriador`; **Ex. 3** (com commit real); **Ex. 4** (pela interface) |
+| T-05 ★ | RF-08, US-06 CA1 | Rui (membro) cria "Rever logótipo" só com o título e depois consulta-a por `GET /tarefas/{id}` e na lista do projeto | `201` com `Location`; estado `POR_FAZER`, prioridade `MEDIA`, sem responsável, criador Rui; o `GET` devolve os mesmos campos; a tarefa está **gravada na base de dados** e aparece na lista | Integração + E2E | `TarefasTest.membroCriaTarefaQueFicaPorFazerComEleComoCriador`; `CriarEConsultarTarefaTest.membroCriaUmaTarefaQueFicaGravadaEPodeSerConsultada` (Ex. 3, com commit real); **Ex. 4** (pela interface) |
 | T-06 | US-06 CA2 | Criar com descrição, prioridade `ALTA`, responsável membro e data limite | Todos os campos guardados com esses valores | Integração | `TarefasTest.membroCriaTarefaQueFicaPorFazerComEleComoCriador` (parcial: sem descrição) |
 | T-07 | RF-08, CE-06 | Data limite no passado, tarefa não concluída | Aceite e marcada `atrasada: true` | Integração | `TarefasTest.listaAsTarefasDoProjetoComResponsaveisComentariosEAtrasada` |
 | T-08 | RNF-06 | Prioridade `URGENTE`, data `31/12/2030`, campos que o cliente não pode enviar (`estado`, `criadorId`) | `400` com o campo em causa | Integração | `TarefasTest.validacaoDoTituloEDaDescricao`, `oClienteNaoPodeIndicarOCriadorNemOEstado` |
-| T-09 ★ | US-06 CA4, CE-07, RNF-03 | Joana (não membro) tenta criar, ver, editar e eliminar tarefas do *Website*, trocando ids no URL | `404` "não encontrado" em todas, igual a um id inexistente (não revela que existe); nada é alterado | Integração | `TarefasTest.quemNaoEMembroRecebe404EmTodasAsOperacoes`; `ControloAcessoTest`; revisto no Ex. 5 (IDOR) |
+| T-09 ★ | US-06 CA4, CE-07, RNF-03 | Joana (não membro) tenta criar, ver, editar e eliminar tarefas do *Website*, trocando ids no URL | `404` "não encontrado" em todas, igual a um id inexistente (não revela que existe); nada é alterado | Integração | `TarefasTest.quemNaoEMembroRecebe404EmTodasAsOperacoes`; `ControloAcessoTest`; `CriarEConsultarTarefaTest.tarefaInexistenteEAlheiaDaoOMesmo404` (Ex. 3); revisto no Ex. 5 (IDOR) |
 | T-10 | RF-09, US-07 CA2–CA4 | Rui (membro) elimina uma tarefa que não criou; elimina uma que criou; Ana (Gestora) elimina uma criada pelo Rui | `403` "Só quem criou a tarefa ou o gestor do projeto a pode eliminar"; `204`; `204` | Integração | `TarefasTest.soOCriadorOuOGestorEliminam` |
 | T-11 | RF-09, US-07 CA1 | Edição parcial (só alguns campos); edição inválida (título vazio) | `200` com os campos alterados e os outros intactos; `400` e a tarefa fica como estava na base de dados | Integração | `TarefasTest.edicaoParcialEValoresANullApagam`, `edicaoInvalidaDa400ENaoAltera` |
 | T-12 | RF-10, US-08 CA2 e CA5 | Atribuir um não membro; atribuir o mesmo responsável duas vezes | `422` (`/erros/responsavel-nao-membro`), igual para um id inexistente; `409` e sem duplicado | Integração | `ResponsaveisEComentariosTest.responsavelTemDeExistirESerMembro`, `aMesmaAtribuicaoNaoFicaDuplicada` |
@@ -76,7 +76,9 @@ Só execuções reais, feitas no ambiente cloud (Java 21, Node 22, Docker com Po
 | Ex. 2 Unitários (depois da correção, 2026-11-11) | `cd backend && ./mvnw test -Dtest=CampoTextoTest` | 22 testes, todos passam (menos de 0,1 s, sem Docker) |
 | Ex. 2 Suíte completa do backend | `cd backend && ./mvnw test` | **97 testes, 0 falhas** (75 da Ficha 03 + 22 novos) |
 | Ex. 2 Frontend | `cd frontend && npm test`, `npm run build`, `npm run lint` | **31 testes, 0 falhas** (28 + 3 novos); build e lint sem erros. Sem a correção, o teste novo do formulário falha (verificado) |
-| Ex. 3 Integração | *(por executar)* | |
+| Ex. 3 Integração (2026-11-11) | `cd backend && ./mvnw test -Dtest=CriarEConsultarTarefaTest` | 3 testes, 0 falhas, à primeira execução (cerca de 8 s, inclui arrancar o PostgreSQL) |
+| Ex. 3 Suíte completa, duas vezes seguidas | `cd backend && ./mvnw test` | **100 testes, 0 falhas**, nas duas execuções |
+| Ex. 3 Prova de isolamento | o teste novo seguido de `ProjetosTest` e `TarefasTest` (`-Dsurefire.runOrder=alphabetical`) | 33 testes, 0 falhas. **Sem a limpeza** (`@AfterEach` retirado de propósito, temporariamente): `ProjetosTest` falha 3 testes (ex.: `$.total` esperado 2, obtido 5), o que mostra que a limpeza é necessária e funciona. A limpeza foi reposta antes do commit |
 | Ex. 4 E2E | *(por executar)* | |
 
 ### 6.1 Análise da falha do Ex. 2
@@ -90,3 +92,11 @@ A falha era **um defeito da aplicação, não do teste**. Evidência:
 Não se alterou o teste nem o limite para ficar verde. Com autorização do Mário, a contagem passou a ser feita em caracteres (code points) em `CampoTexto` (título, nome, descrições, comentário) e numa função `caracteres()` do frontend (validação e contadores dos formulários). Testes de regressão: `CampoTextoTest.duzentosEmojisSaoDuzentosCaracteres` e `duzentosEUmEmojisSaoRecusados`, uma linha nova em `TarefasTest.validacaoDoTituloEDaDescricao` (cria a tarefa com 200 emojis no PostgreSQL real), `texto.test.ts` e um caso em `FormularioTarefa.test.tsx`.
 
 **Limitação conhecida:** emojis compostos (ex.: 👨‍👩‍👧, feito de 5 code points) contam como vários caracteres. É o mesmo critério do PostgreSQL, por isso o backend e a base de dados ficam coerentes.
+
+### 6.2 Como o teste de integração garante dados isolados (Ex. 3)
+
+- **Base de dados de teste:** um PostgreSQL 16 temporário (Testcontainers), criado de novo a cada `./mvnw test`, com o esquema do Flyway e o seed. Nunca toca na base de dados de desenvolvimento.
+- **Commit real:** `CriarEConsultarTarefaTest` não usa `@Transactional`, ao contrário dos outros testes da API. A tarefa é gravada com commit e lida por uma consulta SQL feita noutra ligação, que só a vê se o commit aconteceu.
+- **Dados próprios:** cada teste cria um projeto com nome único (UUID), junta o Rui como membro e trabalha só dentro dele, sem mexer nas tarefas do seed de que os outros testes dependem.
+- **Limpeza verificada:** no `@AfterEach` o projeto é eliminado (a cascata leva as tarefas e os membros) e o teste confirma que não ficou nenhuma tarefa nem membro desse projeto.
+

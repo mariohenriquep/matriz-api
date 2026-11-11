@@ -169,6 +169,7 @@ curl -X POST -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/v1/auth
 cd backend && ./mvnw test     # precisa do Docker: os testes usam um PostgreSQL temporário (Testcontainers);
                               # inclui ArquiteturaTest, que verifica as dependências entre camadas
 cd backend && ./mvnw test -Dtest=CampoTextoTest   # só os testes unitários da validação de texto (sem Docker)
+cd backend && ./mvnw test -Dtest=CriarEConsultarTarefaTest   # integração: criar e consultar com commit real e limpeza
 cd frontend && npm test       # testes de componentes e do cliente da API (Vitest + Testing Library, sem backend)
 cd frontend && npm run build && npm run lint
 ```
@@ -187,5 +188,5 @@ Os resultados da última verificação, com os 9 cenários da Ficha 03, estão e
 - ✅ **Fase 1 — Especificação (Ficha PL 01):** requisitos, backlog e restrições.
 - ✅ **Fase 2 — Conceção (Ficha PL 02):** arquitetura, modelo de dados, contrato da API e wireframe.
 - ✅ **Fase 3 — Desenvolvimento (Ficha PL 03):** MVP full-stack implementado (autenticação, projetos e membros, tarefas com filtros, responsáveis, comentários e interface completa), backend em clean architecture, verificado nos 9 cenários da ficha ([`docs/verification.md`](docs/verification.md)) e revisto para entrega. Progresso em [`docs/implementation-plan.md`](docs/implementation-plan.md).
-- 🔄 **Fase 4 — Testes e revisão (Ficha PL 04):** plano de testes ([`docs/test-plan.md`](docs/test-plan.md)) e testes unitários da validação (com a correção da contagem de caracteres); seguem-se os testes de integração e E2E, e o Code Review e Security Review.
+- 🔄 **Fase 4 — Testes e revisão (Ficha PL 04):** plano de testes ([`docs/test-plan.md`](docs/test-plan.md)), testes unitários da validação (com a correção da contagem de caracteres) e teste de integração com gravação real; seguem-se o teste E2E e o Code Review e Security Review.
 - ⏭️ **Depois:** os extras do MVP original, começando pelo quadro Kanban e pelo arquivo de projetos.
