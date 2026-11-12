@@ -1,6 +1,8 @@
 # Integração contínua da Matriz (Ficha 05, Ex. 4).
-# Corre em cada pull request e em cada push para o main: testes e build do backend e do frontend, teste E2E e,
-# só se tudo passar, a construção das imagens Docker com um arranque de verificação. Não publica nada.
+# Corre em cada pull request e em cada push para o main: testes e build do backend e do frontend, teste E2E,
+# análise de segurança (Trivy) e de qualidade (SonarQube Cloud) e, só se as verificações passarem, a construção
+# das imagens Docker, a análise das imagens e um arranque de verificação. Não publica nada.
+# As actions estão fixadas por commit (SHA), com a versão em comentário, para não mudarem sem revisão.
 name: CI
 
 on:
@@ -27,8 +29,8 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-java@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:
           distribution: temurin
           java-version: '21'
@@ -45,8 +47,8 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22'
           cache: npm
@@ -61,13 +63,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-java@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:
           distribution: temurin
           java-version: '21'
           cache: maven
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22'
           cache: npm
@@ -93,20 +95,69 @@ jobs:
         run: npx playwright test
       - name: Guardar o relatório do Playwright (só se falhar)
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: relatorio-playwright
           path: e2e/playwright-report/
           retention-days: 7
 
+  seguranca:
+    name: Segurança (Trivy no repositório)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Dependências (pom.xml, package-lock.json), configuração (Dockerfiles, compose) e segredos versionados.
+      # Falha com vulnerabilidades HIGH ou CRITICAL que já tenham correção; exceções justificadas em .trivyignore.
+      - name: Trivy (dependências, configuração e segredos)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,misconfig,secret
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+          exit-code: '1'
+
+  qualidade:
+    name: Qualidade (SonarQube Cloud)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Sem o secret SONAR_TOKEN (fork ou projeto ainda não criado) a análise é saltada e o job passa
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Histórico completo: o SonarQube usa-o para saber o que é código novo
+          fetch-depth: 0
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        if: env.SONAR_TOKEN != ''
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      # O analisador de Java precisa das classes compiladas (sonar.java.binaries)
+      - name: Compilar o backend
+        if: env.SONAR_TOKEN != ''
+        working-directory: backend
+        run: ./mvnw -B -q test-compile
+      - name: Análise SonarQube Cloud (configuração em sonar-project.properties)
+        if: env.SONAR_TOKEN != ''
+        uses: SonarSource/sonarqube-scan-action@e805d875275f728fac1885b413934be6d7c63f65 # v8.4.1
+      - name: Aviso quando não há token
+        if: env.SONAR_TOKEN == ''
+        run: echo "::notice::SONAR_TOKEN não definido; a análise SonarQube foi saltada."
+
   docker:
     name: Imagens Docker (build e arranque)
     # Só avança depois de todas as verificações
-    needs: [backend, frontend, e2e]
+    needs: [backend, frontend, e2e, seguranca]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Preparar o .env (valores gerados na hora)
         run: |
           cp .env.example .env
@@ -119,6 +170,23 @@ jobs:
         run: docker compose config -q
       - name: Construir as imagens
         run: docker compose build
+      # As imagens finais: pacotes do sistema (Alpine), JRE e JAR do backend, nginx do frontend
+      - name: Trivy na imagem do backend
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: matriz-backend:local
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+          exit-code: '1'
+      - name: Trivy na imagem do frontend
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: matriz-frontend:local
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+          exit-code: '1'
       - name: Arrancar a aplicação e esperar pelos healthchecks
         run: |
           docker compose up -d --wait --wait-timeout 180
