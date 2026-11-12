@@ -19,6 +19,6 @@ try {
   psql(`CREATE DATABASE ${BD_E2E}`)
   console.log(`[e2e] Base de dados ${BD_E2E} criada de novo.`)
 } catch {
-  console.error(`[e2e] Não consegui preparar a base de dados ${BD_E2E}. O PostgreSQL está a correr? (docker compose up -d na raiz)`)
+  console.error(`[e2e] Não consegui preparar a base de dados ${BD_E2E}. O PostgreSQL está a correr? (docker compose up -d postgres na raiz)`)
   process.exit(1)
 }
