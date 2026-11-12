@@ -1,0 +1,10 @@
+# Só entram no contexto do build o Maven Wrapper, o pom.xml e o código-fonte
+target/
+.idea/
+*.iml
+.vscode/
+.env
+.env.*
+*.log
+Dockerfile
+.dockerignore

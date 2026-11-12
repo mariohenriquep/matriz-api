@@ -1,0 +1,11 @@
+# O contexto do build leva só o código e os ficheiros de configuração do Vite
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.vite/
+.env
+.env.*
+npm-debug.log*
+Dockerfile
+.dockerignore
