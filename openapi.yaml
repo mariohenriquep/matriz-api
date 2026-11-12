@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Matriz API
-  version: 0.3.1
+  version: 0.4.0
   summary: Contrato REST do MVP da Matriz (Ficha 03).
   description: |
     Contrato completo para o âmbito da Ficha 03: autenticação, projetos e membros, tarefas,
