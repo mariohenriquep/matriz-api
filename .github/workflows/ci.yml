@@ -124,31 +124,37 @@ jobs:
     name: Qualidade (SonarQube Cloud)
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      # Sem o secret SONAR_TOKEN (fork ou projeto ainda não criado) a análise é saltada e o job passa
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
+      # O token só chega aos passos que precisam dele: este, que só verifica se existe,
+      # e o da análise. Sem o secret (fork ou projeto ainda não criado) a análise é saltada e o job passa.
+      - name: Verificar se o SONAR_TOKEN existe
+        id: token
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ -n "$SONAR_TOKEN" ]; then echo "existe=sim" >> "$GITHUB_OUTPUT"
+          else echo "::notice::SONAR_TOKEN não definido; a análise SonarQube foi saltada."; fi
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.token.outputs.existe == 'sim'
         with:
           # Histórico completo: o SonarQube usa-o para saber o que é código novo
           fetch-depth: 0
       - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
-        if: env.SONAR_TOKEN != ''
+        if: steps.token.outputs.existe == 'sim'
         with:
           distribution: temurin
           java-version: '21'
           cache: maven
       # O analisador de Java precisa das classes compiladas (sonar.java.binaries)
       - name: Compilar o backend
-        if: env.SONAR_TOKEN != ''
+        if: steps.token.outputs.existe == 'sim'
         working-directory: backend
         run: ./mvnw -B -q test-compile
       - name: Análise SonarQube Cloud (configuração em sonar-project.properties)
-        if: env.SONAR_TOKEN != ''
+        if: steps.token.outputs.existe == 'sim'
         uses: SonarSource/sonarqube-scan-action@e805d875275f728fac1885b413934be6d7c63f65 # v8.4.1
-      - name: Aviso quando não há token
-        if: env.SONAR_TOKEN == ''
-        run: echo "::notice::SONAR_TOKEN não definido; a análise SonarQube foi saltada."
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   docker:
     name: Imagens Docker (build e arranque)
