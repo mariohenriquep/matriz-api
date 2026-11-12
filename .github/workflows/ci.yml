@@ -1,0 +1,135 @@
+# Integração contínua da Matriz (Ficha 05, Ex. 4).
+# Corre em cada pull request e em cada push para o main: testes e build do backend e do frontend, teste E2E e,
+# só se tudo passar, a construção das imagens Docker com um arranque de verificação. Não publica nada.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Permissões mínimas: o workflow só lê o código
+permissions:
+  contents: read
+
+# Um novo push no mesmo ramo cancela a execução anterior
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (testes e build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      # Unitários, ArquiteturaTest e integração com PostgreSQL 16 real (Testcontainers usa o Docker do runner)
+      - name: Testes e empacotamento
+        run: ./mvnw -B verify
+
+  frontend:
+    name: Frontend (lint, testes e build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            e2e/package-lock.json
+      # .env só desta execução, a partir do .env.example, com uma password gerada na hora (nunca é guardada).
+      # O segredo JWT do E2E é gerado pelo próprio playwright.config.ts.
+      - name: Preparar o .env e o PostgreSQL
+        run: |
+          cp .env.example .env
+          PASSWORD="$(openssl rand -hex 16)"
+          echo "::add-mask::$PASSWORD"
+          sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$PASSWORD|" .env
+          docker compose up -d --wait postgres
+      - name: Instalar dependências
+        run: |
+          npm ci --prefix frontend
+          npm ci --prefix e2e
+          cd e2e && npx playwright install --with-deps chromium
+      - name: Teste E2E
+        working-directory: e2e
+        run: npx playwright test
+      - name: Guardar o relatório do Playwright (só se falhar)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-playwright
+          path: e2e/playwright-report/
+          retention-days: 7
+
+  docker:
+    name: Imagens Docker (build e arranque)
+    # Só avança depois de todas as verificações
+    needs: [backend, frontend, e2e]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - name: Preparar o .env (valores gerados na hora)
+        run: |
+          cp .env.example .env
+          PASSWORD="$(openssl rand -hex 16)"
+          SEGREDO="$(openssl rand -base64 48)"
+          echo "::add-mask::$PASSWORD"
+          echo "::add-mask::$SEGREDO"
+          sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$PASSWORD|; s|^MATRIZ_JWT_SEGREDO=.*|MATRIZ_JWT_SEGREDO=$SEGREDO|" .env
+      - name: Validar o compose.yaml
+        run: docker compose config -q
+      - name: Construir as imagens
+        run: docker compose build
+      - name: Arrancar a aplicação e esperar pelos healthchecks
+        run: |
+          docker compose up -d --wait --wait-timeout 180
+          docker compose ps
+      - name: Verificar o backend e o frontend
+        run: |
+          curl -fsS http://localhost:8080/actuator/health | grep -q '"status":"UP"'
+          curl -fsS http://localhost:8000/ | grep -q '<title>Matriz</title>'
+      - name: Logs dos serviços
+        if: always()
+        run: docker compose logs --tail=50
+      - name: Parar a aplicação
+        if: always()
+        run: docker compose down -v
