@@ -1,0 +1,209 @@
+# Integração contínua da Matriz (Ficha 05, Ex. 4).
+# Corre em cada pull request e em cada push para o main: testes e build do backend e do frontend, teste E2E,
+# análise de segurança (Trivy) e de qualidade (SonarQube Cloud) e, só se as verificações passarem, a construção
+# das imagens Docker, a análise das imagens e um arranque de verificação. Não publica nada.
+# As actions estão fixadas por commit (SHA), com a versão em comentário, para não mudarem sem revisão.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Permissões mínimas: o workflow só lê o código
+permissions:
+  contents: read
+
+# Um novo push no mesmo ramo cancela a execução anterior
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (testes e build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      # Unitários, ArquiteturaTest e integração com PostgreSQL 16 real (Testcontainers usa o Docker do runner)
+      - name: Testes e empacotamento
+        run: ./mvnw -B verify
+
+  frontend:
+    name: Frontend (lint, testes e build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            e2e/package-lock.json
+      # .env só desta execução, a partir do .env.example, com uma password gerada na hora (nunca é guardada).
+      # O segredo JWT do E2E é gerado pelo próprio playwright.config.ts.
+      - name: Preparar o .env e o PostgreSQL
+        run: |
+          cp .env.example .env
+          PASSWORD="$(openssl rand -hex 16)"
+          echo "::add-mask::$PASSWORD"
+          sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$PASSWORD|" .env
+          docker compose up -d --wait postgres
+      - name: Instalar dependências
+        run: |
+          npm ci --prefix frontend
+          npm ci --prefix e2e
+          cd e2e && npx playwright install --with-deps chromium
+      - name: Teste E2E
+        working-directory: e2e
+        run: npx playwright test
+      - name: Guardar o relatório do Playwright (só se falhar)
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: relatorio-playwright
+          path: e2e/playwright-report/
+          retention-days: 7
+
+  seguranca:
+    name: Segurança (Trivy no repositório)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Dependências (pom.xml, package-lock.json), configuração (Dockerfiles, compose) e segredos versionados.
+      # Falha com vulnerabilidades HIGH ou CRITICAL que já tenham correção; exceções justificadas em .trivyignore.
+      - name: Trivy (dependências, configuração e segredos)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,misconfig,secret
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+          exit-code: '1'
+
+  qualidade:
+    name: Qualidade (SonarQube Cloud)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # O token só chega aos passos que precisam dele: este, que só verifica se existe,
+      # e o da análise. Sem o secret (fork ou projeto ainda não criado) a análise é saltada e o job passa.
+      - name: Verificar se o SONAR_TOKEN existe
+        id: token
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ -n "$SONAR_TOKEN" ]; then echo "existe=sim" >> "$GITHUB_OUTPUT"
+          else echo "::notice::SONAR_TOKEN não definido; a análise SonarQube foi saltada."; fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.token.outputs.existe == 'sim'
+        with:
+          # Histórico completo: o SonarQube usa-o para saber o que é código novo
+          fetch-depth: 0
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        if: steps.token.outputs.existe == 'sim'
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      # O analisador de Java precisa das classes compiladas (sonar.java.binaries)
+      - name: Compilar o backend
+        if: steps.token.outputs.existe == 'sim'
+        working-directory: backend
+        run: ./mvnw -B -q test-compile
+      - name: Análise SonarQube Cloud (configuração em sonar-project.properties)
+        if: steps.token.outputs.existe == 'sim'
+        uses: SonarSource/sonarqube-scan-action@e805d875275f728fac1885b413934be6d7c63f65 # v8.4.1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  docker:
+    name: Imagens Docker (build e arranque)
+    # Só avança depois de todas as verificações
+    needs: [backend, frontend, e2e, seguranca]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Preparar o .env (valores gerados na hora)
+        run: |
+          cp .env.example .env
+          PASSWORD="$(openssl rand -hex 16)"
+          SEGREDO="$(openssl rand -base64 48)"
+          echo "::add-mask::$PASSWORD"
+          echo "::add-mask::$SEGREDO"
+          sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$PASSWORD|; s|^MATRIZ_JWT_SEGREDO=.*|MATRIZ_JWT_SEGREDO=$SEGREDO|" .env
+      - name: Validar o compose.yaml
+        run: docker compose config -q
+      - name: Construir as imagens
+        run: docker compose build
+      # As imagens finais: pacotes do sistema (Alpine), JRE e JAR do backend, nginx do frontend
+      - name: Trivy na imagem do backend
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: matriz-backend:local
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+          exit-code: '1'
+      - name: Trivy na imagem do frontend
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: matriz-frontend:local
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+          exit-code: '1'
+      - name: Arrancar a aplicação e esperar pelos healthchecks
+        run: |
+          docker compose up -d --wait --wait-timeout 180
+          docker compose ps
+      - name: Verificar o backend e o frontend
+        run: |
+          curl -fsS http://localhost:8080/actuator/health | grep -q '"status":"UP"'
+          curl -fsS http://localhost:8000/ | grep -q '<title>Matriz</title>'
+      - name: Logs dos serviços
+        if: always()
+        run: docker compose logs --tail=50
+      - name: Parar a aplicação
+        if: always()
+        run: docker compose down -v

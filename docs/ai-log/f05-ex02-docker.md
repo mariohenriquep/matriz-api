@@ -27,7 +27,7 @@ Dockerfile e .dockerignore para backend/ e frontend/; construir, executar e vali
 |----------|-----------|
 | `backend/Dockerfile` | Build com `eclipse-temurin:21-jdk-alpine` e `./mvnw` (camada própria para as dependências); execução em `eclipse-temurin:21-jre-alpine` como utilizador `matriz`; healthcheck em `/actuator/health`. |
 | `backend/.dockerignore` | Deixa de fora `target/`, IDE e `.env`. |
-| `frontend/Dockerfile` | Build com `node:22-alpine` e `npm ci`; `VITE_API_URL` como build arg; execução em `nginxinc/nginx-unprivileged:1.29-alpine` (utilizador `nginx`, porta 8080). |
+| `frontend/Dockerfile` | Build com `node:22-alpine` e `npm ci`; `VITE_API_URL` como build arg; execução em `nginxinc/nginx-unprivileged:1.30-alpine` (utilizador `nginx`, porta 8080). |
 | `frontend/nginx.conf` | Fallback para `index.html` (rotas do React Router), cache longa para `/assets/`, cabeçalhos `nosniff`, `DENY` e `Referrer-Policy`. |
 | `frontend/.dockerignore` | Deixa de fora `node_modules/`, `dist/` e `.env`. |
 
