@@ -69,14 +69,15 @@ Todos a partir da raiz do repositório. A configuração vem do `.env` (copiado 
 
 | Para… | Comando |
 |-------|---------|
-| Arrancar a base de dados (PostgreSQL 16, porta 5433) | `docker compose up -d` |
+| Arrancar a base de dados (PostgreSQL 16, porta 5433) | `docker compose up -d postgres` |
 | Apagar os dados e recomeçar | `docker compose down -v` |
+| Arrancar a aplicação completa em Docker (frontend em http://localhost:8000) | `docker compose up -d --build` |
 | Arrancar o backend (cria o esquema com Flyway e, na primeira vez, o seed) | `cd backend && ./mvnw spring-boot:run` |
 | Confirmar que o backend está de pé | `curl http://localhost:8080/actuator/health` |
 | Arrancar o frontend (http://localhost:5173) | `cd frontend && npm install && npm run dev` |
 | Testes do backend (precisam do Docker) | `cd backend && ./mvnw test` |
 | Testes, build e lint do frontend | `cd frontend && npm test && npm run build && npm run lint` |
-| Teste E2E (precisa de `docker compose up -d`) | `cd e2e && npx playwright test` |
+| Teste E2E (precisa de `docker compose up -d postgres`) | `cd e2e && npx playwright test` |
 | Verificar a API contra o contrato (backend a correr) | `MATRIZ_SEED_PASSWORD=<do .env> python3 scripts/verificar-contrato.py` |
 
 Contas de demonstração: `ana@`, `rui@` e `joana@matriz.local`, com a password `MATRIZ_SEED_PASSWORD` do `.env` (papéis no `README.md`).

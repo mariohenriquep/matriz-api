@@ -81,7 +81,7 @@ Resumo, a partir de uma cópia limpa (cada passo está explicado abaixo):
 
 ```bash
 cp .env.example .env              # e editar: POSTGRES_PASSWORD e MATRIZ_JWT_SEGREDO
-docker compose up -d
+docker compose up -d postgres     # só a base de dados (tudo em Docker: ver "Executar com Docker Compose")
 cd backend && ./mvnw spring-boot:run          # num terminal
 cd frontend && npm install && npm run dev     # noutro terminal; abrir http://localhost:5173
 ```
@@ -102,7 +102,7 @@ O `.env` não entra no Git; o `.env.example` só tem valores fictícios. O backe
 ### 2. Base de dados
 
 ```bash
-docker compose up -d          # PostgreSQL em localhost:5433 (porta em POSTGRES_PORTA)
+docker compose up -d postgres # PostgreSQL em localhost:5433 (porta em POSTGRES_PORTA)
 docker compose ps             # deve mostrar "healthy"
 ```
 
@@ -146,6 +146,17 @@ npm run dev                   # http://localhost:5173
 
 O frontend chama a API em `http://localhost:8080/api/v1`. Para outro endereço, copia `frontend/.env.example` para `frontend/.env` e altera `VITE_API_URL`. O backend só aceita pedidos do browser vindos das origens em `MATRIZ_CORS_ORIGENS` (por defeito `http://localhost:5173`); por isso o Vite usa sempre a porta 5173 e recusa arrancar se estiver ocupada.
 
+### Executar com Docker Compose
+
+Em alternativa aos passos 2, 3 e 5, a aplicação completa (PostgreSQL, backend e frontend) corre em containers. Só precisa do Docker e do `.env` do passo 1.
+
+```bash
+docker compose up -d --build   # constrói as imagens e arranca os três serviços
+docker compose ps              # os três devem ficar "healthy"
+```
+
+Abre http://localhost:8000 (porta em `MATRIZ_FRONTEND_PORTA`); a API fica em http://localhost:8080. O backend só arranca depois de a base de dados estar saudável, e o frontend depois do backend. Os dados ficam no volume `matriz-dados` e mantêm-se com `docker compose down`; `docker compose down -v` apaga-os. O frontend chama a API no endereço `VITE_API_URL`, fixado na build da imagem, e a origem `http://localhost:8000` tem de estar em `MATRIZ_CORS_ORIGENS`.
+
 ### Sessão e autenticação
 
 1. O login (`POST /api/v1/auth/login`) devolve um token JWT, válido durante **8 horas a partir do login**, com ou sem atividade.
@@ -174,7 +185,7 @@ cd backend && ./mvnw test -Dtest=CriarEConsultarTarefaTest   # integração: cri
 cd frontend && npm test       # testes de componentes e do cliente da API (Vitest + Testing Library, sem backend)
 cd e2e && npm install && npx playwright install chromium   # só da primeira vez
 cd e2e && npx playwright test # E2E: arranca backend (8081) e frontend (5174) sobre a BD matriz_e2e, criada de novo;
-                              # precisa do PostgreSQL do docker compose ligado (docker compose up -d)
+                              # precisa do PostgreSQL do docker compose ligado (docker compose up -d postgres)
 cd frontend && npm run build && npm run lint
 ```
 

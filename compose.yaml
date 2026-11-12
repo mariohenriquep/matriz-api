@@ -1,0 +1,83 @@
+# Aplicação Matriz com Docker Compose (Ficha 05, Ex. 3). Lê a configuração do ficheiro .env (copiado de .env.example).
+#   Aplicação completa: docker compose up -d --build  (frontend em http://localhost:8000)
+#   Só a base de dados, para desenvolver com o backend e o frontend fora do Docker: docker compose up -d postgres
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: matriz-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-matriz}
+      POSTGRES_USER: ${POSTGRES_USER:-matriz}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD no .env}
+    ports:
+      # Aberta no host para o desenvolvimento local e para os testes E2E
+      - "${POSTGRES_PORTA:-5433}:5432"
+    volumes:
+      - matriz-dados:/var/lib/postgresql/data
+    networks:
+      - matriz
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    image: matriz-backend:local
+    container_name: matriz-backend
+    environment:
+      # Dentro da rede do Compose a base de dados chama-se "postgres" e usa a porta interna 5432
+      MATRIZ_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-matriz}
+      POSTGRES_USER: ${POSTGRES_USER:-matriz}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Sem segredo o backend recusa-se a arrancar (validado no arranque)
+      MATRIZ_JWT_SEGREDO: ${MATRIZ_JWT_SEGREDO}
+      MATRIZ_CORS_ORIGENS: ${MATRIZ_CORS_ORIGENS:-http://localhost:8000}
+      MATRIZ_FUSO_HORARIO: ${MATRIZ_FUSO_HORARIO:-Europe/Lisbon}
+      MATRIZ_SEED_ATIVO: ${MATRIZ_SEED_ATIVO:-false}
+      MATRIZ_SEED_PASSWORD: ${MATRIZ_SEED_PASSWORD:-}
+    ports:
+      - "${MATRIZ_PORTA:-8080}:8080"
+    networks:
+      - matriz
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP"]
+      interval: 10s
+      timeout: 3s
+      start_period: 60s
+      retries: 5
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # O browser chama a API neste endereço (fica fixado na imagem durante a build)
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080/api/v1}
+    image: matriz-frontend:local
+    container_name: matriz-frontend
+    ports:
+      - "${MATRIZ_FRONTEND_PORTA:-8000}:8080"
+    networks:
+      - matriz
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/ > /dev/null"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+
+networks:
+  matriz:
+
+volumes:
+  # Os dados ficam neste volume e sobrevivem a "docker compose down" (só "down -v" os apaga)
+  matriz-dados:
