@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { iniciarSessao, obterUtilizadorAutenticado, terminarSessao, type Utilizador } from '../api/autenticacao'
+import { iniciarSessao, obterUtilizadorAutenticado, terminarSessao, type Conta } from '../api/autenticacao'
 import { ContextoSessao } from './contexto'
 import { EVENTO_SESSAO_TERMINADA, guardarSessao, lerSessao, limparSessao } from './sessao'
 
 const AVISO_SESSAO_TERMINADA = 'A tua sessão terminou. Inicia sessão novamente.'
 
 export function ProvedorSessao({ children }: { children: ReactNode }) {
-  const [utilizador, setUtilizador] = useState<Utilizador | null>(() => lerSessao()?.utilizador ?? null)
+  const [utilizador, setUtilizador] = useState<Conta | null>(() => lerSessao()?.utilizador ?? null)
   const [aviso, setAviso] = useState<string | null>(null)
 
   useEffect(() => {
@@ -19,9 +19,18 @@ export function ProvedorSessao({ children }: { children: ReactNode }) {
   }, [])
 
   // Ao abrir a aplicação com uma sessão guardada, confirma no backend que o token continua válido
-  // (pode ter sido feito logout noutro separador). Um 401 dispara o evento acima.
+  // (pode ter sido feito logout noutro separador) e atualiza os dados da conta (ex.: o plano mudou).
+  // Um 401 dispara o evento acima.
   useEffect(() => {
-    if (lerSessao()) obterUtilizadorAutenticado().catch(() => {})
+    if (!lerSessao()) return
+    obterUtilizadorAutenticado()
+      .then((conta) => {
+        const sessao = lerSessao()
+        if (!sessao) return
+        guardarSessao({ ...sessao, utilizador: conta })
+        setUtilizador(conta)
+      })
+      .catch(() => {})
   }, [])
 
   const entrar = useCallback(async (email: string, password: string) => {

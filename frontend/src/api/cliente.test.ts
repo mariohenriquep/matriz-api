@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { EVENTO_SESSAO_TERMINADA, guardarSessao, lerSessao } from '../auth/sessao'
-import { ana } from '../testes/dados'
+import { contaAna } from '../testes/dados'
 import { ErroApi, pedido } from './cliente'
 
 function responder(estado: number, corpo?: unknown) {
@@ -16,7 +16,7 @@ function responder(estado: number, corpo?: unknown) {
 }
 
 function iniciarSessaoFicticia() {
-  guardarSessao({ token: 'token-ficticio', expiraEm: new Date(Date.now() + 3_600_000).toISOString(), utilizador: ana })
+  guardarSessao({ token: 'token-ficticio', expiraEm: new Date(Date.now() + 3_600_000).toISOString(), utilizador: contaAna })
 }
 
 afterEach(() => {

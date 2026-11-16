@@ -15,7 +15,11 @@ import org.testcontainers.containers.PostgreSQLContainer;
 @SpringBootTest(properties = {
         "matriz.seed.ativo=true",
         "matriz.seed.password=" + TesteIntegracao.PASSWORD_DEMO,
-        "matriz.jwt.segredo=" + TesteIntegracao.SEGREDO_JWT
+        "matriz.jwt.segredo=" + TesteIntegracao.SEGREDO_JWT,
+        // Os testes fazem muitos logins do mesmo IP: os limites testam-se em LimitesPedidosTest
+        "matriz.limites.login.pedidos=100000",
+        "matriz.limites.registo.pedidos=100000",
+        "matriz.limites.registo.total=100000"
 })
 @AutoConfigureMockMvc
 @Import(TesteIntegracao.BaseDeDados.class)

@@ -48,6 +48,19 @@ matriz:
   cors:
     # Origens do frontend autorizadas a chamar a API, separadas por vírgulas
     origens: ${MATRIZ_CORS_ORIGENS:http://localhost:5173}
+  limites:
+    # Pedidos permitidos por IP às rotas públicas de autenticação (versão 0.8.0). Acima disto: 429.
+    login:
+      pedidos: ${MATRIZ_LIMITE_LOGIN:10}
+      janela: PT1M
+    registo:
+      pedidos: ${MATRIZ_LIMITE_REGISTO:5}
+      janela: PT1H
+      # Registos no total (todos os IPs) por janela, contra a criação de contas em massa
+      total: ${MATRIZ_LIMITE_REGISTO_TOTAL:50}
+    # Proxies à frente do backend que acrescentam o IP ao X-Forwarded-For. 0 = ligação direta (desenvolvimento,
+    # Docker Compose). No Render são 2 (Cloudflare e o balanceador do Render): ver render.yaml.
+    proxies-confiaveis: ${MATRIZ_PROXIES_CONFIAVEIS:0}
   seed:
     # Cria as contas e os projetos de demonstração se a base de dados não tiver utilizadores.
     # Desligado por omissão: só cria as contas de demonstração se MATRIZ_SEED_ATIVO=true (o .env.example liga-o

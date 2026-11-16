@@ -1,10 +1,19 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 import { ProvedorSessao } from './auth/ProvedorSessao'
 import { RotaProtegida } from './auth/RotaProtegida'
+import { useSessao } from './auth/useSessao'
+import { Apresentacao } from './paginas/Apresentacao'
 import { Inicio } from './paginas/Inicio'
 import { Login } from './paginas/Login'
+import { Registo } from './paginas/Registo'
 import { ProjetoDetalhe } from './paginas/ProjetoDetalhe'
 import { TarefaDetalhe } from './paginas/TarefaDetalhe'
+
+/** Em "/": o painel para quem tem sessão; a apresentação pública para os visitantes. */
+function PaginaInicial() {
+  const { utilizador } = useSessao()
+  return utilizador ? <Inicio /> : <Apresentacao />
+}
 
 function App() {
   return (
@@ -12,14 +21,8 @@ function App() {
       <ProvedorSessao>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route
-            path="/"
-            element={
-              <RotaProtegida>
-                <Inicio />
-              </RotaProtegida>
-            }
-          />
+          <Route path="/registo" element={<Registo />} />
+          <Route path="/" element={<PaginaInicial />} />
           <Route
             path="/projetos/:projetoId"
             element={

@@ -11,7 +11,7 @@ test('a Ana entra, abre o Website institucional, cria uma tarefa e vê-a na list
   const titulo = `Rever logótipo E2E ${Date.now()}`
 
   // 1. Autenticar
-  await page.goto('/')
+  await page.goto('/login')
   await page.getByLabel('Email').fill('ana@matriz.local')
   await page.getByLabel('Password').fill(PASSWORD_DEMO)
   await page.getByRole('button', { name: 'Entrar' }).click()

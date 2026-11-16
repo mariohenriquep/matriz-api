@@ -83,9 +83,10 @@ public class DadosDemonstracao implements ApplicationRunner {
         log.info("Seed criado: 3 utilizadores, 3 projetos e 6 tarefas de demonstração.");
     }
 
+    /** As contas de demonstração podem criar projetos (plano profissional). */
     private long criarUtilizador(String nome, String email, String hash) {
         return jdbc.queryForObject(
-                "INSERT INTO utilizador (nome, email, password_hash) VALUES (?, ?, ?) RETURNING id",
+                "INSERT INTO utilizador (nome, email, password_hash, plano) VALUES (?, ?, ?, 'PROFISSIONAL') RETURNING id",
                 Long.class, nome, email, hash);
     }
 

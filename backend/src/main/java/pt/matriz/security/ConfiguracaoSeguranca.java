@@ -1,12 +1,15 @@
 package pt.matriz.security;
 
 import java.io.IOException;
+import java.time.Clock;
+import java.time.Duration;
 import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -27,6 +30,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -39,15 +43,18 @@ import pt.matriz.repositories.UtilizadorRepositorio;
  * <ul>
  *   <li>Sem sessão no servidor nem cookies: cada pedido traz {@code Authorization: Bearer <token>}.
  *       Por isso a proteção CSRF não se aplica e fica desligada.</li>
- *   <li>Só {@code POST /api/v1/auth/login} e {@code /actuator/health} são públicos.</li>
+ *   <li>Só {@code POST /api/v1/auth/login}, {@code POST /api/v1/auth/registo} e {@code /actuator/health} são
+ *       públicos.</li>
  *   <li>CORS só para as origens de {@code MATRIZ_CORS_ORIGENS}.</li>
+ *   <li>O login e o registo têm limites de pedidos por IP ({@link FiltroLimitePedidos}, versão 0.8.0).</li>
  * </ul>
  */
 @Configuration
 public class ConfiguracaoSeguranca {
 
     @Bean
-    SecurityFilterChain seguranca(HttpSecurity http, ObjectMapper json) throws Exception {
+    SecurityFilterChain seguranca(HttpSecurity http, ObjectMapper json, FiltroLimitePedidos limites)
+            throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> { }) // usa o bean corsConfigurationSource
@@ -56,7 +63,7 @@ public class ConfiguracaoSeguranca {
                 .formLogin(form -> form.disable())
                 .logout(logout -> logout.disable())
                 .authorizeHttpRequests(pedidos -> pedidos
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/registo").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())
@@ -64,8 +71,34 @@ public class ConfiguracaoSeguranca {
                         .jwt(jwt -> { })
                         .authenticationEntryPoint((pedido, resposta, erro) -> naoAutenticado(pedido, resposta, json)))
                 .exceptionHandling(erros -> erros
-                        .authenticationEntryPoint((pedido, resposta, erro) -> naoAutenticado(pedido, resposta, json)));
+                        .authenticationEntryPoint((pedido, resposta, erro) -> naoAutenticado(pedido, resposta, json)))
+                .addFilterAfter(limites, CorsFilter.class);
         return http.build();
+    }
+
+    /** Limites do login e do registo (valores em {@code matriz.limites} do application.yml). */
+    @Bean
+    FiltroLimitePedidos filtroLimitePedidos(ObjectMapper json, Clock relogio,
+            @Value("${matriz.limites.login.pedidos}") int loginPedidos,
+            @Value("${matriz.limites.login.janela}") Duration loginJanela,
+            @Value("${matriz.limites.registo.pedidos}") int registoPedidos,
+            @Value("${matriz.limites.registo.janela}") Duration registoJanela,
+            @Value("${matriz.limites.registo.total}") int registoTotal,
+            @Value("${matriz.limites.proxies-confiaveis}") int proxies) {
+        int chaves = 50_000;
+        return new FiltroLimitePedidos(
+                new LimitadorPedidos(loginPedidos, loginJanela, chaves, relogio),
+                new LimitadorPedidos(registoPedidos, registoJanela, chaves, relogio),
+                new LimitadorPedidos(registoTotal, registoJanela, 1, relogio),
+                new EnderecoCliente(proxies), json);
+    }
+
+    /** Impede o Spring Boot de registar o filtro também no servidor (correria duas vezes e antes do CORS). */
+    @Bean
+    FilterRegistrationBean<FiltroLimitePedidos> filtroLimitePedidosForaDoServidor(FiltroLimitePedidos filtro) {
+        FilterRegistrationBean<FiltroLimitePedidos> registo = new FilterRegistrationBean<>(filtro);
+        registo.setEnabled(false);
+        return registo;
     }
 
     @Bean

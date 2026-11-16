@@ -2,6 +2,7 @@ package pt.matriz.mappers;
 
 import pt.matriz.domain.SessaoIniciada;
 import pt.matriz.domain.Utilizador;
+import pt.matriz.dtos.ContaResposta;
 import pt.matriz.dtos.SessaoResposta;
 import pt.matriz.dtos.UtilizadorResposta;
 
@@ -15,8 +16,14 @@ public final class UtilizadorMapper {
         return new UtilizadorResposta(String.valueOf(utilizador.getId()), utilizador.getNome(), utilizador.getEmail());
     }
 
+    /** O utilizador autenticado, com o plano (só para o próprio). */
+    public static ContaResposta paraConta(Utilizador utilizador) {
+        return new ContaResposta(String.valueOf(utilizador.getId()), utilizador.getNome(), utilizador.getEmail(),
+                utilizador.getPlano().name(), utilizador.getPlano().podeCriarProjetos());
+    }
+
     public static SessaoResposta paraResposta(SessaoIniciada sessao) {
         return new SessaoResposta(sessao.token().token(), sessao.token().expiraEm(),
-                paraResposta(sessao.utilizador()));
+                paraConta(sessao.utilizador()));
     }
 }

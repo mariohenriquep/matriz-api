@@ -37,7 +37,7 @@ Prioridade MoSCoW. A coluna "US" liga cada requisito ao backlog em `docs/user-st
 
 | ID | Requisito | Prioridade | Justificação | US |
 |----|-----------|-----------|--------------|----|
-| RF-01 | Iniciar e terminar sessão e consultar o utilizador autenticado. Na Ficha 03 usam-se contas de demonstração criadas por seed; o registo público fica como extra (C-06). | M | Sem identidade não há controlo de acesso nem atribuição. | US-01 |
+| RF-01 | Iniciar e terminar sessão e consultar o utilizador autenticado. Na Ficha 03 usam-se contas de demonstração criadas por seed. **Registo público implementado na 0.8.0:** a conta nova fica no plano gratuito (não cria projetos, entra só nos projetos para que um Gestor a adiciona); a resposta não revela se o email já existia; limites de pedidos por IP no login e no registo. | M | Sem identidade não há controlo de acesso nem atribuição. | US-01 |
 | RF-02 | O primeiro administrador global é criado na instalação, por configuração, e não pelo primeiro registo. | M | Garante que existe um administrador sem permitir que um estranho o seja primeiro (Ex. 6, R-12). ✅ P-20 | US-01 |
 | RF-03 | Criar projeto (nome obrigatório, descrição opcional); o criador fica Gestor. | M | OBJ-1. | US-02 |
 | RF-04 | Editar nome e descrição do projeto (Gestor ou administrador). | M | Os projetos evoluem. | US-02 |
@@ -80,7 +80,7 @@ Prioridade MoSCoW. A coluna "US" liga cada requisito ao backlog em `docs/user-st
 O MVP inclui **RF-01 a RF-19** e permite este fluxo de ponta a ponta:
 
 1. Na instalação, é criado o primeiro administrador global.
-2. Outros utilizadores registam-se; qualquer um cria projetos e fica Gestor.
+2. Outros utilizadores registam-se; quem tem o plano Profissional cria projetos e fica Gestor (na 0.8.0, as contas do registo público ficam no plano gratuito e não criam projetos).
 3. O Gestor adiciona colegas ao projeto, que recebem uma notificação.
 4. Os membros criam tarefas, atribuem responsáveis e mudam estados, na lista ou no quadro Kanban.
 5. Todos os membros veem o progresso do projeto; o administrador vê todos os projetos.

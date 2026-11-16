@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Matriz API
-  version: 0.7.1
+  version: 0.8.0
   summary: Contrato REST do MVP da Matriz (Ficha 03).
   description: |
     Contrato completo para o âmbito da Ficha 03: autenticação, projetos e membros, tarefas,
@@ -18,6 +18,10 @@ info:
     4. `POST /auth/logout` invalida todos os tokens já emitidos para o utilizador (o servidor guarda
        uma versão de token por utilizador e incrementa-a).
     5. Token em falta, adulterado, expirado ou anterior a um logout dá `401`.
+
+    **Registo público (0.8.0):** `POST /auth/registo` cria uma conta com o plano `GRATUITO`, que não cria
+    projetos e só vê os projetos para que um Gestor a adiciona. A resposta é sempre a mesma, exista ou não
+    uma conta com o email. O login e o registo têm limites de pedidos por IP (`429` com `Retry-After`).
 
     O utilizador é sempre obtido do token: a API nunca aceita do cliente o Gestor de um projeto, o
     criador de uma tarefa nem o autor de um comentário.
@@ -65,6 +69,71 @@ tags:
   - name: Comentários
 
 paths:
+  /auth/registo:
+    post:
+      tags: [Autenticação]
+      operationId: registar
+      summary: Criar conta (registo público)
+      description: |
+        Cria uma conta com o plano `GRATUITO` (não cria projetos; entra nos projetos para que um Gestor a
+        adiciona). O email fica guardado em minúsculas e é único sem distinguir maiúsculas (CE-08).
+
+        **Não revela se o email já tem conta:** com dados válidos a resposta é sempre `202` com a mesma
+        mensagem, e o tempo de resposta também é o mesmo. Se o email já existir, nada muda. O campo `site`
+        é uma armadilha para robôs (o formulário esconde-o das pessoas): se vier preenchido, nada é criado e a
+        resposta é a mesma.
+
+        Regras da password: 8 a 64 caracteres (no máximo 72 bytes, o limite do bcrypt), pelo menos 4
+        caracteres diferentes, não pode ser uma das passwords mais comuns nem conter a parte do email antes
+        da arroba.
+
+        Limites: 5 pedidos por hora por IP e 50 registos por hora no total (configuráveis).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nome, email, password]
+              additionalProperties: false
+              properties:
+                nome:
+                  type: string
+                  maxLength: 100
+                email:
+                  type: string
+                  format: email
+                  maxLength: 254
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 64
+                site:
+                  type: string
+                  description: Armadilha para robôs. Os clientes legítimos enviam-no vazio ou não o enviam.
+            example:
+              nome: Marta Sousa
+              email: marta@exemplo.pt
+              password: cavalo correto bateria
+      responses:
+        '202':
+          description: Pedido aceite. A mesma resposta para conta criada, email já registado ou robô.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [mensagem]
+                properties:
+                  mensagem:
+                    type: string
+              example:
+                mensagem: Pedido de registo recebido. Se este email ainda não tinha conta, a conta foi criada e já podes iniciar sessão.
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
+        '429':
+          $ref: '#/components/responses/DemasiadosPedidos'
+
   /auth/login:
     post:
       tags: [Autenticação]
@@ -74,6 +143,8 @@ paths:
         Após 5 tentativas falhadas seguidas para a mesma conta, o login dessa conta fica bloqueado durante
         15 minutos (RNF-11). Durante o bloqueio a resposta é o mesmo `401` de uma password errada, mesmo com a
         password certa, para não revelar o bloqueio. Um login com sucesso repõe a contagem.
+
+        Além disso, cada IP pode fazer no máximo 10 pedidos de login por minuto (`429` acima disso).
       security: []
       requestBody:
         required: true
@@ -113,6 +184,8 @@ paths:
                 title: Não autenticado
                 status: 401
                 detail: Email ou password incorretos
+        '429':
+          $ref: '#/components/responses/DemasiadosPedidos'
 
   /auth/eu:
     get:
@@ -121,11 +194,11 @@ paths:
       summary: Consultar o utilizador autenticado
       responses:
         '200':
-          description: Utilizador associado ao token.
+          description: Utilizador associado ao token, com o plano.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Utilizador'
+                $ref: '#/components/schemas/Conta'
         '401':
           $ref: '#/components/responses/NaoAutenticado'
 
@@ -188,7 +261,10 @@ paths:
       tags: [Projetos]
       operationId: criarProjeto
       summary: Criar projeto
-      description: O utilizador autenticado fica como Gestor e membro do projeto (o cliente não indica o dono).
+      description: |
+        O utilizador autenticado fica como Gestor e membro do projeto (o cliente não indica o dono).
+        Só as contas com o plano `PROFISSIONAL` criam projetos; o plano `GRATUITO` recebe `403` com o tipo
+        `/erros/plano-sem-acesso`.
       requestBody:
         required: true
         content:
@@ -213,6 +289,17 @@ paths:
           $ref: '#/components/responses/PedidoInvalido'
         '401':
           $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          description: O plano da conta não inclui criar projetos.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problema'
+              example:
+                type: /erros/plano-sem-acesso
+                title: Sem permissão
+                status: 403
+                detail: O teu plano não inclui criar projetos. Pede a um gestor que te adicione a um projeto
 
   /projetos/{projetoId}:
     parameters:
@@ -795,7 +882,27 @@ components:
           type: string
           format: date-time
         utilizador:
-          $ref: '#/components/schemas/Utilizador'
+          $ref: '#/components/schemas/Conta'
+
+    Plano:
+      type: string
+      description: |
+        `GRATUITO`: conta do registo público, participa só nos projetos para que é adicionada.
+        `PROFISSIONAL`: pode também criar projetos (será um plano pago). As contas anteriores à 0.8.0 são
+        `PROFISSIONAL`.
+      enum: [GRATUITO, PROFISSIONAL]
+
+    Conta:
+      description: O utilizador autenticado, com o plano (só o próprio o vê).
+      allOf:
+        - $ref: '#/components/schemas/Utilizador'
+        - type: object
+          required: [plano, podeCriarProjetos]
+          properties:
+            plano:
+              $ref: '#/components/schemas/Plano'
+            podeCriarProjetos:
+              type: boolean
 
     ContagensPorEstado:
       type: object
@@ -998,6 +1105,21 @@ components:
                 type: string
 
   responses:
+    DemasiadosPedidos:
+      description: Limite de pedidos por IP atingido (login e registo). `Retry-After` diz quantos segundos esperar.
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problema'
+          example:
+            type: /erros/demasiados-pedidos
+            title: Demasiados pedidos
+            status: 429
+            detail: Demasiadas tentativas. Tenta novamente daqui a 1 minuto.
     PedidoInvalido:
       description: 'Dados inválidos (ex.: título vazio ou só com espaços, estado inexistente).'
       content:
