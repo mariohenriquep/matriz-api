@@ -43,6 +43,12 @@ public class ServicoTarefas {
         return tarefas.listar(projeto, filtro);
     }
 
+    /** Quadro geral: tarefas dos projetos ativos de que o utilizador é membro; não exige ser membro de um projeto concreto. */
+    @Transactional(readOnly = true)
+    public List<Tarefa> listarDoUtilizador(long utilizador, Long projeto, FiltroTarefas filtro) {
+        return tarefas.listarDoUtilizador(utilizador, projeto, filtro);
+    }
+
     @Transactional(readOnly = true)
     public Tarefa obter(long tarefa, long utilizador) {
         acesso.exigirMembroDaTarefa(tarefa, utilizador);

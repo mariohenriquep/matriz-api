@@ -32,7 +32,7 @@ import pt.matriz.mappers.TarefaMapper;
 import pt.matriz.security.UtilizadorAtual;
 import pt.matriz.services.ServicoTarefas;
 
-/** {@code /projetos/{id}/tarefas}, {@code /tarefas/{id}} e {@code /tarefas/{id}/responsaveis} do openapi.yaml. */
+/** {@code /projetos/{id}/tarefas}, {@code /tarefas}, {@code /tarefas/{id}} e {@code /tarefas/{id}/responsaveis} do openapi.yaml. */
 @RestController
 @RequestMapping("/api/v1")
 public class ControladorTarefas {
@@ -57,6 +57,18 @@ public class ControladorTarefas {
             @RequestParam(required = false) Long responsavelId) {
         LocalDate hoje = hoje();
         return Lista.de(servico.listar(projetoId, utilizadorAtual.id(),
+                new FiltroTarefas(estado, prioridade, responsavelId)).stream()
+                .map(tarefa -> TarefaMapper.paraResposta(tarefa, hoje)).toList());
+    }
+
+    /** Quadro geral da página inicial: tarefas de todos os projetos ativos do utilizador. */
+    @GetMapping("/tarefas")
+    public Lista<TarefaResposta> listarTodas(@RequestParam(required = false) Long projetoId,
+            @RequestParam(required = false) EstadoTarefa estado,
+            @RequestParam(required = false) Prioridade prioridade,
+            @RequestParam(required = false) Long responsavelId) {
+        LocalDate hoje = hoje();
+        return Lista.de(servico.listarDoUtilizador(utilizadorAtual.id(), projetoId,
                 new FiltroTarefas(estado, prioridade, responsavelId)).stream()
                 .map(tarefa -> TarefaMapper.paraResposta(tarefa, hoje)).toList());
     }
