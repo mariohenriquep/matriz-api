@@ -10,9 +10,11 @@ Extras do MVP depois das fichas (RF-15 e RF-18).
 - Quadro Kanban na página do projeto (vista por omissão; a lista continua disponível em "Lista"): uma coluna por estado, arrastar um cartão muda o estado (US-13). Cada cartão tem também um seletor "Mover para", para teclado e ecrãs táteis. A vista fica no URL (`?vista=lista`).
 - Arquivo de projetos (US-16): `POST /projetos/{id}/arquivar` e `POST /projetos/{id}/reativar` (só o Gestor), `GET /projetos?arquivados=true`, campos `arquivado` e `arquivadoEm` no `Projeto`. Migração `V4__arquivo_projetos.sql`.
 - Separadores "Ativos" e "Arquivados" no painel inicial; aviso e botão "Reativar projeto" num projeto arquivado.
+- Novo visual, a partir da proposta aprovada no Figma: barra lateral escura (no telemóvel passa para o topo), cartões arredondados com sombra e efeito ao passar o rato, cartões de resumo por estado no painel, cores por estado e por prioridade, gradiente violeta na marca, modo escuro revisto e tipo de letra Inter servido pela própria aplicação (`@fontsource-variable/inter`, sem pedidos a serviços externos).
 - Testes: `ArquivoProjetosTest` (backend), `Quadro.test.tsx` e novos casos no frontend, E2E `quadro-e-arquivo.spec.ts` (arrastar no Chromium, arquivar e reativar).
 
 ### Alterado
+- Na página do projeto, as tarefas aparecem antes dos membros.
 - Um projeto arquivado fica só de leitura: alterar o projeto, membros, tarefas, responsáveis ou comentários dá `409` com o tipo `/erros/projeto-arquivado` (RN-04, CE-05). Consultar e eliminar continuam possíveis.
 - A lista de projetos (`GET /projetos`) devolve por omissão só os projetos ativos, e o resumo do painel conta só esses.
 

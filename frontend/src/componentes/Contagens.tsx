@@ -3,15 +3,15 @@ import type { Contagens as ContagensProjeto } from '../api/projetos'
 export function Contagens({ contagens }: { contagens: ContagensProjeto }) {
   return (
     <dl className="contagens">
-      <div>
+      <div className="estado-por_fazer">
         <dt>Por fazer</dt>
         <dd>{contagens.POR_FAZER}</dd>
       </div>
-      <div>
+      <div className="estado-em_curso">
         <dt>Em curso</dt>
         <dd>{contagens.EM_CURSO}</dd>
       </div>
-      <div>
+      <div className="estado-concluida">
         <dt>Concluídas</dt>
         <dd>{contagens.CONCLUIDA}</dd>
       </div>
@@ -41,5 +41,27 @@ export function Progresso({ contagens }: { contagens: ContagensProjeto }) {
       </div>
       <p className="suave">{texto}</p>
     </div>
+  )
+}
+
+/** Cartões de resumo do painel: um por estado, com a cor do estado. */
+export function ResumoEstados({ contagens }: { contagens: ContagensProjeto }) {
+  const estados = [
+    { chave: 'por_fazer', nome: 'Por fazer', valor: contagens.POR_FAZER },
+    { chave: 'em_curso', nome: 'Em curso', valor: contagens.EM_CURSO },
+    { chave: 'concluida', nome: 'Concluídas', valor: contagens.CONCLUIDA },
+  ]
+  return (
+    <dl className="resumo-estados">
+      {estados.map((e) => (
+        <div key={e.chave} className={`resumo-estado estado-${e.chave}`}>
+          <span className="resumo-icone" aria-hidden="true">
+            <span className="ponto" />
+          </span>
+          <dt>{e.nome}</dt>
+          <dd>{e.valor}</dd>
+        </div>
+      ))}
+    </dl>
   )
 }

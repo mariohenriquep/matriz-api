@@ -1,10 +1,15 @@
 import { useState } from 'react'
-import { Link, NavLink } from 'react-router'
+import { Link, useLocation } from 'react-router'
+import { iniciais } from '../api/texto'
 import { useSessao } from '../auth/useSessao'
 
+/** Barra lateral (em ecrãs pequenos passa a barra no topo): marca, navegação e sessão. */
 export function Barra() {
   const { utilizador, sair } = useSessao()
   const [aSair, setASair] = useState(false)
+  const { pathname, search } = useLocation()
+  const noArquivo = pathname === '/' && new URLSearchParams(search).get('vista') === 'arquivados'
+  const emProjetos = !noArquivo
 
   async function terminar() {
     setASair(true)
@@ -13,20 +18,37 @@ export function Barra() {
 
   return (
     <header className="barra">
+      <Link to="/" className="marca">
+        <span className="marca-logo" aria-hidden="true">
+          M
+        </span>
+        Matriz
+      </Link>
       <nav aria-label="Principal">
-        <Link to="/" className="marca">
-          Matriz
-        </Link>
-        <NavLink to="/" end>
+        <Link to="/" aria-current={emProjetos ? 'page' : undefined}>
+          <span className="icone" aria-hidden="true">
+            ◧
+          </span>
           Projetos
-        </NavLink>
+        </Link>
+        <Link to="/?vista=arquivados" aria-current={noArquivo ? 'page' : undefined}>
+          <span className="icone" aria-hidden="true">
+            ▤
+          </span>
+          Arquivo
+        </Link>
       </nav>
-      <span>
-        {utilizador?.nome}
-        <button type="button" className="secundario" onClick={terminar} disabled={aSair}>
-          {aSair ? 'A terminar…' : 'Terminar sessão'}
-        </button>
-      </span>
+      <div className="sessao">
+        <span className="avatar grande" aria-hidden="true">
+          {iniciais(utilizador?.nome ?? '')}
+        </span>
+        <span className="sessao-texto">
+          <span className="sessao-nome">{utilizador?.nome}</span>
+          <button type="button" className="ligacao" onClick={terminar} disabled={aSair}>
+            {aSair ? 'A terminar…' : 'Terminar sessão'}
+          </button>
+        </span>
+      </div>
     </header>
   )
 }

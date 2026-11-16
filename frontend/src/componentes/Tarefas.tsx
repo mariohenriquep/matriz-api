@@ -76,8 +76,9 @@ export function Tarefas({ projeto, membros, aoMudar }: Props) {
   const souGestor = projeto.meuPapel === 'GESTOR'
 
   function mudarFiltro(novos: FiltrosTarefas, novaVista: Vista = vista) {
-    setEstado({ tipo: 'a-carregar' })
     const url = filtrosParaUrl(novaVista === 'quadro' ? { ...novos, estado: undefined } : novos)
+    // Só se pede de novo a lista quando os filtros mudam (trocar de vista com os mesmos filtros não pede nada)
+    if (url.toString() !== chaveFiltros) setEstado({ tipo: 'a-carregar' })
     if (novaVista === 'lista') url.set('vista', 'lista')
     // replace: mudar de filtro não cria entradas no histórico, por isso "Voltar" sai da página do projeto
     setParametros(url, { replace: true })
@@ -188,7 +189,7 @@ export function Tarefas({ projeto, membros, aoMudar }: Props) {
   }
 
   return (
-    <section className="cartao" aria-labelledby="titulo-tarefas">
+    <section className="painel-tarefas" aria-labelledby="titulo-tarefas">
       <div className="cabecalho">
         <h2 id="titulo-tarefas">Tarefas</h2>
         <div className="separadores" role="group" aria-label="Vista das tarefas">

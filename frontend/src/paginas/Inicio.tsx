@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router'
 import { criarProjeto, listarProjetos, somarContagens, type Contagens as ContagensProjeto, type Projeto } from '../api/projetos'
 import { useSessao } from '../auth/useSessao'
 import { Barra } from '../componentes/Barra'
-import { Contagens, Progresso } from '../componentes/Contagens'
+import { Contagens, Progresso, ResumoEstados } from '../componentes/Contagens'
 import { ACarregar, MensagemErro, MensagemSucesso } from '../componentes/Estados'
 import { FormularioProjeto } from '../componentes/FormularioProjeto'
 import { formatarDataHora } from '../api/tarefas'
@@ -95,28 +95,24 @@ export function Inicio() {
     <>
       <Barra />
       <main className="conteudo">
-        <section className="resumo" aria-labelledby="saudacao">
-          <h1 id="saudacao">Olá, {utilizador?.nome}</h1>
-          {resumo && (
-            <>
+        <div className="cabecalho">
+          <section className="resumo" aria-labelledby="saudacao">
+            <h1 id="saudacao">Olá, {utilizador?.nome}</h1>
+            {resumo && (
               <p className="suave">
                 {resumo.projetos === 0
                   ? 'Ainda não participas em nenhum projeto.'
                   : `Participas em ${resumo.projetos} projeto${resumo.projetos === 1 ? '' : 's'}. Tarefas em todos eles:`}
               </p>
-              {resumo.projetos > 0 && <Contagens contagens={resumo.contagens} />}
-            </>
-          )}
-        </section>
-
-        <div className="cabecalho">
-          <h2>Os meus projetos</h2>
+            )}
+          </section>
           {!aCriar && (
             <button type="button" onClick={() => { setACriar(true); setSucesso(null) }}>
-              Novo projeto
+              + Novo projeto
             </button>
           )}
         </div>
+        {resumo && resumo.projetos > 0 && <ResumoEstados contagens={resumo.contagens} />}
 
         {sucesso && <MensagemSucesso>{sucesso}</MensagemSucesso>}
 
@@ -132,36 +128,47 @@ export function Inicio() {
           </section>
         )}
 
-        <div className="separadores" role="tablist" aria-label="Projetos ativos ou arquivados">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={!arquivados}
-            className={!arquivados ? 'ativo' : undefined}
-            onClick={() => mudarVista(false)}
-          >
-            Ativos
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={arquivados}
-            className={arquivados ? 'ativo' : undefined}
-            onClick={() => mudarVista(true)}
-          >
-            Arquivados
-          </button>
+        <h2 className="visualmente-escondido">Os meus projetos</h2>
+        <div className="barra-ferramentas">
+          <div className="separadores" role="tablist" aria-label="Projetos ativos ou arquivados">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={!arquivados}
+              className={!arquivados ? 'ativo' : undefined}
+              onClick={() => mudarVista(false)}
+            >
+              Ativos
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={arquivados}
+              className={arquivados ? 'ativo' : undefined}
+              onClick={() => mudarVista(true)}
+            >
+              Arquivados
+            </button>
+          </div>
+          <label className="pesquisa">
+            <span className="visualmente-escondido">Pesquisar pelo nome</span>
+            <input
+              type="search"
+              value={pesquisa}
+              onChange={(e) => setPesquisa(e.target.value)}
+              placeholder="Pesquisar projetos…"
+            />
+          </label>
         </div>
-
-        <label className="pesquisa">
-          Pesquisar pelo nome
-          <input type="search" value={pesquisa} onChange={(e) => setPesquisa(e.target.value)} placeholder="ex.: website" />
-        </label>
+        {arquivados && (
+          <p className="suave">
+            Projetos arquivados ficam só de leitura: as tarefas e os comentários mantêm-se. O gestor pode reativá-los
+            ou eliminá-los.
+          </p>
+        )}
 
         {estado.tipo === 'a-carregar' && <ACarregar texto="A carregar projetos…" />}
-        {estado.tipo === 'erro' && (
-          <MensagemErro texto={estado.mensagem} tentarNovamente={recarregar} />
-        )}
+        {estado.tipo === 'erro' && <MensagemErro texto={estado.mensagem} tentarNovamente={recarregar} />}
         {estado.tipo === 'pronto' && estado.projetos.length === 0 && (
           <div className="vazio">
             {pesquisaAplicada.trim() ? (
@@ -183,18 +190,23 @@ export function Inicio() {
         {estado.tipo === 'pronto' && estado.projetos.length > 0 && (
           <ul className="grelha">
             {estado.projetos.map((projeto) => (
-              <li key={projeto.id} className={projeto.arquivado ? 'cartao arquivado' : 'cartao'}>
-                <h3>
-                  <Link to={`/projetos/${projeto.id}`}>{projeto.nome}</Link>
-                </h3>
-                <p className="suave">
-                  {projeto.meuPapel === 'GESTOR' ? 'És o gestor' : `Gestor: ${projeto.gestor.nome}`}
-                </p>
-                {projeto.arquivado && (
-                  <p>
-                    <span className="etiqueta">Arquivado</span>
-                    {projeto.arquivadoEm && <span className="suave"> em {formatarDataHora(projeto.arquivadoEm)}</span>}
-                  </p>
+              <li key={projeto.id} className={projeto.arquivado ? 'cartao cartao-projeto arquivado' : 'cartao cartao-projeto'}>
+                <div className="projeto-topo">
+                  <span className="projeto-icone" aria-hidden="true">
+                    {projeto.nome.trim().charAt(0).toUpperCase()}
+                  </span>
+                  <div className="projeto-titulo">
+                    <h3>
+                      <Link to={`/projetos/${projeto.id}`}>{projeto.nome}</Link>
+                    </h3>
+                    <p className="suave">
+                      {projeto.meuPapel === 'GESTOR' ? 'És o gestor' : `Gestor: ${projeto.gestor.nome}`}
+                    </p>
+                  </div>
+                  {projeto.arquivado && <span className="etiqueta">Arquivado</span>}
+                </div>
+                {projeto.arquivado && projeto.arquivadoEm && (
+                  <p className="suave">Arquivado em {formatarDataHora(projeto.arquivadoEm)}</p>
                 )}
                 {projeto.descricao && <p className="descricao">{projeto.descricao}</p>}
                 <Progresso contagens={projeto.contagens} />

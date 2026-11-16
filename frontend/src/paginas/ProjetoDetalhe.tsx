@@ -235,13 +235,13 @@ export function ProjetoDetalhe() {
           </div>
         )}
 
+        <Tarefas projeto={projeto} membros={membros} aoMudar={atualizarContagens} />
+
         <Membros
           projeto={projeto}
           membros={membros}
           aoMudar={(novos) => setEstado({ tipo: 'pronto', projeto, membros: novos })}
         />
-
-        <Tarefas projeto={projeto} membros={membros} aoMudar={atualizarContagens} />
       </main>
     </>
   )

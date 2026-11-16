@@ -136,7 +136,10 @@ describe('ProjetoDetalhe', () => {
     await utilizador.click(screen.getByRole('button', { name: 'Lista' }))
     expect(screen.getByLabelText('endereço')).toHaveTextContent('?vista=lista')
     expect(screen.getByRole('button', { name: 'Lista' })).toHaveAttribute('aria-pressed', 'true')
-    expect(await screen.findByRole('button', { name: 'Editar' })).toBeInTheDocument()
+    // A lista aparece logo (os filtros não mudaram): Editar do projeto e Editar da tarefa
+    expect(screen.getAllByRole('button', { name: 'Editar' })).toHaveLength(2)
+    expect(screen.queryByText('A carregar as tarefas…')).not.toBeInTheDocument()
+    expect(apiTarefas.listarTarefas).toHaveBeenCalledTimes(1)
 
     await utilizador.click(screen.getByRole('button', { name: 'Quadro' }))
     expect(screen.getByLabelText('endereço')).toBeEmptyDOMElement()
