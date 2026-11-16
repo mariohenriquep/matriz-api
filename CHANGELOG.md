@@ -2,9 +2,9 @@
 
 As versões seguem [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto a major for 0, o contrato pode mudar entre versões menores. Cada versão tem uma tag `vX.Y.Z` no `main`. O mesmo número aparece no contrato (`openapi.yaml`), no backend (`backend/pom.xml`) e no frontend (`frontend/package.json`).
 
-## [0.5.0] - por lançar (versão candidata)
+## [0.5.0] - 2026-11-16
 
-Fase 5: entrega (Ficha PL 05, PRs #17 a #19 e seguintes). Notas da versão em [`docs/release-notes/v0.5.0.md`](docs/release-notes/v0.5.0.md).
+Fase 5: entrega (Ficha PL 05, PRs #17 a #21). Validação final em [`docs/delivery-validation.md`](docs/delivery-validation.md). Notas da versão em [`docs/release-notes/v0.5.0.md`](docs/release-notes/v0.5.0.md).
 
 ### Adicionado
 - Plano de entrega em [`docs/delivery-plan.md`](docs/delivery-plan.md).
@@ -13,12 +13,15 @@ Fase 5: entrega (Ficha PL 05, PRs #17 a #19 e seguintes). Notas da versão em [`
 - Pipeline de CI no GitHub Actions: testes do backend, do frontend e E2E; Trivy no repositório e nas imagens; SonarQube Cloud; build e arranque das imagens só depois das verificações.
 - Publicação das imagens no Docker Hub (`marrike/matriz-backend` e `marrike/matriz-frontend`, tags da versão e `latest`) num push de uma tag `vX.Y.Z`, depois de todas as verificações.
 - Diagramas Mermaid da execução em containers e da pipeline em [`docs/architecture.md`](docs/architecture.md) §8.
+- Cobertura dos testes enviada para o SonarQube Cloud: JaCoCo no backend (`./mvnw verify`) e Vitest no frontend (`npm run test:cobertura`).
+- Relatório de validação final em [`docs/delivery-validation.md`](docs/delivery-validation.md).
 - README com as tecnologias, a execução com Docker Compose, a documentação da API e a integração contínua.
 
 ### Alterado
 - `docker-compose.yml` passa a `compose.yaml`. Para desenvolver só com a base de dados em Docker usa-se `docker compose up -d postgres`.
 - `.env.example`: `MATRIZ_CORS_ORIGENS` inclui `http://localhost:8000`; novas variáveis `MATRIZ_FRONTEND_PORTA` e `VITE_API_URL`.
 - Os testes E2E correm com `npm test` na pasta `e2e/`.
+- Versão 0.5.0 em `openapi.yaml`, `backend/pom.xml`, `frontend/package.json` e `e2e/package.json`.
 
 ### Segurança
 - Tomcat 10.1.61, Jackson 2.21.8 e driver PostgreSQL 42.7.14 fixados no `pom.xml`, por vulnerabilidades HIGH/CRITICAL encontradas pelo Trivy nas versões do Spring Boot 3.5.16.
