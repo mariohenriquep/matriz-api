@@ -17,7 +17,7 @@ A Ficha 03 define um âmbito funcional mínimo. Foi comparado com o MVP aprovado
 | C-06 | Registo público opcional; contas de demonstração por seed | ✅ Seed; registo público fica como extra | requirements RF-01 |
 | C-07 | Valores do exemplo da ficha (`TODO`, `LOW`…, título 3–150) | ✅ Mantemos os nossos (`POR_FAZER`, `BAIXA`…, título 1–200) | — |
 
-**Feitos depois das fichas (2026-11-16):** arquivo e reativação (RF-18) e quadro Kanban (RF-15).
+**Feitos depois das fichas (2026-11-16):** arquivo e reativação (RF-18), quadro Kanban (RF-15) e, na 0.7.0, o quadro geral na página inicial com o filtro "Só as minhas" (RF-17).
 
 **Extras do nosso MVP adiados** (ficam para depois da Ficha 03, por esta ordem proposta): arquivo e reativação (RF-18), quadro Kanban (RF-15), "As minhas tarefas" (RF-17), marcação "Atrasada" na interface (o campo já vem da API), registo público (RF-01), administrador global e registo de promoções (RF-02, RF-13, RF-19), notificações (RF-16). O bloqueio após tentativas falhadas (RNF-11) foi implementado na Ficha 04, Ex. 5 (finding SEC-01).
 
