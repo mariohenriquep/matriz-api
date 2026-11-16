@@ -2,9 +2,9 @@
 
 As versões seguem [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto a major for 0, o contrato pode mudar entre versões menores. Cada versão tem uma tag `vX.Y.Z` no `main`. O mesmo número aparece no contrato (`openapi.yaml`), no backend (`backend/pom.xml`) e no frontend (`frontend/package.json`).
 
-## [Não publicado]
+## [0.6.0] - 2026-11-16
 
-Extras do MVP depois das fichas (RF-15 e RF-18).
+Extras do MVP depois das fichas (RF-15 e RF-18). Notas da versão em [`docs/release-notes/v0.6.0.md`](docs/release-notes/v0.6.0.md).
 
 ### Adicionado
 - Quadro Kanban na página do projeto (vista por omissão; a lista continua disponível em "Lista"): uma coluna por estado, arrastar um cartão muda o estado (US-13). Cada cartão tem também um seletor "Mover para", para teclado e ecrãs táteis. A vista fica no URL (`?vista=lista`).
