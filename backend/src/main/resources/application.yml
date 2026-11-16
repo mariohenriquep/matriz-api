@@ -8,7 +8,9 @@ spring:
       - optional:file:../.env[.properties]
       - optional:file:.env[.properties]
   datasource:
-    url: ${MATRIZ_DB_URL:jdbc:postgresql://localhost:5433/matriz}
+    # MATRIZ_DB_URL (JDBC completo) ou, em alternativa, as partes em separado: o Render (render.yaml) só
+    # dá o anfitrião, a porta e o nome da base de dados, não um endereço JDBC
+    url: ${MATRIZ_DB_URL:jdbc:postgresql://${MATRIZ_DB_HOST:localhost}:${MATRIZ_DB_PORTA:5433}/${POSTGRES_DB:matriz}}
     username: ${POSTGRES_USER:matriz}
     password: ${POSTGRES_PASSWORD}
   jpa:

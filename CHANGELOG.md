@@ -2,6 +2,16 @@
 
 As versões seguem [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto a major for 0, o contrato pode mudar entre versões menores. Cada versão tem uma tag `vX.Y.Z` no `main`. O mesmo número aparece no contrato (`openapi.yaml`), no backend (`backend/pom.xml`) e no frontend (`frontend/package.json`).
 
+## [0.7.1] - 2026-11-16
+
+Deploy no plano gratuito do Render. Notas da versão em [`docs/release-notes/v0.7.1.md`](docs/release-notes/v0.7.1.md).
+
+### Adicionado
+- Blueprint `render.yaml` (PostgreSQL gratuito, backend a partir da imagem do Docker Hub, frontend como site estático) e guia [`docs/deploy-render.md`](docs/deploy-render.md).
+
+### Alterado
+- O backend aceita o endereço da base de dados em partes (`MATRIZ_DB_HOST`, `MATRIZ_DB_PORTA`, `POSTGRES_DB`) quando `MATRIZ_DB_URL` não está definida. `MATRIZ_DB_URL` continua a ter prioridade, por isso o `.env` e o Docker Compose não mudam.
+
 ## [0.7.0] - 2026-11-16
 
 Quadro geral na página inicial, pedido depois da 0.6.0. Notas da versão em [`docs/release-notes/v0.7.0.md`](docs/release-notes/v0.7.0.md).
