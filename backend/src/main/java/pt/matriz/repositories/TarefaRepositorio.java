@@ -43,7 +43,27 @@ public class TarefaRepositorio {
     /** Mais recentes primeiro. */
     public List<Tarefa> listar(long projeto, FiltroTarefas filtro) {
         StringBuilder sql = new StringBuilder(SELECAO).append("WHERE t.projeto_id = :projeto ");
-        MapSqlParameterSource parametros = new MapSqlParameterSource("projeto", projeto);
+        return listarCom(sql, new MapSqlParameterSource("projeto", projeto), filtro);
+    }
+
+    /**
+     * Tarefas de todos os projetos ativos (não arquivados) de que o utilizador é membro, para o quadro geral.
+     * Com {@code projeto}, limita a esse projeto (se não for um deles, a lista vem vazia).
+     */
+    public List<Tarefa> listarDoUtilizador(long utilizador, Long projeto, FiltroTarefas filtro) {
+        StringBuilder sql = new StringBuilder(SELECAO).append("""
+                WHERE t.projeto_id IN (SELECT m.projeto_id FROM membro_projeto m JOIN projeto p ON p.id = m.projeto_id
+                                       WHERE m.utilizador_id = :utilizador AND p.arquivado_em IS NULL)
+                """);
+        MapSqlParameterSource parametros = new MapSqlParameterSource("utilizador", utilizador);
+        if (projeto != null) {
+            sql.append("AND t.projeto_id = :projeto ");
+            parametros.addValue("projeto", projeto);
+        }
+        return listarCom(sql, parametros, filtro);
+    }
+
+    private List<Tarefa> listarCom(StringBuilder sql, MapSqlParameterSource parametros, FiltroTarefas filtro) {
         if (filtro.estado() != null) {
             sql.append("AND t.estado = :estado ");
             parametros.addValue("estado", filtro.estado().name());

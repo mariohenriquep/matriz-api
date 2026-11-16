@@ -1,11 +1,10 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as apiProjetos from '../api/projetos'
 import * as apiTarefas from '../api/tarefas'
-import { ContextoSessao } from '../auth/contexto'
-import { ana, membros, umProjeto, umaTarefa } from '../testes/dados'
+import { abrirComSessao } from '../testes/abrir'
+import { membros, umProjeto, umaTarefa } from '../testes/dados'
 import { Inicio } from './Inicio'
 import { ProjetoDetalhe } from './ProjetoDetalhe'
 
@@ -24,39 +23,8 @@ vi.mock('../api/tarefas', async (original) => ({
   editarTarefa: vi.fn(),
 }))
 
-/** Mostra o endereço atual, para os testes confirmarem os filtros no URL. */
-function Endereco() {
-  const { search } = useLocation()
-  return <output aria-label="endereço">{search}</output>
-}
-
 function abrir(endereco: string) {
-  render(
-    <ContextoSessao.Provider value={{ utilizador: ana, aviso: null, entrar: vi.fn(), sair: vi.fn() }}>
-      <MemoryRouter initialEntries={[endereco]}>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <Inicio />
-                <Endereco />
-              </>
-            }
-          />
-          <Route
-            path="/projetos/:projetoId"
-            element={
-              <>
-                <ProjetoDetalhe />
-                <Endereco />
-              </>
-            }
-          />
-        </Routes>
-      </MemoryRouter>
-    </ContextoSessao.Provider>,
-  )
+  abrirComSessao(endereco, { '/': <Inicio />, '/projetos/:projetoId': <ProjetoDetalhe /> })
 }
 
 beforeEach(() => {

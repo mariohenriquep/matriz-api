@@ -1016,6 +1016,40 @@ body:has(.cartao-login) {
   box-shadow: var(--sombra);
 }
 
+.filtros label.caixa {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  background: var(--superficie);
+  box-shadow: var(--sombra);
+  color: var(--texto);
+  cursor: pointer;
+}
+
+.filtros label.caixa input {
+  width: auto;
+  margin: 0;
+  accent-color: var(--marca);
+}
+
+/* Quadro geral: nome do projeto no cartão */
+.cartao-projeto-nome {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--marca);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.cartao-projeto-nome:hover {
+  text-decoration: underline;
+}
+
 /* Lista de tarefas */
 .tarefas {
   list-style: none;

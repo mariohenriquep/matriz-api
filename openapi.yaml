@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Matriz API
-  version: 0.6.0
+  version: 0.7.0
   summary: Contrato REST do MVP da Matriz (Ficha 03).
   description: |
     Contrato completo para o âmbito da Ficha 03: autenticação, projetos e membros, tarefas,
@@ -488,6 +488,55 @@ paths:
         '422':
           $ref: '#/components/responses/RegraDeNegocio'
 
+  /tarefas:
+    get:
+      tags: [Tarefas]
+      operationId: listarTodasAsTarefas
+      summary: Quadro geral (tarefas de todos os projetos)
+      description: >-
+        Tarefas de todos os projetos ativos (não arquivados) de que o utilizador é membro, para o quadro geral da
+        página inicial. Os filtros combinam-se (E lógico). Com `projetoId` de um projeto arquivado ou de que o
+        utilizador não é membro, a lista vem vazia (não há 404). Ordenadas da mais recente para a mais antiga.
+      parameters:
+        - name: projetoId
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/Id'
+        - name: estado
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/EstadoTarefa'
+        - name: prioridade
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/Prioridade'
+        - name: responsavelId
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/Id'
+      responses:
+        '200':
+          description: Lista (pode estar vazia).
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [itens, total]
+                properties:
+                  itens:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Tarefa'
+                  total:
+                    type: integer
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
   /tarefas/{tarefaId}:
     parameters:
       - $ref: '#/components/parameters/TarefaId'

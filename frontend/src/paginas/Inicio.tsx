@@ -6,7 +6,16 @@ import { Barra } from '../componentes/Barra'
 import { Contagens, Progresso, ResumoEstados } from '../componentes/Contagens'
 import { ACarregar, MensagemErro, MensagemSucesso } from '../componentes/Estados'
 import { FormularioProjeto } from '../componentes/FormularioProjeto'
+import { QuadroGeral } from '../componentes/QuadroGeral'
 import { formatarDataHora } from '../api/tarefas'
+
+type Vista = 'ativos' | 'quadro' | 'arquivados'
+
+const SEPARADORES: { vista: Vista; nome: string }[] = [
+  { vista: 'ativos', nome: 'Ativos' },
+  { vista: 'quadro', nome: 'Quadro geral' },
+  { vista: 'arquivados', nome: 'Arquivados' },
+]
 
 type Estado =
   | { tipo: 'a-carregar' }
@@ -15,12 +24,16 @@ type Estado =
 
 /**
  * Painel inicial: saudação, resumo das tarefas, projetos acessíveis, pesquisa e criação (Ficha 03, Ex. 4 e 7).
- * Separadores Ativos/Arquivados (arquivo de projetos); o separador fica no URL (`?vista=arquivados`).
+ * Separadores Ativos, Quadro geral (Kanban com as tarefas de todos os projetos ativos) e Arquivados;
+ * o separador fica no URL (`?vista=quadro`, `?vista=arquivados`).
  */
 export function Inicio() {
   const { utilizador } = useSessao()
   const [parametros, setParametros] = useSearchParams()
-  const arquivados = parametros.get('vista') === 'arquivados'
+  const vistaUrl = parametros.get('vista')
+  const vista: Vista = vistaUrl === 'quadro' || vistaUrl === 'arquivados' ? vistaUrl : 'ativos'
+  const arquivados = vista === 'arquivados'
+  const noQuadro = vista === 'quadro'
   const [pesquisa, setPesquisa] = useState('')
   const [pesquisaAplicada, setPesquisaAplicada] = useState('')
   const [estado, setEstado] = useState<Estado>({ tipo: 'a-carregar' })
@@ -33,6 +46,8 @@ export function Inicio() {
   )
   // O resumo conta todos os projetos, por isso só se atualiza com a lista sem pesquisa
   const [resumo, setResumo] = useState<{ projetos: number; contagens: ContagensProjeto } | null>(null)
+  // Projetos ativos (sem pesquisa), para o filtro e os nomes do quadro geral
+  const [ativos, setAtivos] = useState<Projeto[] | null>(null)
 
   const [versao, setVersao] = useState(0)
 
@@ -53,11 +68,16 @@ export function Inicio() {
 
   useEffect(() => {
     let ativo = true // ignora respostas de pesquisas antigas que cheguem depois
-    listarProjetos(pesquisaAplicada, arquivados)
+    // No quadro geral a pesquisa não se aplica: pede-se sempre a lista completa de projetos ativos
+    const texto = noQuadro ? '' : pesquisaAplicada
+    listarProjetos(texto, arquivados)
       .then((lista) => {
         if (!ativo) return
         setEstado({ tipo: 'pronto', projetos: lista.itens })
-        if (!pesquisaAplicada.trim() && !arquivados) setResumo({ projetos: lista.itens.length, contagens: somarContagens(lista.itens) })
+        if (!texto.trim() && !arquivados) {
+          setResumo({ projetos: lista.itens.length, contagens: somarContagens(lista.itens) })
+          setAtivos(lista.itens)
+        }
       })
       .catch(
         (e) =>
@@ -67,13 +87,13 @@ export function Inicio() {
     return () => {
       ativo = false
     }
-  }, [pesquisaAplicada, arquivados, versao])
+  }, [pesquisaAplicada, arquivados, noQuadro, versao])
 
-  function mudarVista(paraArquivados: boolean) {
-    if (paraArquivados === arquivados) return
+  function mudarVista(nova: Vista) {
+    if (nova === vista) return
     setEstado({ tipo: 'a-carregar' })
     setSucesso(null)
-    setParametros(paraArquivados ? { vista: 'arquivados' } : {}, { replace: true })
+    setParametros(nova === 'ativos' ? {} : { vista: nova }, { replace: true })
   }
 
   function recarregar() {
@@ -130,35 +150,31 @@ export function Inicio() {
 
         <h2 className="visualmente-escondido">Os meus projetos</h2>
         <div className="barra-ferramentas">
-          <div className="separadores" role="tablist" aria-label="Projetos ativos ou arquivados">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={!arquivados}
-              className={!arquivados ? 'ativo' : undefined}
-              onClick={() => mudarVista(false)}
-            >
-              Ativos
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={arquivados}
-              className={arquivados ? 'ativo' : undefined}
-              onClick={() => mudarVista(true)}
-            >
-              Arquivados
-            </button>
+          <div className="separadores" role="tablist" aria-label="Vista da página inicial">
+            {SEPARADORES.map((separador) => (
+              <button
+                key={separador.vista}
+                type="button"
+                role="tab"
+                aria-selected={vista === separador.vista}
+                className={vista === separador.vista ? 'ativo' : undefined}
+                onClick={() => mudarVista(separador.vista)}
+              >
+                {separador.nome}
+              </button>
+            ))}
           </div>
-          <label className="pesquisa">
-            <span className="visualmente-escondido">Pesquisar pelo nome</span>
-            <input
-              type="search"
-              value={pesquisa}
-              onChange={(e) => setPesquisa(e.target.value)}
-              placeholder="Pesquisar projetos…"
-            />
-          </label>
+          {!noQuadro && (
+            <label className="pesquisa">
+              <span className="visualmente-escondido">Pesquisar pelo nome</span>
+              <input
+                type="search"
+                value={pesquisa}
+                onChange={(e) => setPesquisa(e.target.value)}
+                placeholder="Pesquisar projetos…"
+              />
+            </label>
+          )}
         </div>
         {arquivados && (
           <p className="suave">
@@ -167,9 +183,18 @@ export function Inicio() {
           </p>
         )}
 
-        {estado.tipo === 'a-carregar' && <ACarregar texto="A carregar projetos…" />}
-        {estado.tipo === 'erro' && <MensagemErro texto={estado.mensagem} tentarNovamente={recarregar} />}
-        {estado.tipo === 'pronto' && estado.projetos.length === 0 && (
+        {noQuadro &&
+          (ativos ? (
+            <QuadroGeral projetos={ativos} aoMudar={() => setVersao((v) => v + 1)} />
+          ) : estado.tipo === 'erro' ? (
+            <MensagemErro texto={estado.mensagem} tentarNovamente={recarregar} />
+          ) : (
+            <ACarregar texto="A carregar as tarefas…" />
+          ))}
+
+        {!noQuadro && estado.tipo === 'a-carregar' && <ACarregar texto="A carregar projetos…" />}
+        {!noQuadro && estado.tipo === 'erro' && <MensagemErro texto={estado.mensagem} tentarNovamente={recarregar} />}
+        {!noQuadro && estado.tipo === 'pronto' && estado.projetos.length === 0 && (
           <div className="vazio">
             {pesquisaAplicada.trim() ? (
               <p>Nenhum projeto corresponde a "{pesquisaAplicada.trim()}".</p>
@@ -187,7 +212,7 @@ export function Inicio() {
             )}
           </div>
         )}
-        {estado.tipo === 'pronto' && estado.projetos.length > 0 && (
+        {!noQuadro && estado.tipo === 'pronto' && estado.projetos.length > 0 && (
           <ul className="grelha">
             {estado.projetos.map((projeto) => (
               <li key={projeto.id} className={projeto.arquivado ? 'cartao cartao-projeto arquivado' : 'cartao cartao-projeto'}>

@@ -4,6 +4,7 @@ import java.net.URI;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -32,7 +33,7 @@ import pt.matriz.mappers.TarefaMapper;
 import pt.matriz.security.UtilizadorAtual;
 import pt.matriz.services.ServicoTarefas;
 
-/** {@code /projetos/{id}/tarefas}, {@code /tarefas/{id}} e {@code /tarefas/{id}/responsaveis} do openapi.yaml. */
+/** {@code /projetos/{id}/tarefas}, {@code /tarefas}, {@code /tarefas/{id}} e {@code /tarefas/{id}/responsaveis} do openapi.yaml. */
 @RestController
 @RequestMapping("/api/v1")
 public class ControladorTarefas {
@@ -55,10 +56,18 @@ public class ControladorTarefas {
             @RequestParam(required = false) EstadoTarefa estado,
             @RequestParam(required = false) Prioridade prioridade,
             @RequestParam(required = false) Long responsavelId) {
-        LocalDate hoje = hoje();
-        return Lista.de(servico.listar(projetoId, utilizadorAtual.id(),
-                new FiltroTarefas(estado, prioridade, responsavelId)).stream()
-                .map(tarefa -> TarefaMapper.paraResposta(tarefa, hoje)).toList());
+        return respostas(servico.listar(projetoId, utilizadorAtual.id(),
+                new FiltroTarefas(estado, prioridade, responsavelId)));
+    }
+
+    /** Quadro geral da página inicial: tarefas de todos os projetos ativos do utilizador. */
+    @GetMapping("/tarefas")
+    public Lista<TarefaResposta> listarTodas(@RequestParam(required = false) Long projetoId,
+            @RequestParam(required = false) EstadoTarefa estado,
+            @RequestParam(required = false) Prioridade prioridade,
+            @RequestParam(required = false) Long responsavelId) {
+        return respostas(servico.listarDoUtilizador(utilizadorAtual.id(), projetoId,
+                new FiltroTarefas(estado, prioridade, responsavelId)));
     }
 
     @PostMapping("/projetos/{projetoId}/tarefas")
@@ -101,5 +110,10 @@ public class ControladorTarefas {
     /** "Hoje" no fuso da equipa, para a marcação "atrasada". */
     private LocalDate hoje() {
         return LocalDate.now(relogio.withZone(fuso));
+    }
+
+    private Lista<TarefaResposta> respostas(List<Tarefa> tarefas) {
+        LocalDate hoje = hoje();
+        return Lista.de(tarefas.stream().map(tarefa -> TarefaMapper.paraResposta(tarefa, hoje)).toList());
     }
 }

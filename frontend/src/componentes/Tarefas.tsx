@@ -23,11 +23,9 @@ import { useSessao } from '../auth/useSessao'
 import { ACarregar, MensagemErro, MensagemSucesso } from './Estados'
 import { FormularioTarefa } from './FormularioTarefa'
 import { Quadro } from './Quadro'
+import { useMoverTarefa, type EstadoListaTarefas } from './useMoverTarefa'
 
-type Estado =
-  | { tipo: 'a-carregar' }
-  | { tipo: 'erro'; mensagem: string }
-  | { tipo: 'pronto'; tarefas: Tarefa[] }
+type Estado = EstadoListaTarefas
 
 interface Props {
   projeto: Projeto
@@ -58,9 +56,7 @@ export function Tarefas({ projeto, membros, aoMudar }: Props) {
   const [aCriar, setACriar] = useState(false)
   const [aEditar, setAEditar] = useState<string | null>(null)
   const [aConfirmar, setAConfirmar] = useState<string | null>(null)
-  const [ocupada, setOcupada] = useState<string | null>(null)
-  const [erroAcao, setErroAcao] = useState<string | null>(null)
-  const [sucesso, setSucesso] = useState<string | null>(null)
+  const { ocupada, setOcupada, erroAcao, setErroAcao, sucesso, setSucesso, mover } = useMoverTarefa(setEstado, aoMudar)
 
   useEffect(() => {
     let ativo = true
@@ -90,39 +86,6 @@ export function Tarefas({ projeto, membros, aoMudar }: Props) {
     setAEditar(null)
     setAConfirmar(null)
     mudarFiltro(filtros, nova)
-  }
-
-  /**
-   * Mudança de estado no quadro: o cartão muda logo de coluna e volta para trás se a API recusar.
-   * Depois de guardar, o projeto atualiza as contagens.
-   */
-  async function mover(tarefa: Tarefa, novo: EstadoTarefa) {
-    if (ocupada || soLeitura || tarefa.estado === novo) return
-    const trocar = (estadoTarefa: EstadoTarefa) =>
-      setEstado((anterior) =>
-        anterior.tipo === 'pronto'
-          ? { ...anterior, tarefas: anterior.tarefas.map((t) => (t.id === tarefa.id ? { ...t, estado: estadoTarefa } : t)) }
-          : anterior,
-      )
-    setOcupada(tarefa.id)
-    setErroAcao(null)
-    setSucesso(null)
-    trocar(novo)
-    try {
-      const atualizada = await editarTarefa(tarefa.id, { estado: novo })
-      setEstado((anterior) =>
-        anterior.tipo === 'pronto'
-          ? { ...anterior, tarefas: anterior.tarefas.map((t) => (t.id === tarefa.id ? atualizada : t)) }
-          : anterior,
-      )
-      aoMudar()
-      setSucesso(`"${tarefa.titulo}" passou para ${ESTADOS.find((e) => e.valor === novo)?.nome}.`)
-    } catch (e) {
-      trocar(tarefa.estado)
-      setErroAcao(e instanceof Error ? e.message : 'Não foi possível mudar o estado.')
-    } finally {
-      setOcupada(null)
-    }
   }
 
   /**
@@ -286,7 +249,7 @@ export function Tarefas({ projeto, membros, aoMudar }: Props) {
         <MensagemErro texto={estado.mensagem} tentarNovamente={() => { setEstado({ tipo: 'a-carregar' }); setVersao((v) => v + 1) }} />
       )}
       {estado.tipo === 'pronto' && vista === 'quadro' && (estado.tarefas.length > 0 || !filtrosAtivos) && (
-        <Quadro tarefas={estado.tarefas} soLeitura={soLeitura} ocupada={ocupada} aoMover={(t, e) => void mover(t, e)} />
+        <Quadro tarefas={estado.tarefas} soLeitura={soLeitura} ocupada={ocupada} aoMover={(t, e) => !soLeitura && void mover(t, e)} />
       )}
       {estado.tipo === 'pronto' && estado.tarefas.length === 0 && (vista === 'lista' || filtrosAtivos) && (
         <p className="vazio">

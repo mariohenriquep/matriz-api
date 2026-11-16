@@ -8,8 +8,10 @@ export function Barra() {
   const { utilizador, sair } = useSessao()
   const [aSair, setASair] = useState(false)
   const { pathname, search } = useLocation()
-  const noArquivo = pathname === '/' && new URLSearchParams(search).get('vista') === 'arquivados'
-  const emProjetos = !noArquivo
+  const vista = pathname === '/' ? new URLSearchParams(search).get('vista') : null
+  const noArquivo = vista === 'arquivados'
+  const noQuadro = vista === 'quadro'
+  const emProjetos = !noArquivo && !noQuadro
 
   async function terminar() {
     setASair(true)
@@ -30,6 +32,12 @@ export function Barra() {
             ◧
           </span>
           Projetos
+        </Link>
+        <Link to="/?vista=quadro" aria-current={noQuadro ? 'page' : undefined}>
+          <span className="icone" aria-hidden="true">
+            ▦
+          </span>
+          Quadro geral
         </Link>
         <Link to="/?vista=arquivados" aria-current={noArquivo ? 'page' : undefined}>
           <span className="icone" aria-hidden="true">

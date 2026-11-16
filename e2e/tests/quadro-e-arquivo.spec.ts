@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { PASSWORD_DEMO } from '../ambiente.mjs'
+import { criarProjetoComTarefa, entrar } from './passos'
 
 /**
  * Extras do MVP pela interface: quadro Kanban (arrastar muda o estado e fica guardado) e arquivo de projetos
@@ -9,22 +9,8 @@ test('a Ana arrasta uma tarefa para Concluída, arquiva o projeto e reativa-o', 
   const projeto = `Projeto quadro E2E ${Date.now()}`
   const titulo = 'Preparar a apresentação'
 
-  await page.goto('/')
-  await page.getByLabel('Email').fill('ana@matriz.local')
-  await page.getByLabel('Password').fill(PASSWORD_DEMO)
-  await page.getByRole('button', { name: 'Entrar' }).click()
-  await expect(page.getByRole('heading', { name: 'Olá, Ana Silva' })).toBeVisible()
-
-  // Criar o projeto e uma tarefa
-  await page.getByRole('button', { name: 'Novo projeto' }).click()
-  await page.getByRole('region', { name: 'Novo projeto' }).getByLabel('Nome').fill(projeto)
-  await page.getByRole('button', { name: 'Criar projeto' }).click()
-  await page.getByRole('link', { name: projeto }).click()
-  await expect(page.getByRole('heading', { level: 1, name: projeto })).toBeVisible()
-  const tarefas = page.getByRole('region', { name: 'Tarefas' })
-  await tarefas.getByRole('button', { name: 'Nova tarefa' }).click()
-  await tarefas.getByLabel('Título').fill(titulo)
-  await tarefas.getByRole('button', { name: 'Criar tarefa' }).click()
+  await entrar(page, 'ana@matriz.local', 'Ana Silva')
+  const tarefas = await criarProjetoComTarefa(page, projeto, titulo)
 
   // Quadro: a tarefa começa em "Por fazer"; arrastá-la para "Concluída"
   const porFazer = tarefas.getByRole('region', { name: 'Por fazer' })

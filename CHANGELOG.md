@@ -2,6 +2,16 @@
 
 As versões seguem [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto a major for 0, o contrato pode mudar entre versões menores. Cada versão tem uma tag `vX.Y.Z` no `main`. O mesmo número aparece no contrato (`openapi.yaml`), no backend (`backend/pom.xml`) e no frontend (`frontend/package.json`).
 
+## [0.7.0] - 2026-11-16
+
+Quadro geral na página inicial, pedido depois da 0.6.0. Notas da versão em [`docs/release-notes/v0.7.0.md`](docs/release-notes/v0.7.0.md).
+
+### Adicionado
+- `GET /tarefas`: tarefas de todos os projetos ativos de que o utilizador é membro, com os filtros `projetoId`, `estado`, `prioridade` e `responsavelId`. Projetos arquivados ficam de fora.
+- Separador "Quadro geral" na página inicial (e ligação na barra lateral), com o URL `?vista=quadro`: um Kanban com as tarefas de todos os projetos ativos, sem abrir cada projeto. Cada cartão mostra o projeto (com ligação para ele). Arrastar ou "Mover para" muda o estado e atualiza o resumo do painel.
+- Filtros do quadro geral por projeto, por prioridade e "Só as minhas" (as tarefas de que o utilizador é responsável), que cobre a ideia do RF-17 "As minhas tarefas".
+- Testes: `QuadroGeralTest` (backend), `Inicio.test.tsx` (frontend) e E2E `quadro-geral.spec.ts`.
+
 ## [0.6.0] - 2026-11-16
 
 Extras do MVP depois das fichas (RF-15 e RF-18). Notas da versão em [`docs/release-notes/v0.6.0.md`](docs/release-notes/v0.6.0.md).

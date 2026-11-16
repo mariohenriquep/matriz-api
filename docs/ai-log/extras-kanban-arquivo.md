@@ -39,3 +39,18 @@ na tarefa, quadro com três colunas e mudança de estado otimista (volta atrás 
 - Backend: `./mvnw verify` com todos os testes verdes, incluindo os 9 de `ArquivoProjetosTest`.
 - Frontend: `npm test` (48 testes), `npm run build` e `oxlint` sem avisos.
 - E2E: `npm test` em `e2e/` com os 2 testes verdes; o novo arrasta um cartão no Chromium real.
+
+## Quadro geral na página inicial (0.7.0)
+
+Pedido do Mário depois da 0.6.0: "todas as tarefas de todos os projetos num kanban geral na primeira página, sem ser necessário abrir um projeto".
+
+| Decisão | Porquê |
+|---------|--------|
+| Endpoint novo `GET /tarefas` em vez de um pedido por projeto | Um só pedido, com os filtros feitos na base de dados; escala com o número de projetos. |
+| Só projetos ativos | Os arquivados são só de leitura; no quadro geral não se poderiam arrastar. |
+| `projetoId` de outro projeto dá lista vazia, não 404 | É um filtro sobre "as minhas tarefas", não o acesso a um recurso; não revela se o projeto existe. |
+| Separador "Quadro geral" ao lado de Ativos e Arquivados | A página inicial continua a abrir nos projetos (nada muda para quem já a usa) e o quadro fica a um clique, com URL próprio. |
+| Nome do projeto vem da lista de projetos já pedida pelo painel | O contrato da `Tarefa` não muda. |
+| Filtro "Só as minhas" | Cobre o RF-17 ("As minhas tarefas") sem uma página nova. |
+
+Verificação: `./mvnw verify`, `npm test` e `oxlint` no frontend, e os 3 testes E2E verdes (o novo arrasta um cartão no quadro geral).

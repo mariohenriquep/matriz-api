@@ -10,6 +10,8 @@ interface Props {
   /** Tarefa com um pedido em curso (o cartão fica desativado). */
   ocupada: string | null
   aoMover: (tarefa: Tarefa, estado: EstadoTarefa) => void
+  /** Quadro geral: nome de cada projeto por id, para o cartão indicar a que projeto pertence. */
+  nomesProjetos?: Map<string, string>
 }
 
 const TIPO_ARRASTO = 'application/x-matriz-tarefa'
@@ -18,7 +20,7 @@ const TIPO_ARRASTO = 'application/x-matriz-tarefa'
  * Quadro Kanban (extra do MVP): uma coluna por estado. Arrastar um cartão para outra coluna muda o estado.
  * Para quem usa teclado ou ecrã tátil, cada cartão tem também um seletor "Mover para".
  */
-export function Quadro({ tarefas, soLeitura, ocupada, aoMover }: Props) {
+export function Quadro({ tarefas, soLeitura, ocupada, aoMover, nomesProjetos }: Props) {
   const [aArrastar, setAArrastar] = useState<string | null>(null)
   const [sobre, setSobre] = useState<EstadoTarefa | null>(null)
 
@@ -84,6 +86,11 @@ export function Quadro({ tarefas, soLeitura, ocupada, aoMover }: Props) {
                     </span>
                     {tarefa.atrasada && <span className="etiqueta atrasada">Atrasada</span>}
                   </div>
+                  {nomesProjetos && (
+                    <Link to={`/projetos/${tarefa.projetoId}`} className="cartao-projeto-nome" draggable={false}>
+                      {nomesProjetos.get(tarefa.projetoId) ?? 'Projeto'}
+                    </Link>
+                  )}
                   <Link to={`/tarefas/${tarefa.id}`} className="cartao-titulo" draggable={false}>
                     {tarefa.titulo}
                   </Link>

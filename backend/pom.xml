@@ -13,7 +13,7 @@
 
     <groupId>pt.matriz</groupId>
     <artifactId>matriz-backend</artifactId>
-    <version>0.6.0</version>
+    <version>0.7.0</version>
     <name>Matriz (backend)</name>
     <description>API REST da Matriz: gestão de projetos e tarefas</description>
 

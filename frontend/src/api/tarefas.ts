@@ -89,6 +89,19 @@ export function listarTarefas(projetoId: string, filtros: FiltrosTarefas = {}) {
   return pedido<Lista<Tarefa>>(`/projetos/${encodeURIComponent(projetoId)}/tarefas${texto ? `?${texto}` : ''}`)
 }
 
+/** Filtros do quadro geral: os da lista de um projeto mais o projeto (opcional). */
+export interface FiltrosQuadroGeral extends FiltrosTarefas {
+  projetoId?: string
+}
+
+/** Quadro geral da página inicial: tarefas de todos os projetos ativos de que o utilizador é membro. */
+export function listarTodasAsTarefas(filtros: FiltrosQuadroGeral = {}) {
+  const consulta = filtrosParaUrl(filtros)
+  if (filtros.projetoId) consulta.set('projetoId', filtros.projetoId)
+  const texto = consulta.toString()
+  return pedido<Lista<Tarefa>>(`/tarefas${texto ? `?${texto}` : ''}`)
+}
+
 export function criarTarefa(projetoId: string, dados: NovaTarefa) {
   return pedido<Tarefa>(`/projetos/${encodeURIComponent(projetoId)}/tarefas`, { metodo: 'POST', corpo: dados })
 }
