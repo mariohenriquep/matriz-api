@@ -19,6 +19,9 @@ export interface Projeto {
   contagens: Contagens
   criadoEm: string
   atualizadoEm: string
+  /** Arquivado = só de leitura; sai da lista principal. */
+  arquivado: boolean
+  arquivadoEm?: string | null
 }
 
 export interface Membro {
@@ -34,9 +37,21 @@ export interface Lista<T> {
 export const LIMITE_NOME = 100
 export const LIMITE_DESCRICAO = 1000
 
-export function listarProjetos(pesquisa?: string) {
-  const consulta = pesquisa?.trim() ? `?pesquisa=${encodeURIComponent(pesquisa.trim())}` : ''
-  return pedido<Lista<Projeto>>(`/projetos${consulta}`)
+/** Por omissão só os projetos ativos; com `arquivados` só os arquivados. */
+export function listarProjetos(pesquisa?: string, arquivados = false) {
+  const consulta = new URLSearchParams()
+  if (pesquisa?.trim()) consulta.set('pesquisa', pesquisa.trim())
+  if (arquivados) consulta.set('arquivados', 'true')
+  const texto = consulta.toString()
+  return pedido<Lista<Projeto>>(`/projetos${texto ? `?${texto}` : ''}`)
+}
+
+export function arquivarProjeto(id: string) {
+  return pedido<Projeto>(`/projetos/${encodeURIComponent(id)}/arquivar`, { metodo: 'POST' })
+}
+
+export function reativarProjeto(id: string) {
+  return pedido<Projeto>(`/projetos/${encodeURIComponent(id)}/reativar`, { metodo: 'POST' })
 }
 
 export function obterProjeto(id: string) {

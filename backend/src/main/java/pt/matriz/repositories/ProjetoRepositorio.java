@@ -24,6 +24,7 @@ public class ProjetoRepositorio {
 
     private static final String SELECAO_PROJETO = """
             SELECT p.id, p.nome, p.descricao, p.gestor_id, g.nome AS gestor_nome, p.criado_em, p.atualizado_em,
+                   p.arquivado_em,
                    count(t.id) FILTER (WHERE t.estado = 'POR_FAZER') AS por_fazer,
                    count(t.id) FILTER (WHERE t.estado = 'EM_CURSO') AS em_curso,
                    count(t.id) FILTER (WHERE t.estado = 'CONCLUIDA') AS concluidas
@@ -39,12 +40,15 @@ public class ProjetoRepositorio {
         this.jdbc = jdbc;
     }
 
-    /** Só os projetos de que o utilizador é membro; {@code pesquisa} nula devolve todos. */
-    public List<Projeto> listar(long utilizador, String pesquisa) {
+    /**
+     * Só os projetos de que o utilizador é membro, ativos ou arquivados conforme {@code arquivados};
+     * {@code pesquisa} nula devolve todos.
+     */
+    public List<Projeto> listar(long utilizador, String pesquisa, boolean arquivados) {
         MapSqlParameterSource parametros = new MapSqlParameterSource("utilizador", utilizador);
-        String filtro = "";
+        String filtro = arquivados ? "WHERE p.arquivado_em IS NOT NULL " : "WHERE p.arquivado_em IS NULL ";
         if (pesquisa != null) {
-            filtro = "WHERE unaccent(lower(p.nome)) LIKE '%' || unaccent(lower(:pesquisa)) || '%' ESCAPE '\\' ";
+            filtro += "AND unaccent(lower(p.nome)) LIKE '%' || unaccent(lower(:pesquisa)) || '%' ESCAPE '\\' ";
             parametros.addValue("pesquisa", escaparLike(pesquisa));
         }
         return jdbc.query(SELECAO_PROJETO + filtro + "GROUP BY p.id, g.nome ORDER BY lower(p.nome), p.id",
@@ -77,6 +81,19 @@ public class ProjetoRepositorio {
     public void alterarDescricao(long projeto, String descricao) {
         jdbc.update("UPDATE projeto SET descricao = :descricao, atualizado_em = now() WHERE id = :projeto",
                 new MapSqlParameterSource("descricao", descricao).addValue("projeto", projeto));
+    }
+
+    /** Arquiva ({@code true}) ou reativa ({@code false}); arquivar um projeto já arquivado mantém a data. */
+    public void arquivar(long projeto, boolean arquivar) {
+        String sql = arquivar
+                ? "UPDATE projeto SET arquivado_em = coalesce(arquivado_em, now()), atualizado_em = now() WHERE id = :projeto"
+                : "UPDATE projeto SET arquivado_em = NULL, atualizado_em = now() WHERE id = :projeto";
+        jdbc.update(sql, new MapSqlParameterSource("projeto", projeto));
+    }
+
+    public boolean arquivado(long projeto) {
+        return Boolean.TRUE.equals(jdbc.queryForObject("SELECT arquivado_em IS NOT NULL FROM projeto WHERE id = :projeto",
+                new MapSqlParameterSource("projeto", projeto), Boolean.class));
     }
 
     /** Membros, tarefas, atribuições e comentários saem com o projeto ({@code ON DELETE CASCADE}, RN-10). */
@@ -154,7 +171,8 @@ public class ProjetoRepositorio {
         return new Projeto(linha.getLong("id"), linha.getString("nome"), linha.getString("descricao"), gestor,
                 linha.getString("gestor_nome"), gestor == utilizador ? Papel.GESTOR : Papel.MEMBRO,
                 new ContagensTarefas(linha.getLong("por_fazer"), linha.getLong("em_curso"), linha.getLong("concluidas")),
-                linha.getObject("criado_em", OffsetDateTime.class), linha.getObject("atualizado_em", OffsetDateTime.class));
+                linha.getObject("criado_em", OffsetDateTime.class), linha.getObject("atualizado_em", OffsetDateTime.class),
+                linha.getObject("arquivado_em", OffsetDateTime.class));
     }
 
     /** O texto pesquisado é literal: {@code %} e {@code _} não funcionam como curingas. */

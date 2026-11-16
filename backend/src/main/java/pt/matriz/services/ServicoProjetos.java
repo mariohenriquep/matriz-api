@@ -33,13 +33,13 @@ public class ServicoProjetos {
     }
 
     @Transactional(readOnly = true)
-    public List<Projeto> listar(long utilizador, String pesquisa) {
+    public List<Projeto> listar(long utilizador, String pesquisa, boolean arquivados) {
         // O limite conta depois de retirar os espaços das pontas e em caracteres, como nos outros campos (CR-02)
         String texto = CampoTexto.limpo(pesquisa);
         if (texto != null && texto.codePointCount(0, texto.length()) > MAX_PESQUISA) {
             throw ErroApi.validacao("pesquisa", "A pesquisa tem no máximo " + MAX_PESQUISA + " caracteres");
         }
-        return projetos.listar(utilizador, texto);
+        return projetos.listar(utilizador, texto, arquivados);
     }
 
     @Transactional(readOnly = true)
@@ -57,7 +57,7 @@ public class ServicoProjetos {
 
     @Transactional
     public Projeto editar(long projeto, long utilizador, EdicaoProjeto edicao) {
-        acesso.exigirGestor(projeto, utilizador);
+        acesso.exigirGestorAtivo(projeto, utilizador);
         if (edicao.vazia()) {
             throw ErroApi.validacao("nome", "Indica pelo menos um campo a alterar");
         }
@@ -70,6 +70,18 @@ public class ServicoProjetos {
         return obter(projeto, utilizador);
     }
 
+    /**
+     * Arquiva ou reativa o projeto (só o Gestor). Repetir a operação não dá erro: o resultado é o mesmo.
+     * Arquivado, o projeto sai da lista principal e fica só de leitura.
+     */
+    @Transactional
+    public Projeto arquivar(long projeto, long utilizador, boolean arquivar) {
+        acesso.exigirGestor(projeto, utilizador);
+        projetos.arquivar(projeto, arquivar);
+        return obter(projeto, utilizador);
+    }
+
+    /** Também funciona com o projeto arquivado. */
     @Transactional
     public void eliminar(long projeto, long utilizador) {
         acesso.exigirGestor(projeto, utilizador);
@@ -84,7 +96,7 @@ public class ServicoProjetos {
 
     @Transactional
     public Membro adicionarMembro(long projeto, long utilizador, String email) {
-        acesso.exigirGestor(projeto, utilizador);
+        acesso.exigirGestorAtivo(projeto, utilizador);
         long novo = projetos.utilizadorPorEmail(email.trim())
                 .orElseThrow(() -> ErroApi.regraDeNegocio("/erros/utilizador-inexistente",
                         "Não existe utilizador com este email"));
@@ -102,7 +114,7 @@ public class ServicoProjetos {
 
     @Transactional
     public void removerMembro(long projeto, long utilizador, long alvo) {
-        acesso.exigirGestor(projeto, utilizador);
+        acesso.exigirGestorAtivo(projeto, utilizador);
         if (projetos.gestor(projeto) == alvo) {
             throw ErroApi.conflito("O gestor não pode ser removido do projeto");
         }

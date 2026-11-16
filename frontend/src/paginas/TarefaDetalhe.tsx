@@ -101,6 +101,11 @@ export function TarefaDetalhe() {
         <p>
           <Link to={`/projetos/${projeto.id}`}>← {projeto.nome}</Link>
         </p>
+        {projeto.arquivado && (
+          <div className="aviso aviso-arquivo" role="status">
+            <span>O projeto desta tarefa está arquivado. Só de leitura: não podes alterar a tarefa nem comentar.</span>
+          </div>
+        )}
         <DadosDaTarefa
           tarefa={tarefa}
           projeto={projeto}
@@ -109,12 +114,14 @@ export function TarefaDetalhe() {
         />
 
         <Responsaveis
+          soLeitura={projeto.arquivado}
           tarefa={tarefa}
           membros={membros}
           aoMudar={(atual) => setEstado({ ...estado, tarefa: atual })}
         />
 
         <Comentarios
+          soLeitura={projeto.arquivado}
           tarefa={tarefa}
           comentarios={comentarios}
           aoComentar={(novo) =>
@@ -213,6 +220,7 @@ function DadosDaTarefa({
       </p>
       {sucesso && <MensagemSucesso>{sucesso}</MensagemSucesso>}
       {erro && <MensagemErro texto={erro} />}
+      {!projeto.arquivado && (
       <div className="acoes">
         <label className="em-linha">
           Estado
@@ -268,15 +276,18 @@ function DadosDaTarefa({
             </button>
           ))}
       </div>
+      )}
     </section>
   )
 }
 
 function Responsaveis({
+  soLeitura,
   tarefa,
   membros,
   aoMudar,
 }: {
+  soLeitura: boolean
   tarefa: Tarefa
   membros: Membro[]
   aoMudar: (tarefa: Tarefa) => void
@@ -330,7 +341,7 @@ function Responsaveis({
           {tarefa.responsaveis.map((r) => (
             <li key={r.id}>
               <span>{r.nome}</span>
-              {aRemover === r.id ? (
+              {soLeitura ? null : aRemover === r.id ? (
                 <span className="acoes">
                   <span>Remover a atribuição?</span>
                   <button type="button" className="perigo pequeno" onClick={() => void remover(r.id)} disabled={aEnviar}>
@@ -349,7 +360,7 @@ function Responsaveis({
           ))}
         </ul>
       )}
-      {elegiveis.length > 0 ? (
+      {soLeitura ? null : elegiveis.length > 0 ? (
         <form onSubmit={atribuir} className="linha" noValidate>
           <label>
             Atribuir a
@@ -374,10 +385,12 @@ function Responsaveis({
 }
 
 function Comentarios({
+  soLeitura,
   tarefa,
   comentarios,
   aoComentar,
 }: {
+  soLeitura: boolean
   tarefa: Tarefa
   comentarios: Comentario[]
   aoComentar: (comentario: Comentario) => void
@@ -429,6 +442,7 @@ function Comentarios({
       )}
       {sucesso && <MensagemSucesso>Comentário publicado.</MensagemSucesso>}
       {erro && <MensagemErro texto={erro} />}
+      {!soLeitura && (
       <form onSubmit={enviar} noValidate className="formulario">
         <label>
           Novo comentário
@@ -450,6 +464,7 @@ function Comentarios({
           </button>
         </div>
       </form>
+      )}
     </section>
   )
 }

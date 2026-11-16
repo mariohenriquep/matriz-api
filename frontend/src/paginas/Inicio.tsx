@@ -1,20 +1,26 @@
 import { useEffect, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router'
 import { criarProjeto, listarProjetos, somarContagens, type Contagens as ContagensProjeto, type Projeto } from '../api/projetos'
 import { useSessao } from '../auth/useSessao'
 import { Barra } from '../componentes/Barra'
 import { Contagens, Progresso } from '../componentes/Contagens'
 import { ACarregar, MensagemErro, MensagemSucesso } from '../componentes/Estados'
 import { FormularioProjeto } from '../componentes/FormularioProjeto'
+import { formatarDataHora } from '../api/tarefas'
 
 type Estado =
   | { tipo: 'a-carregar' }
   | { tipo: 'erro'; mensagem: string }
   | { tipo: 'pronto'; projetos: Projeto[] }
 
-/** Painel inicial: saudação, resumo das tarefas, projetos acessíveis, pesquisa e criação (Ficha 03, Ex. 4 e 7). */
+/**
+ * Painel inicial: saudação, resumo das tarefas, projetos acessíveis, pesquisa e criação (Ficha 03, Ex. 4 e 7).
+ * Separadores Ativos/Arquivados (arquivo de projetos); o separador fica no URL (`?vista=arquivados`).
+ */
 export function Inicio() {
   const { utilizador } = useSessao()
+  const [parametros, setParametros] = useSearchParams()
+  const arquivados = parametros.get('vista') === 'arquivados'
   const [pesquisa, setPesquisa] = useState('')
   const [pesquisaAplicada, setPesquisaAplicada] = useState('')
   const [estado, setEstado] = useState<Estado>({ tipo: 'a-carregar' })
@@ -47,11 +53,11 @@ export function Inicio() {
 
   useEffect(() => {
     let ativo = true // ignora respostas de pesquisas antigas que cheguem depois
-    listarProjetos(pesquisaAplicada)
+    listarProjetos(pesquisaAplicada, arquivados)
       .then((lista) => {
         if (!ativo) return
         setEstado({ tipo: 'pronto', projetos: lista.itens })
-        if (!pesquisaAplicada.trim()) setResumo({ projetos: lista.itens.length, contagens: somarContagens(lista.itens) })
+        if (!pesquisaAplicada.trim() && !arquivados) setResumo({ projetos: lista.itens.length, contagens: somarContagens(lista.itens) })
       })
       .catch(
         (e) =>
@@ -61,7 +67,14 @@ export function Inicio() {
     return () => {
       ativo = false
     }
-  }, [pesquisaAplicada, versao])
+  }, [pesquisaAplicada, arquivados, versao])
+
+  function mudarVista(paraArquivados: boolean) {
+    if (paraArquivados === arquivados) return
+    setEstado({ tipo: 'a-carregar' })
+    setSucesso(null)
+    setParametros(paraArquivados ? { vista: 'arquivados' } : {}, { replace: true })
+  }
 
   function recarregar() {
     setEstado({ tipo: 'a-carregar' })
@@ -74,6 +87,7 @@ export function Inicio() {
     setSucesso(`Projeto "${projeto.nome}" criado.`)
     setPesquisa('')
     setPesquisaAplicada('')
+    setParametros({}, { replace: true })
     recarregar()
   }
 
@@ -118,6 +132,27 @@ export function Inicio() {
           </section>
         )}
 
+        <div className="separadores" role="tablist" aria-label="Projetos ativos ou arquivados">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={!arquivados}
+            className={!arquivados ? 'ativo' : undefined}
+            onClick={() => mudarVista(false)}
+          >
+            Ativos
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={arquivados}
+            className={arquivados ? 'ativo' : undefined}
+            onClick={() => mudarVista(true)}
+          >
+            Arquivados
+          </button>
+        </div>
+
         <label className="pesquisa">
           Pesquisar pelo nome
           <input type="search" value={pesquisa} onChange={(e) => setPesquisa(e.target.value)} placeholder="ex.: website" />
@@ -131,6 +166,8 @@ export function Inicio() {
           <div className="vazio">
             {pesquisaAplicada.trim() ? (
               <p>Nenhum projeto corresponde a "{pesquisaAplicada.trim()}".</p>
+            ) : arquivados ? (
+              <p>Não há projetos arquivados. O gestor pode arquivar um projeto na página do projeto.</p>
             ) : (
               <>
                 <p>Ainda não participas em nenhum projeto.</p>
@@ -146,13 +183,19 @@ export function Inicio() {
         {estado.tipo === 'pronto' && estado.projetos.length > 0 && (
           <ul className="grelha">
             {estado.projetos.map((projeto) => (
-              <li key={projeto.id} className="cartao">
+              <li key={projeto.id} className={projeto.arquivado ? 'cartao arquivado' : 'cartao'}>
                 <h3>
                   <Link to={`/projetos/${projeto.id}`}>{projeto.nome}</Link>
                 </h3>
                 <p className="suave">
                   {projeto.meuPapel === 'GESTOR' ? 'És o gestor' : `Gestor: ${projeto.gestor.nome}`}
                 </p>
+                {projeto.arquivado && (
+                  <p>
+                    <span className="etiqueta">Arquivado</span>
+                    {projeto.arquivadoEm && <span className="suave"> em {formatarDataHora(projeto.arquivadoEm)}</span>}
+                  </p>
+                )}
                 {projeto.descricao && <p className="descricao">{projeto.descricao}</p>}
                 <Progresso contagens={projeto.contagens} />
                 <Contagens contagens={projeto.contagens} />

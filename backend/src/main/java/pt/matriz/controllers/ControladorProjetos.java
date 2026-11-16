@@ -42,8 +42,9 @@ public class ControladorProjetos {
     }
 
     @GetMapping
-    public Lista<ProjetoResposta> listar(@RequestParam(required = false) String pesquisa) {
-        return Lista.de(servico.listar(utilizadorAtual.id(), pesquisa).stream()
+    public Lista<ProjetoResposta> listar(@RequestParam(required = false) String pesquisa,
+            @RequestParam(defaultValue = "false") boolean arquivados) {
+        return Lista.de(servico.listar(utilizadorAtual.id(), pesquisa, arquivados).stream()
                 .map(ProjetoMapper::paraResposta).toList());
     }
 
@@ -63,6 +64,16 @@ public class ControladorProjetos {
     public ProjetoResposta editar(@PathVariable long projetoId, @RequestBody AlteracaoProjeto alteracao) {
         return ProjetoMapper.paraResposta(
                 servico.editar(projetoId, utilizadorAtual.id(), ProjetoMapper.paraEdicao(alteracao)));
+    }
+
+    @PostMapping("/{projetoId}/arquivar")
+    public ProjetoResposta arquivar(@PathVariable long projetoId) {
+        return ProjetoMapper.paraResposta(servico.arquivar(projetoId, utilizadorAtual.id(), true));
+    }
+
+    @PostMapping("/{projetoId}/reativar")
+    public ProjetoResposta reativar(@PathVariable long projetoId) {
+        return ProjetoMapper.paraResposta(servico.arquivar(projetoId, utilizadorAtual.id(), false));
     }
 
     @DeleteMapping("/{projetoId}")

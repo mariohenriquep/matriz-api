@@ -22,8 +22,8 @@ vi.mock('../api/tarefas', async (original) => ({
   eliminarTarefa: vi.fn(),
 }))
 
-function abrir(utilizador: Utilizador, papel: 'GESTOR' | 'MEMBRO') {
-  vi.mocked(apiProjetos.obterProjeto).mockResolvedValue(umProjeto({ meuPapel: papel }))
+function abrir(utilizador: Utilizador, papel: 'GESTOR' | 'MEMBRO', arquivado = false) {
+  vi.mocked(apiProjetos.obterProjeto).mockResolvedValue(umProjeto({ meuPapel: papel, arquivado }))
   render(
     <ContextoSessao.Provider value={{ utilizador, aviso: null, entrar: vi.fn(), sair: vi.fn() }}>
       <MemoryRouter initialEntries={['/tarefas/t-1']}>
@@ -83,5 +83,18 @@ describe('TarefaDetalhe', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Não tens permissão para eliminar esta tarefa.')
     expect(screen.getByRole('heading', { name: 'Escrever os textos' })).toBeInTheDocument()
+  })
+
+  it('num projeto arquivado a tarefa fica só de leitura', async () => {
+    vi.mocked(apiTarefas.obterTarefa).mockResolvedValue(umaTarefa({ responsaveis: [{ id: rui.id, nome: rui.nome }] }))
+    abrir(ana, 'GESTOR', true)
+
+    expect(await screen.findByRole('heading', { name: 'Escrever os textos' })).toBeInTheDocument()
+    expect(screen.getByText(/O projeto desta tarefa está arquivado/)).toBeInTheDocument()
+    expect(screen.getByText(rui.nome)).toBeInTheDocument()
+    // Só sobra o botão da barra superior
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['Terminar sessão'])
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Novo comentário')).not.toBeInTheDocument()
   })
 })

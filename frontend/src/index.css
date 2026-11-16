@@ -465,3 +465,236 @@ label.opcao {
 .barra button {
   white-space: nowrap;
 }
+
+/* --- Separadores (Ativos/Arquivados, Quadro/Lista) --- */
+.separadores {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: 8px;
+  background: var(--borda);
+  margin-bottom: 1rem;
+}
+
+.cabecalho .separadores {
+  margin: 0 auto 0 0;
+}
+
+.separadores button {
+  padding: 0.3rem 0.875rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--texto-suave);
+  font-weight: 600;
+}
+
+.separadores button.ativo {
+  background: var(--fundo);
+  color: var(--texto);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+/* --- Arquivo de projetos --- */
+.aviso-arquivo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+
+.grelha .cartao.arquivado {
+  border-style: dashed;
+}
+
+.grelha .cartao.arquivado .etiqueta {
+  margin-left: 0;
+}
+
+/* --- Quadro Kanban --- */
+.quadro {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (max-width: 760px) {
+  .quadro {
+    grid-template-columns: 1fr;
+  }
+}
+
+.coluna {
+  --cor-estado: #64748b;
+  border-radius: 12px;
+  padding: 0.75rem;
+  min-height: 12rem;
+  background: color-mix(in srgb, var(--cor-estado) 10%, var(--fundo));
+  border: 2px solid transparent;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.coluna-em_curso {
+  --cor-estado: #f59e0b;
+}
+
+.coluna-concluida {
+  --cor-estado: #10b981;
+}
+
+.coluna-destino {
+  border-color: var(--cor-estado);
+  border-style: dashed;
+  background: color-mix(in srgb, var(--cor-estado) 18%, var(--fundo));
+}
+
+.coluna-topo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.coluna-topo h3 {
+  margin: 0;
+  flex: 1;
+  font-size: 0.95rem;
+}
+
+.ponto {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--cor-estado);
+}
+
+.contador-coluna {
+  min-width: 1.5rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: var(--fundo);
+  color: var(--cor-estado);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.cartoes {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.625rem;
+}
+
+.cartao-tarefa {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--borda);
+  background: var(--fundo);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+}
+
+.cartao-tarefa[draggable='true'] {
+  cursor: grab;
+}
+
+.cartao-tarefa[draggable='true']:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.cartao-tarefa.a-arrastar {
+  opacity: 0.4;
+}
+
+.cartao-tarefa.ocupada {
+  opacity: 0.6;
+}
+
+.coluna-concluida .cartao-tarefa {
+  opacity: 0.85;
+}
+
+.cartao-tarefa .etiqueta {
+  margin-left: 0;
+}
+
+.cartao-titulo {
+  font-weight: 600;
+  color: var(--texto);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.cartao-titulo:hover {
+  text-decoration: underline;
+}
+
+.cartao-rodape {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.avatares {
+  display: flex;
+}
+
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-left: -0.35rem;
+  border-radius: 50%;
+  border: 2px solid var(--fundo);
+  background: linear-gradient(135deg, #5b4cf0, #8b5cf6);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.avatar.mais {
+  background: var(--texto-suave);
+}
+
+.mover select {
+  width: 100%;
+  font-size: 0.8rem;
+  padding: 0.2rem 0.4rem;
+}
+
+.coluna-vazia {
+  margin: 0;
+  padding: 1.25rem 0.5rem;
+  border: 1px dashed var(--borda);
+  border-radius: 10px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+
+.visualmente-escondido {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cartao-tarefa,
+  .coluna {
+    transition: none;
+  }
+}

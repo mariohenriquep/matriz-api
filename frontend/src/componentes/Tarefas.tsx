@@ -22,6 +22,7 @@ import {
 import { useSessao } from '../auth/useSessao'
 import { ACarregar, MensagemErro, MensagemSucesso } from './Estados'
 import { FormularioTarefa } from './FormularioTarefa'
+import { Quadro } from './Quadro'
 
 type Estado =
   | { tipo: 'a-carregar' }
@@ -35,12 +36,22 @@ interface Props {
   aoMudar: () => void
 }
 
-/** Lista de tarefas do projeto com filtros, criação, edição, mudança rápida de estado e eliminação. */
+type Vista = 'quadro' | 'lista'
+
+/**
+ * Tarefas do projeto em quadro Kanban (por omissão) ou em lista, com filtros, criação, edição, mudança de estado
+ * e eliminação. Num projeto arquivado tudo fica só de leitura.
+ */
 export function Tarefas({ projeto, membros, aoMudar }: Props) {
   const { utilizador } = useSessao()
-  // Os filtros vivem no URL: mantêm-se ao voltar do detalhe de uma tarefa, ao recarregar e ao partilhar o link
+  // Os filtros e a vista vivem no URL: mantêm-se ao voltar do detalhe de uma tarefa, ao recarregar e ao partilhar o link
   const [parametros, setParametros] = useSearchParams()
-  const chaveFiltros = filtrosParaUrl(filtrosDoUrl(parametros)).toString()
+  const vista: Vista = parametros.get('vista') === 'lista' ? 'lista' : 'quadro'
+  const soLeitura = projeto.arquivado
+  // No quadro as colunas já separam por estado, por isso o filtro de estado não se aplica
+  const lidos = filtrosDoUrl(parametros)
+  if (vista === 'quadro') delete lidos.estado
+  const chaveFiltros = filtrosParaUrl(lidos).toString()
   const filtros = useMemo(() => filtrosDoUrl(new URLSearchParams(chaveFiltros)), [chaveFiltros])
   const [estado, setEstado] = useState<Estado>({ tipo: 'a-carregar' })
   const [versao, setVersao] = useState(0)
@@ -64,10 +75,53 @@ export function Tarefas({ projeto, membros, aoMudar }: Props) {
   const filtrosAtivos = Boolean(filtros.estado || filtros.prioridade || filtros.responsavelId)
   const souGestor = projeto.meuPapel === 'GESTOR'
 
-  function mudarFiltro(novos: FiltrosTarefas) {
+  function mudarFiltro(novos: FiltrosTarefas, novaVista: Vista = vista) {
     setEstado({ tipo: 'a-carregar' })
+    const url = filtrosParaUrl(novaVista === 'quadro' ? { ...novos, estado: undefined } : novos)
+    if (novaVista === 'lista') url.set('vista', 'lista')
     // replace: mudar de filtro não cria entradas no histórico, por isso "Voltar" sai da página do projeto
-    setParametros(filtrosParaUrl(novos), { replace: true })
+    setParametros(url, { replace: true })
+  }
+
+  function mudarVista(nova: Vista) {
+    if (nova === vista) return
+    setSucesso(null)
+    setAEditar(null)
+    setAConfirmar(null)
+    mudarFiltro(filtros, nova)
+  }
+
+  /**
+   * Mudança de estado no quadro: o cartão muda logo de coluna e volta para trás se a API recusar.
+   * Depois de guardar, o projeto atualiza as contagens.
+   */
+  async function mover(tarefa: Tarefa, novo: EstadoTarefa) {
+    if (ocupada || soLeitura || tarefa.estado === novo) return
+    const trocar = (estadoTarefa: EstadoTarefa) =>
+      setEstado((anterior) =>
+        anterior.tipo === 'pronto'
+          ? { ...anterior, tarefas: anterior.tarefas.map((t) => (t.id === tarefa.id ? { ...t, estado: estadoTarefa } : t)) }
+          : anterior,
+      )
+    setOcupada(tarefa.id)
+    setErroAcao(null)
+    setSucesso(null)
+    trocar(novo)
+    try {
+      const atualizada = await editarTarefa(tarefa.id, { estado: novo })
+      setEstado((anterior) =>
+        anterior.tipo === 'pronto'
+          ? { ...anterior, tarefas: anterior.tarefas.map((t) => (t.id === tarefa.id ? atualizada : t)) }
+          : anterior,
+      )
+      aoMudar()
+      setSucesso(`"${tarefa.titulo}" passou para ${ESTADOS.find((e) => e.valor === novo)?.nome}.`)
+    } catch (e) {
+      trocar(tarefa.estado)
+      setErroAcao(e instanceof Error ? e.message : 'Não foi possível mudar o estado.')
+    } finally {
+      setOcupada(null)
+    }
   }
 
   /**
@@ -137,7 +191,25 @@ export function Tarefas({ projeto, membros, aoMudar }: Props) {
     <section className="cartao" aria-labelledby="titulo-tarefas">
       <div className="cabecalho">
         <h2 id="titulo-tarefas">Tarefas</h2>
-        {!aCriar && (
+        <div className="separadores" role="group" aria-label="Vista das tarefas">
+          <button
+            type="button"
+            aria-pressed={vista === 'quadro'}
+            className={vista === 'quadro' ? 'ativo' : undefined}
+            onClick={() => mudarVista('quadro')}
+          >
+            Quadro
+          </button>
+          <button
+            type="button"
+            aria-pressed={vista === 'lista'}
+            className={vista === 'lista' ? 'ativo' : undefined}
+            onClick={() => mudarVista('lista')}
+          >
+            Lista
+          </button>
+        </div>
+        {!aCriar && !soLeitura && (
           <button type="button" onClick={() => { setACriar(true); setSucesso(null) }}>
             Nova tarefa
           </button>
@@ -152,6 +224,7 @@ export function Tarefas({ projeto, membros, aoMudar }: Props) {
       )}
 
       <div className="filtros" role="group" aria-label="Filtrar tarefas">
+        {vista === 'lista' && (
         <label>
           Estado
           <select
@@ -166,6 +239,7 @@ export function Tarefas({ projeto, membros, aoMudar }: Props) {
             ))}
           </select>
         </label>
+        )}
         <label>
           Prioridade
           <select
@@ -210,7 +284,10 @@ export function Tarefas({ projeto, membros, aoMudar }: Props) {
       {estado.tipo === 'erro' && (
         <MensagemErro texto={estado.mensagem} tentarNovamente={() => { setEstado({ tipo: 'a-carregar' }); setVersao((v) => v + 1) }} />
       )}
-      {estado.tipo === 'pronto' && estado.tarefas.length === 0 && (
+      {estado.tipo === 'pronto' && vista === 'quadro' && (estado.tarefas.length > 0 || !filtrosAtivos) && (
+        <Quadro tarefas={estado.tarefas} soLeitura={soLeitura} ocupada={ocupada} aoMover={(t, e) => void mover(t, e)} />
+      )}
+      {estado.tipo === 'pronto' && estado.tarefas.length === 0 && (vista === 'lista' || filtrosAtivos) && (
         <p className="vazio">
           {filtrosAtivos ? 'Nenhuma tarefa corresponde aos filtros.' : 'Ainda não há tarefas neste projeto.'}
         </p>
@@ -220,7 +297,7 @@ export function Tarefas({ projeto, membros, aoMudar }: Props) {
           A mostrar {estado.tarefas.length} de {projeto.contagens.total} tarefa{projeto.contagens.total === 1 ? '' : 's'}
         </p>
       )}
-      {estado.tipo === 'pronto' && estado.tarefas.length > 0 && (
+      {estado.tipo === 'pronto' && vista === 'lista' && estado.tarefas.length > 0 && (
         <ul className="tarefas">
           {estado.tarefas.map((tarefa) => {
             const podeEliminar = souGestor || tarefa.criador.id === utilizador?.id
@@ -257,6 +334,7 @@ export function Tarefas({ projeto, membros, aoMudar }: Props) {
                   {` · Criada por ${tarefa.criador.nome}`}
                   {tarefa.totalComentarios > 0 && ` · ${tarefa.totalComentarios} comentário(s)`}
                 </p>
+                {!soLeitura && (
                 <div className="acoes">
                   <label className="em-linha">
                     Estado
@@ -305,6 +383,7 @@ export function Tarefas({ projeto, membros, aoMudar }: Props) {
                       </button>
                     ))}
                 </div>
+                )}
               </li>
             )
           })}
