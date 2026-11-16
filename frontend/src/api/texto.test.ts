@@ -4,7 +4,7 @@ import { caracteres } from './texto'
 describe('caracteres', () => {
   it('conta letras simples e acentuadas como um caracter cada', () => {
     expect(caracteres('')).toBe(0)
-    expect(caracteres('Rever logótipo')).toBe(15) // FALHA CONTROLADA (Ficha 05, Ex. 4): a reverter no commit seguinte
+    expect(caracteres('Rever logótipo')).toBe(14)
   })
 
   it('conta um emoji como um só caracter (regressão da Ficha 04, Ex. 2)', () => {
