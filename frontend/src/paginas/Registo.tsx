@@ -60,7 +60,7 @@ export function Registo() {
     setAEnviar(true)
     try {
       const resposta = await registar({ nome: nome.trim(), email: email.trim(), password, site })
-      navegar('/login', { state: { mensagem: resposta.mensagem, email: email.trim() } })
+      void navegar('/login', { state: { mensagem: resposta.mensagem, email: email.trim() } })
     } catch (e) {
       if (e instanceof ErroApi && e.erros.length > 0) {
         const doServidor: Partial<Record<Campo, string>> = {}

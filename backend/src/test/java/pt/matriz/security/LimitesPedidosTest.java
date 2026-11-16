@@ -31,7 +31,8 @@ import pt.matriz.TesteIntegracao;
 class LimitesPedidosTest extends TesteIntegracao {
 
     private static final String ORIGEM = "http://localhost:5173";
-    private static final String CLOUDFLARE = "104.22.17.40";
+    /** Faz de IP do Cloudflare (endereço de documentação, RFC 5737). */
+    private static final String CLOUDFLARE = "203.0.113.40";
 
     @Autowired
     MockMvc mvc;

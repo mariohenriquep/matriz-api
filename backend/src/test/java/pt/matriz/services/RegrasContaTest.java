@@ -39,7 +39,7 @@ class RegrasContaTest {
     @Test
     void oNomeFicaLimpoERecusaCaracteresInvisiveis() {
         assertThat(RegrasConta.nome("  Nova Pessoa ")).isEqualTo("Nova Pessoa");
-        assertThatThrownBy(() -> RegrasConta.nome("Ana‮avlиS")).hasMessage("O nome tem caracteres inválidos");
+        assertThatThrownBy(() -> RegrasConta.nome("Ana\u202EavliS")).hasMessage("O nome tem caracteres inválidos");
         assertThatThrownBy(() -> RegrasConta.nome(" ")).hasMessage("O nome é obrigatório");
         assertThatThrownBy(() -> RegrasConta.nome("a".repeat(101))).hasMessage("O nome tem no máximo 100 caracteres");
     }
