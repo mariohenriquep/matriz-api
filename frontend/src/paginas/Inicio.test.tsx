@@ -1,10 +1,9 @@
-import { render, screen, within } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as apiProjetos from '../api/projetos'
 import * as apiTarefas from '../api/tarefas'
-import { ContextoSessao } from '../auth/contexto'
+import { abrirComSessao } from '../testes/abrir'
 import { ana, umProjeto, umaTarefa } from '../testes/dados'
 import { Inicio } from './Inicio'
 
@@ -18,29 +17,8 @@ vi.mock('../api/tarefas', async (original) => ({
   editarTarefa: vi.fn(),
 }))
 
-function Endereco() {
-  const { search } = useLocation()
-  return <output aria-label="endereço">{search}</output>
-}
-
 function abrir(endereco: string) {
-  render(
-    <ContextoSessao.Provider value={{ utilizador: ana, aviso: null, entrar: vi.fn(), sair: vi.fn() }}>
-      <MemoryRouter initialEntries={[endereco]}>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <Inicio />
-                <Endereco />
-              </>
-            }
-          />
-        </Routes>
-      </MemoryRouter>
-    </ContextoSessao.Provider>,
-  )
+  abrirComSessao(endereco, { '/': <Inicio /> })
 }
 
 function coluna(nome: string) {

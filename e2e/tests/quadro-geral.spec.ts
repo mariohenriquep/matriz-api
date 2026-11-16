@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { PASSWORD_DEMO } from '../ambiente.mjs'
+import { criarProjetoComTarefa, entrar } from './passos'
 
 /**
  * Quadro geral da página inicial: as tarefas de todos os projetos ativos num só Kanban. A Joana vê as tarefas
@@ -9,22 +9,8 @@ test('a Joana vê todas as suas tarefas na página inicial e muda uma de estado'
   const projeto = `Projeto geral E2E ${Date.now()}`
   const titulo = 'Rever o orçamento'
 
-  await page.goto('/')
-  await page.getByLabel('Email').fill('joana@matriz.local')
-  await page.getByLabel('Password').fill(PASSWORD_DEMO)
-  await page.getByRole('button', { name: 'Entrar' }).click()
-  await expect(page.getByRole('heading', { name: 'Olá, Joana Lopes' })).toBeVisible()
-
-  // Um projeto novo com uma tarefa, para não mexer nas tarefas do seed
-  await page.getByRole('button', { name: 'Novo projeto' }).click()
-  await page.getByRole('region', { name: 'Novo projeto' }).getByLabel('Nome').fill(projeto)
-  await page.getByRole('button', { name: 'Criar projeto' }).click()
-  await page.getByRole('link', { name: projeto }).click()
-  const tarefas = page.getByRole('region', { name: 'Tarefas' })
-  await tarefas.getByRole('button', { name: 'Nova tarefa' }).click()
-  await tarefas.getByLabel('Título').fill(titulo)
-  await tarefas.getByRole('button', { name: 'Criar tarefa' }).click()
-  await expect(tarefas.getByRole('link', { name: titulo })).toBeVisible()
+  await entrar(page, 'joana@matriz.local', 'Joana Lopes')
+  await criarProjetoComTarefa(page, projeto, titulo)
 
   // Página inicial, separador "Quadro geral": tarefas de vários projetos, com o nome do projeto no cartão
   await page.getByRole('link', { name: 'Quadro geral' }).click()

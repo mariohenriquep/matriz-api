@@ -1,23 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Projeto } from '../api/projetos'
 import {
-  ESTADOS,
   PRIORIDADES,
-  editarTarefa,
   listarTodasAsTarefas,
-  type EstadoTarefa,
   type FiltrosQuadroGeral,
   type Prioridade,
-  type Tarefa,
 } from '../api/tarefas'
 import { useSessao } from '../auth/useSessao'
 import { ACarregar, MensagemErro, MensagemSucesso } from './Estados'
 import { Quadro } from './Quadro'
-
-type Estado =
-  | { tipo: 'a-carregar' }
-  | { tipo: 'erro'; mensagem: string }
-  | { tipo: 'pronto'; tarefas: Tarefa[] }
+import { useMoverTarefa, type EstadoListaTarefas } from './useMoverTarefa'
 
 interface Props {
   /** Projetos ativos do utilizador (para o filtro e o nome em cada cartão). */
@@ -35,11 +27,9 @@ export function QuadroGeral({ projetos, aoMudar }: Props) {
   const [projetoId, setProjetoId] = useState('')
   const [prioridade, setPrioridade] = useState<Prioridade | ''>('')
   const [soMinhas, setSoMinhas] = useState(false)
-  const [estado, setEstado] = useState<Estado>({ tipo: 'a-carregar' })
+  const [estado, setEstado] = useState<EstadoListaTarefas>({ tipo: 'a-carregar' })
   const [versao, setVersao] = useState(0)
-  const [ocupada, setOcupada] = useState<string | null>(null)
-  const [erroAcao, setErroAcao] = useState<string | null>(null)
-  const [sucesso, setSucesso] = useState<string | null>(null)
+  const { ocupada, erroAcao, setErroAcao, sucesso, setSucesso, mover } = useMoverTarefa(setEstado, aoMudar)
 
   const nomes = useMemo(() => new Map(projetos.map((p) => [p.id, p.nome])), [projetos])
 
@@ -70,31 +60,6 @@ export function QuadroGeral({ projetos, aoMudar }: Props) {
   function recarregar() {
     aCarregar()
     setVersao((v) => v + 1)
-  }
-
-  /** Igual ao quadro de um projeto: o cartão muda logo de coluna e volta para trás se a API recusar. */
-  async function mover(tarefa: Tarefa, novo: EstadoTarefa) {
-    if (ocupada || tarefa.estado === novo) return
-    const trocar = (substituta: Tarefa) =>
-      setEstado((anterior) =>
-        anterior.tipo === 'pronto'
-          ? { ...anterior, tarefas: anterior.tarefas.map((t) => (t.id === tarefa.id ? substituta : t)) }
-          : anterior,
-      )
-    setOcupada(tarefa.id)
-    setErroAcao(null)
-    setSucesso(null)
-    trocar({ ...tarefa, estado: novo })
-    try {
-      trocar(await editarTarefa(tarefa.id, { estado: novo }))
-      aoMudar()
-      setSucesso(`"${tarefa.titulo}" passou para ${ESTADOS.find((e) => e.valor === novo)?.nome}.`)
-    } catch (e) {
-      trocar(tarefa)
-      setErroAcao(e instanceof Error ? e.message : 'Não foi possível mudar o estado.')
-    } finally {
-      setOcupada(null)
-    }
   }
 
   const filtrado = Boolean(projetoId || prioridade || soMinhas)
