@@ -146,3 +146,51 @@ A regra é verificada automaticamente pelo teste `ArquiteturaTest` (ArchUnit), q
 - A consulta periódica das notificações (30 s) é suficiente para os utilizadores [P-30, por confirmar].
 - O frontend e o backend podem ser publicados no mesmo domínio, o que simplifica a autenticação [P-31, por confirmar].
 - D-01, D-02, D-03 e D-05 foram fechadas na Ficha 03 (Exercício 1).
+
+## 8. Execução e entrega (Ficha 05) ✅
+
+A aplicação corre em três containers definidos no [`compose.yaml`](../compose.yaml), na rede `matriz`. O browser fala com o frontend (ficheiros estáticos) e chama a API diretamente; o backend autoriza a origem do frontend por CORS (`MATRIZ_CORS_ORIGENS`).
+
+```mermaid
+flowchart LR
+    B[Browser] -->|"http://localhost:8000"| FE
+    B -->|"REST /api/v1 + JWT<br/>http://localhost:8080"| BE
+
+    subgraph compose["Docker Compose (rede matriz)"]
+        FE["frontend<br/>nginx sem privilégios<br/>build do Vite"]
+        BE["backend<br/>Spring Boot 3, JRE 21<br/>utilizador matriz"]
+        DB[("postgres<br/>PostgreSQL 16")]
+        BE -->|"JDBC postgres:5432"| DB
+    end
+
+    DB --- V[("volume matriz-dados")]
+    ENV[".env (fora do Git)"] -.->|variáveis de ambiente| BE
+    ENV -.-> DB
+```
+
+| Serviço | Imagem | Porta no host | Healthcheck | Arranca depois de |
+|---------|--------|---------------|-------------|-------------------|
+| `postgres` | `postgres:16-alpine` | 5433 (`POSTGRES_PORTA`) | `pg_isready` | — |
+| `backend` | `backend/Dockerfile` (JDK 21 para compilar, JRE 21 para executar) | 8080 (`MATRIZ_PORTA`) | `/actuator/health` = `UP` (inclui a base de dados) | `postgres` saudável |
+| `frontend` | `frontend/Dockerfile` (Node 22 para a build, nginx 1.30 para servir) | 8000 (`MATRIZ_FRONTEND_PORTA`) | `GET /` | `backend` saudável |
+
+- Nenhum segredo fica nas imagens: a password da base de dados e o segredo JWT chegam por variáveis de ambiente, a partir do `.env`.
+- O endereço da API que o browser usa (`VITE_API_URL`) é fixado na build da imagem do frontend.
+- Para desenvolver sem containers, só a base de dados corre em Docker (`docker compose up -d postgres`).
+
+### Pipeline de CI
+
+```mermaid
+flowchart LR
+    PR[pull request<br/>ou push para main] --> BK[backend<br/>mvnw verify]
+    PR --> FT[frontend<br/>lint, testes, build]
+    PR --> E2E[e2e<br/>Playwright]
+    PR --> SEG[seguranca<br/>Trivy no repositório]
+    PR --> QUA[qualidade<br/>SonarQube Cloud]
+    BK --> DK
+    FT --> DK
+    E2E --> DK
+    SEG --> DK[docker<br/>build, Trivy nas imagens,<br/>arranque com healthchecks]
+```
+
+O job `docker` só corre se os quatro primeiros passarem. O `qualidade` corre em paralelo e o quality gate aparece no PR. Detalhe em [`docs/delivery-plan.md`](delivery-plan.md) e no [`README.md`](../README.md#integração-contínua).

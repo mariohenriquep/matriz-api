@@ -16,9 +16,9 @@ Descrição do cliente:
 - Acompanhar o progresso de cada projeto.
 - Garantir que cada pessoa só vê os projetos que lhe dizem respeito *(pressuposto P-14)*.
 
-## Funcionalidades implementadas (versão entregue na Ficha 03)
+## Funcionalidades implementadas (versão 0.5.0)
 
-- **Acesso:** início e fim de sessão com email e password; contas de demonstração criadas por seed.
+- **Acesso:** início e fim de sessão com email e password; o login fica bloqueado 15 minutos depois de 5 tentativas falhadas seguidas; contas de demonstração criadas por seed (desligado por omissão).
 - **Projetos:** criar (quem cria fica Gestor), pesquisar pelo nome, editar e eliminar (só o Gestor, com confirmação; apaga também as tarefas, atribuições e comentários).
 - **Membros:** o Gestor adiciona membros pelo email e remove-os.
 - **Tarefas:** título, descrição, prioridade, data limite e estado (`Por fazer`, `Em curso`, `Concluída`); as que passam do prazo aparecem como "Atrasada". Qualquer membro cria e edita; só quem criou a tarefa ou o Gestor a elimina.
@@ -28,7 +28,18 @@ Descrição do cliente:
 - **Painel inicial** com os projetos acessíveis e o total de tarefas por estado.
 - Cada utilizador só vê e altera os projetos de que é membro, também em pedidos diretos à API.
 
-Ficaram para incrementos seguintes, como extras do MVP original: registo público, administração global, quadro Kanban, notificações, "As minhas tarefas", arquivo de projetos e bloqueio após tentativas de login falhadas. Detalhe em [`docs/requirements.md`](docs/requirements.md), [`docs/user-stories.md`](docs/user-stories.md) e [`docs/implementation-plan.md`](docs/implementation-plan.md).
+Ficaram para incrementos seguintes, como extras do MVP original: registo público, administração global, quadro Kanban, notificações, "As minhas tarefas" e arquivo de projetos. Detalhe em [`docs/requirements.md`](docs/requirements.md), [`docs/user-stories.md`](docs/user-stories.md) e [`docs/implementation-plan.md`](docs/implementation-plan.md).
+
+## Tecnologias
+
+| Componente | Tecnologia |
+|------------|-----------|
+| Backend | Java 21, Spring Boot 3.5 (Web, Security com JWT, Data JPA, Validation, Actuator), Flyway, Maven Wrapper |
+| Base de dados | PostgreSQL 16 |
+| Frontend | React 19, React Router, TypeScript, Vite 8 |
+| Testes | JUnit 5, Testcontainers, ArchUnit; Vitest e Testing Library; Playwright (E2E) |
+| Execução | Docker (imagens multi-stage; frontend servido por nginx sem privilégios) e Docker Compose |
+| CI | GitHub Actions, Trivy (dependências, configuração e imagens) e SonarQube Cloud |
 
 ## Organização da documentação
 
@@ -46,6 +57,11 @@ Ficaram para incrementos seguintes, como extras do MVP original: registo públic
 | [`docs/verification.md`](docs/verification.md) | Verificação do MVP: 9 cenários com evidência, testes, contrato, limitações e exemplos de uso da IA. |
 | [`docs/test-plan.md`](docs/test-plan.md) | Plano de testes (Ficha 04): cenários de tarefas e permissões a partir dos requisitos, nível de teste e teste associado. |
 | [`docs/quality-security-review.md`](docs/quality-security-review.md) | Code Review e Security Review (Ficha 04): IDOR com contas de demonstração, findings com evidência e severidade, análise estática e correções. |
+| [`docs/delivery-plan.md`](docs/delivery-plan.md) | Plano de entrega (Ficha 05): componentes, variáveis de ambiente, estratégia de Docker, Compose e CI. |
+| [`docs/release-notes/`](docs/release-notes/) | Notas de cada versão (a 0.5.0 é a primeira versão candidata). |
+| [`CHANGELOG.md`](CHANGELOG.md) | Registo das alterações de cada versão. |
+| `compose.yaml`, `backend/Dockerfile`, `frontend/Dockerfile` | Execução em containers (ver "Executar com Docker Compose"). |
+| `.github/workflows/ci.yml` | Pipeline de CI (ver "Integração contínua"). |
 | [`docs/ui/`](docs/ui/) | Wireframe do painel do projeto (`wireframe.png`, fonte em `wireframe.html`). |
 | `backend/` | API em Java 21 + Spring Boot 3 (Maven), em clean architecture; migrations Flyway e seed. |
 | `frontend/` | Interface em React + Vite + TypeScript. |
@@ -74,7 +90,7 @@ As dependências só apontam para dentro (`controllers → services → reposito
 
 - **Java 21** (o Maven não é preciso: o backend traz o `mvnw`, que o descarrega).
 - **Node.js 22** e npm.
-- **Docker** com Docker Compose, para a base de dados PostgreSQL 16 e para os testes do backend. Em alternativa à base de dados em Docker, um PostgreSQL 16 instalado localmente (ajusta `MATRIZ_DB_URL`, `POSTGRES_USER` e `POSTGRES_PASSWORD`).
+- **Docker** com Docker Compose, para a base de dados PostgreSQL 16, para os testes do backend e para correr a aplicação completa em containers. Só com o Docker (sem Java nem Node) já se consegue correr a aplicação: ver "Executar com Docker Compose". Em alternativa à base de dados em Docker, um PostgreSQL 16 instalado localmente (ajusta `MATRIZ_DB_URL`, `POSTGRES_USER` e `POSTGRES_PASSWORD`).
 - Opcional, para verificar o contrato: Python 3 com `pyyaml` e `jsonschema`.
 
 Resumo, a partir de uma cópia limpa (cada passo está explicado abaixo):
@@ -157,6 +173,20 @@ docker compose ps              # os três devem ficar "healthy"
 
 Abre http://localhost:8000 (porta em `MATRIZ_FRONTEND_PORTA`); a API fica em http://localhost:8080. O backend só arranca depois de a base de dados estar saudável, e o frontend depois do backend. Os dados ficam no volume `matriz-dados` e mantêm-se com `docker compose down`; `docker compose down -v` apaga-os. O frontend chama a API no endereço `VITE_API_URL`, fixado na build da imagem, e a origem `http://localhost:8000` tem de estar em `MATRIZ_CORS_ORIGENS`.
 
+| Para… | Comando |
+|-------|---------|
+| Validar o `compose.yaml` e o `.env` | `docker compose config -q` |
+| Ver o estado e os healthchecks | `docker compose ps` |
+| Ver os logs | `docker compose logs --tail=50` (ou `docker compose logs -f backend`) |
+| Reconstruir depois de mudar código | `docker compose up -d --build` |
+| Parar (mantém os dados) | `docker compose down` |
+
+Problemas comuns:
+
+- **Porta ocupada** (`port is already allocated`): muda `POSTGRES_PORTA`, `MATRIZ_PORTA` ou `MATRIZ_FRONTEND_PORTA` no `.env`. Não corras o backend com `./mvnw spring-boot:run` e em Docker ao mesmo tempo: os dois usam a 8080.
+- **O backend não fica saudável:** confirma em `docker compose logs backend` que `MATRIZ_JWT_SEGREDO` tem pelo menos 32 caracteres e que `POSTGRES_PASSWORD` é a mesma com que o volume foi criado (se mudaste a password, `docker compose down -v` recria a base de dados e apaga os dados).
+- **O login no frontend falha com erro de rede:** falta `http://localhost:8000` em `MATRIZ_CORS_ORIGENS`, ou o `VITE_API_URL` da imagem não corresponde ao endereço da API (reconstrói com `--build`).
+
 ### Sessão e autenticação
 
 1. O login (`POST /api/v1/auth/login`) devolve um token JWT, válido durante **8 horas a partir do login**, com ou sem atividade.
@@ -183,8 +213,8 @@ cd backend && ./mvnw test     # precisa do Docker: os testes usam um PostgreSQL 
 cd backend && ./mvnw test -Dtest=CampoTextoTest   # só os testes unitários da validação de texto (sem Docker)
 cd backend && ./mvnw test -Dtest=CriarEConsultarTarefaTest   # integração: criar e consultar com commit real e limpeza
 cd frontend && npm test       # testes de componentes e do cliente da API (Vitest + Testing Library, sem backend)
-cd e2e && npm install && npx playwright install chromium   # só da primeira vez
-cd e2e && npx playwright test # E2E: arranca backend (8081) e frontend (5174) sobre a BD matriz_e2e, criada de novo;
+cd e2e && npm ci && npx playwright install chromium   # só da primeira vez
+cd e2e && npm test            # E2E: arranca backend (8081) e frontend (5174) sobre a BD matriz_e2e, criada de novo;
                               # precisa do PostgreSQL do docker compose ligado (docker compose up -d postgres)
 cd frontend && npm run build && npm run lint
 ```
@@ -198,13 +228,35 @@ MATRIZ_SEED_PASSWORD=<valor do .env> python3 scripts/verificar-contrato.py
 
 Os resultados da última verificação, com os 9 cenários da Ficha 03, estão em [`docs/verification.md`](docs/verification.md).
 
+### Documentação da API
+
+O contrato da API está em [`openapi.yaml`](openapi.yaml) (OpenAPI 3.1): todas as operações, esquemas, códigos de resposta e erros. Pode ser lido em qualquer visualizador de OpenAPI, por exemplo a extensão OpenAPI do VS Code ou do IntelliJ, ou colando o ficheiro em https://editor.swagger.io. A API não serve uma página Swagger própria, para não acrescentar dependências; o script `scripts/verificar-contrato.py` confirma que a implementação corresponde ao contrato.
+
+### Integração contínua
+
+Cada pull request e cada push para o `main` corre a pipeline [`.github/workflows/ci.yml`](.github/workflows/ci.yml) no GitHub Actions (separador *Actions* do repositório):
+
+| Job | O que verifica |
+|-----|----------------|
+| Backend | `./mvnw verify`: testes unitários, de arquitetura e de integração |
+| Frontend | lint, testes e build |
+| E2E | o teste Playwright, com um PostgreSQL do Compose |
+| Segurança | Trivy: vulnerabilidades HIGH/CRITICAL com correção nas dependências, configuração e segredos |
+| Qualidade | SonarQube Cloud (quality gate no PR) |
+| Imagens Docker | só depois dos anteriores: build das imagens, Trivy nas imagens e arranque da aplicação com os healthchecks; em tags de versão, publicação no Docker Hub |
+
+Num push de uma tag de versão (`vX.Y.Z`), a mesma pipeline corre de ponta a ponta e, se tudo passar, publica no Docker Hub as imagens que o Trivy analisou: `marrike/matriz-backend` e `marrike/matriz-frontend`, com as tags da versão (por exemplo `0.5.0`) e `latest`. A publicação falha se a tag não corresponder à versão do `pom.xml`, do `openapi.yaml` e dos `package.json`. Precisa da variável `DOCKERHUB_USERNAME` e do secret `DOCKERHUB_TOKEN` nas definições do repositório (*Settings → Secrets and variables → Actions*). A imagem publicada do frontend chama a API em `http://localhost:8080/api/v1`; para outro endereço é preciso construir a imagem com outro `VITE_API_URL`.
+
+A pipeline falha se algum teste falhar, e as imagens só se constroem depois de as verificações passarem. Usa só permissão de leitura do repositório; as credenciais de teste são geradas em cada execução. Exceções aceites do Trivy, com justificação, em [`.trivyignore`](.trivyignore).
+
 ## Estado atual
 
 - ✅ **Fase 1 — Especificação (Ficha PL 01):** requisitos, backlog e restrições.
 - ✅ **Fase 2 — Conceção (Ficha PL 02):** arquitetura, modelo de dados, contrato da API e wireframe.
 - ✅ **Fase 3 — Desenvolvimento (Ficha PL 03):** MVP full-stack implementado (autenticação, projetos e membros, tarefas com filtros, responsáveis, comentários e interface completa), backend em clean architecture, verificado nos 9 cenários da ficha ([`docs/verification.md`](docs/verification.md)) e revisto para entrega. Progresso em [`docs/implementation-plan.md`](docs/implementation-plan.md).
 - ✅ **Fase 4 — Testes e revisão (Ficha PL 04):** plano de testes ([`docs/test-plan.md`](docs/test-plan.md)), testes unitários, de integração com gravação real e E2E com Playwright, e Code Review e Security Review ([`docs/quality-security-review.md`](docs/quality-security-review.md)) com as correções aprovadas, incluindo o bloqueio do login após 5 tentativas falhadas.
+- 🔄 **Fase 5 — Entrega (Ficha PL 05):** containers Docker, Docker Compose, CI no GitHub Actions com Trivy e SonarQube Cloud ([`docs/delivery-plan.md`](docs/delivery-plan.md)). Versão candidata 0.5.0 ([notas](docs/release-notes/v0.5.0.md)).
 
-Versão atual: **0.4.0** (histórico em [`CHANGELOG.md`](CHANGELOG.md)).
+Versão atual: **0.4.0**; candidata: **0.5.0** (histórico em [`CHANGELOG.md`](CHANGELOG.md)).
 
 - ⏭️ **Depois:** os extras do MVP original, começando pelo quadro Kanban e pelo arquivo de projetos.

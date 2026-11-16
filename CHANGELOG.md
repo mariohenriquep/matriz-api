@@ -2,6 +2,29 @@
 
 As versões seguem [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto a major for 0, o contrato pode mudar entre versões menores. Cada versão tem uma tag `vX.Y.Z` no `main`. O mesmo número aparece no contrato (`openapi.yaml`), no backend (`backend/pom.xml`) e no frontend (`frontend/package.json`).
 
+## [0.5.0] - por lançar (versão candidata)
+
+Fase 5: entrega (Ficha PL 05, PRs #17 a #19 e seguintes). Notas da versão em [`docs/release-notes/v0.5.0.md`](docs/release-notes/v0.5.0.md).
+
+### Adicionado
+- Plano de entrega em [`docs/delivery-plan.md`](docs/delivery-plan.md).
+- Imagens Docker do backend (JRE 21, utilizador sem privilégios) e do frontend (nginx sem privilégios), com `.dockerignore` e healthchecks.
+- `compose.yaml` com a aplicação completa (PostgreSQL, backend e frontend), rede própria, volume persistente e arranque ordenado pelos healthchecks.
+- Pipeline de CI no GitHub Actions: testes do backend, do frontend e E2E; Trivy no repositório e nas imagens; SonarQube Cloud; build e arranque das imagens só depois das verificações.
+- Publicação das imagens no Docker Hub (`marrike/matriz-backend` e `marrike/matriz-frontend`, tags da versão e `latest`) num push de uma tag `vX.Y.Z`, depois de todas as verificações.
+- Diagramas Mermaid da execução em containers e da pipeline em [`docs/architecture.md`](docs/architecture.md) §8.
+- README com as tecnologias, a execução com Docker Compose, a documentação da API e a integração contínua.
+
+### Alterado
+- `docker-compose.yml` passa a `compose.yaml`. Para desenvolver só com a base de dados em Docker usa-se `docker compose up -d postgres`.
+- `.env.example`: `MATRIZ_CORS_ORIGENS` inclui `http://localhost:8000`; novas variáveis `MATRIZ_FRONTEND_PORTA` e `VITE_API_URL`.
+- Os testes E2E correm com `npm test` na pasta `e2e/`.
+
+### Segurança
+- Tomcat 10.1.61, Jackson 2.21.8 e driver PostgreSQL 42.7.14 fixados no `pom.xml`, por vulnerabilidades HIGH/CRITICAL encontradas pelo Trivy nas versões do Spring Boot 3.5.16.
+- `.trivyignore` com 2 vulnerabilidades do `spring-webmvc` sem correção na linha 6.2, em partes que a Matriz não usa (XsltView e Server-Sent Events).
+- `npm ci --ignore-scripts` na CI e na imagem do frontend.
+
 ## [0.4.0] - 2026-11-12
 
 Fim da Fase 4: testes e revisão (Ficha PL 04, PRs #12 a #15).
