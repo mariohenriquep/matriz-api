@@ -58,7 +58,8 @@ Ficaram para incrementos seguintes, como extras do MVP original: registo públic
 | [`docs/test-plan.md`](docs/test-plan.md) | Plano de testes (Ficha 04): cenários de tarefas e permissões a partir dos requisitos, nível de teste e teste associado. |
 | [`docs/quality-security-review.md`](docs/quality-security-review.md) | Code Review e Security Review (Ficha 04): IDOR com contas de demonstração, findings com evidência e severidade, análise estática e correções. |
 | [`docs/delivery-plan.md`](docs/delivery-plan.md) | Plano de entrega (Ficha 05): componentes, variáveis de ambiente, estratégia de Docker, Compose e CI. |
-| [`docs/release-notes/`](docs/release-notes/) | Notas de cada versão (a 0.5.0 é a primeira versão candidata). |
+| [`docs/delivery-validation.md`](docs/delivery-validation.md) | Validação final da entrega (Ficha 05): requisitos cumpridos, resultados, problemas e limitações. |
+| [`docs/release-notes/`](docs/release-notes/) | Notas de cada versão (a primeira é a 0.5.0). |
 | [`CHANGELOG.md`](CHANGELOG.md) | Registo das alterações de cada versão. |
 | `compose.yaml`, `backend/Dockerfile`, `frontend/Dockerfile` | Execução em containers (ver "Executar com Docker Compose"). |
 | `.github/workflows/ci.yml` | Pipeline de CI (ver "Integração contínua"). |
@@ -183,8 +184,8 @@ Abre http://localhost:8000 (porta em `MATRIZ_FRONTEND_PORTA`); a API fica em htt
 
 Problemas comuns:
 
-- **Porta ocupada** (`port is already allocated`): muda `POSTGRES_PORTA`, `MATRIZ_PORTA` ou `MATRIZ_FRONTEND_PORTA` no `.env`. Não corras o backend com `./mvnw spring-boot:run` e em Docker ao mesmo tempo: os dois usam a 8080.
-- **O backend não fica saudável:** confirma em `docker compose logs backend` que `MATRIZ_JWT_SEGREDO` tem pelo menos 32 caracteres e que `POSTGRES_PASSWORD` é a mesma com que o volume foi criado (se mudaste a password, `docker compose down -v` recria a base de dados e apaga os dados).
+- **Porta ocupada** (`port is already allocated` ou `address already in use`): muda `POSTGRES_PORTA`, `MATRIZ_PORTA` ou `MATRIZ_FRONTEND_PORTA` no `.env`. Não corras o backend com `./mvnw spring-boot:run` e em Docker ao mesmo tempo: os dois usam a 8080.
+- **O backend não fica saudável** (fica em `Restarting`): confirma em `docker compose logs backend` que `MATRIZ_JWT_SEGREDO` tem pelo menos 32 caracteres e que `POSTGRES_PASSWORD` é a mesma com que o volume foi criado (se mudaste a password, `docker compose down -v` recria a base de dados e apaga os dados).
 - **O login no frontend falha com erro de rede:** falta `http://localhost:8000` em `MATRIZ_CORS_ORIGENS`, ou o `VITE_API_URL` da imagem não corresponde ao endereço da API (reconstrói com `--build`).
 
 ### Sessão e autenticação
@@ -213,7 +214,8 @@ cd backend && ./mvnw test     # precisa do Docker: os testes usam um PostgreSQL 
 cd backend && ./mvnw test -Dtest=CampoTextoTest   # só os testes unitários da validação de texto (sem Docker)
 cd backend && ./mvnw test -Dtest=CriarEConsultarTarefaTest   # integração: criar e consultar com commit real e limpeza
 cd frontend && npm test       # testes de componentes e do cliente da API (Vitest + Testing Library, sem backend)
-cd e2e && npm ci && npx playwright install chromium   # só da primeira vez
+cd frontend && npm run test:cobertura   # os mesmos testes, com relatório de cobertura em frontend/coverage/
+cd e2e && npm ci --ignore-scripts && ./node_modules/.bin/playwright install chromium   # só da primeira vez
 cd e2e && npm test            # E2E: arranca backend (8081) e frontend (5174) sobre a BD matriz_e2e, criada de novo;
                               # precisa do PostgreSQL do docker compose ligado (docker compose up -d postgres)
 cd frontend && npm run build && npm run lint
@@ -242,7 +244,7 @@ Cada pull request e cada push para o `main` corre a pipeline [`.github/workflows
 | Frontend | lint, testes e build |
 | E2E | o teste Playwright, com um PostgreSQL do Compose |
 | Segurança | Trivy: vulnerabilidades HIGH/CRITICAL com correção nas dependências, configuração e segredos |
-| Qualidade | SonarQube Cloud (quality gate no PR) |
+| Qualidade | testes do backend e do frontend com cobertura (JaCoCo e Vitest) e SonarQube Cloud (quality gate no PR) |
 | Imagens Docker | só depois dos anteriores: build das imagens, Trivy nas imagens e arranque da aplicação com os healthchecks; em tags de versão, publicação no Docker Hub |
 
 Num push de uma tag de versão (`vX.Y.Z`), a mesma pipeline corre de ponta a ponta e, se tudo passar, publica no Docker Hub as imagens que o Trivy analisou: `marrike/matriz-backend` e `marrike/matriz-frontend`, com as tags da versão (por exemplo `0.5.0`) e `latest`. A publicação falha se a tag não corresponder à versão do `pom.xml`, do `openapi.yaml` e dos `package.json`. Precisa da variável `DOCKERHUB_USERNAME` e do secret `DOCKERHUB_TOKEN` nas definições do repositório (*Settings → Secrets and variables → Actions*). A imagem publicada do frontend chama a API em `http://localhost:8080/api/v1`; para outro endereço é preciso construir a imagem com outro `VITE_API_URL`.
@@ -255,8 +257,8 @@ A pipeline falha se algum teste falhar, e as imagens só se constroem depois de 
 - ✅ **Fase 2 — Conceção (Ficha PL 02):** arquitetura, modelo de dados, contrato da API e wireframe.
 - ✅ **Fase 3 — Desenvolvimento (Ficha PL 03):** MVP full-stack implementado (autenticação, projetos e membros, tarefas com filtros, responsáveis, comentários e interface completa), backend em clean architecture, verificado nos 9 cenários da ficha ([`docs/verification.md`](docs/verification.md)) e revisto para entrega. Progresso em [`docs/implementation-plan.md`](docs/implementation-plan.md).
 - ✅ **Fase 4 — Testes e revisão (Ficha PL 04):** plano de testes ([`docs/test-plan.md`](docs/test-plan.md)), testes unitários, de integração com gravação real e E2E com Playwright, e Code Review e Security Review ([`docs/quality-security-review.md`](docs/quality-security-review.md)) com as correções aprovadas, incluindo o bloqueio do login após 5 tentativas falhadas.
-- 🔄 **Fase 5 — Entrega (Ficha PL 05):** containers Docker, Docker Compose, CI no GitHub Actions com Trivy e SonarQube Cloud ([`docs/delivery-plan.md`](docs/delivery-plan.md)). Versão candidata 0.5.0 ([notas](docs/release-notes/v0.5.0.md)).
+- ✅ **Fase 5 — Entrega (Ficha PL 05):** containers Docker, Docker Compose, CI no GitHub Actions com Trivy, SonarQube Cloud e cobertura dos testes, publicação das imagens no Docker Hub ([`docs/delivery-plan.md`](docs/delivery-plan.md), validação em [`docs/delivery-validation.md`](docs/delivery-validation.md)). Versão 0.5.0 ([notas](docs/release-notes/v0.5.0.md)).
 
-Versão atual: **0.4.0**; candidata: **0.5.0** (histórico em [`CHANGELOG.md`](CHANGELOG.md)).
+Versão atual: **0.5.0** (histórico em [`CHANGELOG.md`](CHANGELOG.md)).
 
 - ⏭️ **Depois:** os extras do MVP original, começando pelo quadro Kanban e pelo arquivo de projetos.

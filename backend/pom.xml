@@ -13,7 +13,7 @@
 
     <groupId>pt.matriz</groupId>
     <artifactId>matriz-backend</artifactId>
-    <version>0.4.0</version>
+    <version>0.5.0</version>
     <name>Matriz (backend)</name>
     <description>API REST da Matriz: gestão de projetos e tarefas</description>
 
@@ -104,6 +104,27 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!-- Cobertura dos testes: relatório em target/site/jacoco/jacoco.xml no "verify", lido pelo SonarQube Cloud -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.16</version>
+                <executions>
+                    <execution>
+                        <id>preparar-agente</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>relatorio</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

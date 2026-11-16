@@ -11,5 +11,12 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/testes/preparar.ts'],
+    // npm run test:cobertura: relatório lcov em coverage/, lido pelo SonarQube Cloud na CI
+    coverage: {
+      provider: 'v8',
+      reporter: ['text-summary', 'lcov'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.test.{ts,tsx}', 'src/testes/**', 'src/main.tsx', 'src/**/*.d.ts'],
+    },
   },
 })
