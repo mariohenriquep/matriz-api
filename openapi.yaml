@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Matriz API
-  version: 0.5.0
+  version: 0.6.0
   summary: Contrato REST do MVP da Matriz (Ficha 03).
   description: |
     Contrato completo para o âmbito da Ficha 03: autenticação, projetos e membros, tarefas,
@@ -33,12 +33,17 @@ info:
     | 401 | Sem token, token inválido ou expirado. |
     | 403 | É membro do projeto, mas não tem o papel necessário (ex.: só o Gestor edita o projeto). |
     | 404 | O recurso não existe **ou** o utilizador não é membro do projeto (não se revela a existência, CE-07). |
-    | 409 | Conflito com o estado atual (ex.: responsável já atribuído, utilizador já é membro). |
+    | 409 | Conflito com o estado atual (ex.: responsável já atribuído, utilizador já é membro, projeto arquivado). |
     | 422 | Pedido bem formado que viola uma regra de negócio (ex.: responsável não é membro). |
 
     Em qualquer endereço, a API pode ainda responder, no mesmo formato e sem estar repetido em cada
     operação: `404` para uma rota inexistente, `405` para um método não suportado, `415` para um corpo
     que não é JSON e `500` para um erro inesperado (sem detalhes internos).
+
+    **Projetos arquivados:** um projeto arquivado fica só de leitura. Qualquer operação que altere o
+    projeto, os seus membros, tarefas, responsáveis ou comentários responde `409` com o tipo
+    `/erros/projeto-arquivado` (sem estar repetido em cada operação). Consultar, reativar e eliminar
+    continuam possíveis. Quem não é membro continua a receber `404`.
 
     **Paginação:** não existe no MVP (P-01, RNF-08). As listas vêm em `{ itens, total }`, para se
     poder acrescentar paginação sem quebrar o contrato.
@@ -142,7 +147,7 @@ paths:
       operationId: listarProjetos
       summary: Listar os projetos acessíveis
       description: |
-        Devolve os projetos de que o utilizador é membro, com as contagens de tarefas por estado
+        Devolve os projetos ativos (ou, com `arquivados=true`, os arquivados) de que o utilizador é membro, com as contagens de tarefas por estado
         (usadas no painel inicial). Ordenados por nome.
       parameters:
         - name: pesquisa
@@ -152,6 +157,13 @@ paths:
           schema:
             type: string
             maxLength: 100
+        - name: arquivados
+          in: query
+          required: false
+          description: "`true` devolve só os projetos arquivados; por omissão, só os ativos."
+          schema:
+            type: boolean
+            default: false
       responses:
         '200':
           description: Lista (pode estar vazia).
@@ -252,9 +264,56 @@ paths:
       description: |
         Elimina o projeto e, na mesma transação, as suas tarefas, atribuições, comentários e
         membros (RN-10). A interface pede confirmação antes de chamar esta operação.
+        Funciona também com o projeto arquivado.
       responses:
         '204':
           description: Projeto eliminado.
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+
+  /projetos/{projetoId}/arquivar:
+    parameters:
+      - $ref: '#/components/parameters/ProjetoId'
+    post:
+      tags: [Projetos]
+      operationId: arquivarProjeto
+      summary: Arquivar projeto (só Gestor)
+      description: |
+        O projeto sai da lista principal e fica só de leitura, com as tarefas e os comentários.
+        Arquivar um projeto já arquivado não é erro e mantém a data original.
+      responses:
+        '200':
+          description: Projeto arquivado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Projeto'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+
+  /projetos/{projetoId}/reativar:
+    parameters:
+      - $ref: '#/components/parameters/ProjetoId'
+    post:
+      tags: [Projetos]
+      operationId: reativarProjeto
+      summary: Reativar projeto arquivado (só Gestor)
+      description: Volta a aceitar alterações. Reativar um projeto ativo não é erro.
+      responses:
+        '200':
+          description: Projeto ativo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Projeto'
         '401':
           $ref: '#/components/responses/NaoAutenticado'
         '403':
@@ -732,7 +791,7 @@ components:
 
     Projeto:
       type: object
-      required: [id, nome, gestor, meuPapel, contagens, criadoEm, atualizadoEm]
+      required: [id, nome, gestor, meuPapel, contagens, criadoEm, atualizadoEm, arquivado]
       properties:
         id:
           $ref: '#/components/schemas/Id'
@@ -752,6 +811,13 @@ components:
         atualizadoEm:
           type: string
           format: date-time
+        arquivado:
+          type: boolean
+          description: Projeto arquivado (só de leitura).
+        arquivadoEm:
+          type: [string, 'null']
+          format: date-time
+          description: Quando foi arquivado; `null` se estiver ativo.
 
     Membro:
       type: object

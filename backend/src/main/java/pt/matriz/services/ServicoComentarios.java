@@ -36,7 +36,7 @@ public class ServicoComentarios {
     /** O autor é o utilizador autenticado e a data é a do servidor. */
     @Transactional
     public Comentario criar(long tarefa, long utilizador, String conteudo) {
-        acesso.exigirMembroDaTarefa(tarefa, utilizador);
+        acesso.exigirMembroDaTarefaAtiva(tarefa, utilizador);
         long id = comentarios.criar(tarefa, utilizador, CONTEUDO.validar(conteudo));
         return comentarios.obter(id).orElseThrow();
     }

@@ -21,6 +21,8 @@ export function umProjeto(alteracoes: Partial<Projeto> = {}): Projeto {
     contagens: { POR_FAZER: 1, EM_CURSO: 1, CONCLUIDA: 1, total: 3 },
     criadoEm: '2026-10-01T09:00:00Z',
     atualizadoEm: '2026-10-01T09:00:00Z',
+    arquivado: false,
+    arquivadoEm: null,
     ...alteracoes,
   }
 }

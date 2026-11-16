@@ -2,6 +2,22 @@
 
 As versões seguem [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto a major for 0, o contrato pode mudar entre versões menores. Cada versão tem uma tag `vX.Y.Z` no `main`. O mesmo número aparece no contrato (`openapi.yaml`), no backend (`backend/pom.xml`) e no frontend (`frontend/package.json`).
 
+## [0.6.0] - 2026-11-16
+
+Extras do MVP depois das fichas (RF-15 e RF-18). Notas da versão em [`docs/release-notes/v0.6.0.md`](docs/release-notes/v0.6.0.md).
+
+### Adicionado
+- Quadro Kanban na página do projeto (vista por omissão; a lista continua disponível em "Lista"): uma coluna por estado, arrastar um cartão muda o estado (US-13). Cada cartão tem também um seletor "Mover para", para teclado e ecrãs táteis. A vista fica no URL (`?vista=lista`).
+- Arquivo de projetos (US-16): `POST /projetos/{id}/arquivar` e `POST /projetos/{id}/reativar` (só o Gestor), `GET /projetos?arquivados=true`, campos `arquivado` e `arquivadoEm` no `Projeto`. Migração `V4__arquivo_projetos.sql`.
+- Separadores "Ativos" e "Arquivados" no painel inicial; aviso e botão "Reativar projeto" num projeto arquivado.
+- Novo visual, a partir da proposta aprovada no Figma: barra lateral escura (no telemóvel passa para o topo), cartões arredondados com sombra e efeito ao passar o rato, cartões de resumo por estado no painel, cores por estado e por prioridade, gradiente violeta na marca, modo escuro revisto e tipo de letra Inter servido pela própria aplicação (`@fontsource-variable/inter`, sem pedidos a serviços externos).
+- Testes: `ArquivoProjetosTest` (backend), `Quadro.test.tsx` e novos casos no frontend, E2E `quadro-e-arquivo.spec.ts` (arrastar no Chromium, arquivar e reativar).
+
+### Alterado
+- Na página do projeto, as tarefas aparecem antes dos membros.
+- Um projeto arquivado fica só de leitura: alterar o projeto, membros, tarefas, responsáveis ou comentários dá `409` com o tipo `/erros/projeto-arquivado` (RN-04, CE-05). Consultar e eliminar continuam possíveis.
+- A lista de projetos (`GET /projetos`) devolve por omissão só os projetos ativos, e o resumo do painel conta só esses.
+
 ## [0.5.0] - 2026-11-16
 
 Fase 5: entrega (Ficha PL 05, PRs #17 a #21). Validação final em [`docs/delivery-validation.md`](docs/delivery-validation.md). Notas da versão em [`docs/release-notes/v0.5.0.md`](docs/release-notes/v0.5.0.md).

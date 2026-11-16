@@ -13,6 +13,7 @@ import pt.matriz.repositories.ProjetoRepositorio;
  * <ul>
  *   <li>Quem não é membro recebe 404, como se o recurso não existisse (CE-07).</li>
  *   <li>Um membro sem o papel necessário recebe 403.</li>
+ *   <li>Alterar um projeto arquivado, ou as suas tarefas, dá 409 (os métodos {@code ...Ativo}).</li>
  * </ul>
  */
 @Component
@@ -34,6 +35,32 @@ public class ControloAcesso {
     public void exigirGestor(long projetoId, long utilizadorId) {
         if (exigirMembro(projetoId, utilizadorId) != Papel.GESTOR) {
             throw ErroApi.semPermissao("Só o gestor do projeto pode fazer esta operação");
+        }
+    }
+
+    /** Como {@link #exigirMembro}, e 409 se o projeto estiver arquivado (só leitura). */
+    public Papel exigirMembroAtivo(long projetoId, long utilizadorId) {
+        Papel papel = exigirMembro(projetoId, utilizadorId);
+        exigirAtivo(projetoId);
+        return papel;
+    }
+
+    /** Como {@link #exigirGestor}, e 409 se o projeto estiver arquivado. */
+    public void exigirGestorAtivo(long projetoId, long utilizadorId) {
+        exigirGestor(projetoId, utilizadorId);
+        exigirAtivo(projetoId);
+    }
+
+    /** Como {@link #exigirMembroDaTarefa}, e 409 se o projeto da tarefa estiver arquivado. */
+    public long exigirMembroDaTarefaAtiva(long tarefaId, long utilizadorId) {
+        long projeto = exigirMembroDaTarefa(tarefaId, utilizadorId);
+        exigirAtivo(projeto);
+        return projeto;
+    }
+
+    private void exigirAtivo(long projetoId) {
+        if (projetos.arquivado(projetoId)) {
+            throw ErroApi.projetoArquivado();
         }
     }
 

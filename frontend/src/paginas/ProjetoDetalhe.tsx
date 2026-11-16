@@ -3,10 +3,12 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { ErroApi } from '../api/cliente'
 import {
   adicionarMembro,
+  arquivarProjeto,
   editarProjeto,
   eliminarProjeto,
   listarMembros,
   obterProjeto,
+  reativarProjeto,
   removerMembro,
   type Membro,
   type Projeto,
@@ -23,7 +25,7 @@ type Estado =
   | { tipo: 'erro'; mensagem: string }
   | { tipo: 'pronto'; projeto: Projeto; membros: Membro[] }
 
-/** Detalhe do projeto: dados, edição e eliminação (só Gestor), membros e tarefas. */
+/** Detalhe do projeto: dados, edição, arquivo e eliminação (só Gestor), membros e tarefas. */
 export function ProjetoDetalhe() {
   const { projetoId = '' } = useParams()
   const navegar = useNavigate()
@@ -32,6 +34,7 @@ export function ProjetoDetalhe() {
   const [aEditar, setAEditar] = useState(false)
   const [aConfirmarEliminar, setAConfirmarEliminar] = useState(false)
   const [aEliminar, setAEliminar] = useState(false)
+  const [aArquivar, setAArquivar] = useState(false)
   const [erroAcao, setErroAcao] = useState<string | null>(null)
   // Mensagem deixada por outra página (por exemplo, depois de eliminar uma tarefa no detalhe)
   const [sucesso, setSucesso] = useState<string | null>(
@@ -108,6 +111,24 @@ export function ProjetoDetalhe() {
       })
   }
 
+  /** Arquivar é reversível, por isso não pede confirmação. */
+  async function alternarArquivo() {
+    if (aArquivar) return
+    setAArquivar(true)
+    setErroAcao(null)
+    setSucesso(null)
+    try {
+      const atual = projeto.arquivado ? await reativarProjeto(projeto.id) : await arquivarProjeto(projeto.id)
+      setEstado((anterior) => (anterior.tipo === 'pronto' ? { ...anterior, projeto: atual } : anterior))
+      setAEditar(false)
+      setSucesso(atual.arquivado ? 'Projeto arquivado. Fica só de leitura até ser reativado.' : 'Projeto reativado.')
+    } catch (e) {
+      setErroAcao(e instanceof Error ? e.message : 'Não foi possível mudar o arquivo do projeto.')
+    } finally {
+      setAArquivar(false)
+    }
+  }
+
   async function eliminar() {
     if (aEliminar) return
     setAEliminar(true)
@@ -126,11 +147,24 @@ export function ProjetoDetalhe() {
       <Barra />
       <main className="conteudo">
         <p>
-          <Link to="/">← Os meus projetos</Link>
+          <Link to={projeto.arquivado ? '/?vista=arquivados' : '/'}>← Os meus projetos</Link>
         </p>
 
         {sucesso && <MensagemSucesso>{sucesso}</MensagemSucesso>}
         {erroAcao && <MensagemErro texto={erroAcao} />}
+
+        {projeto.arquivado && (
+          <div className="aviso aviso-arquivo" role="status">
+            <span>
+              Este projeto está arquivado. Só de leitura: não podes criar, mover nem editar tarefas.
+            </span>
+            {souGestor && (
+              <button type="button" onClick={() => void alternarArquivo()} disabled={aArquivar}>
+                {aArquivar ? 'A reativar…' : 'Reativar projeto'}
+              </button>
+            )}
+          </div>
+        )}
 
         {aEditar ? (
           <section className="cartao" aria-label="Editar projeto">
@@ -149,9 +183,21 @@ export function ProjetoDetalhe() {
               <h1>{projeto.nome}</h1>
               {souGestor && (
                 <span className="acoes">
-                  <button type="button" className="secundario" onClick={() => { setAEditar(true); setSucesso(null) }}>
-                    Editar
-                  </button>
+                  {!projeto.arquivado && (
+                    <>
+                      <button type="button" className="secundario" onClick={() => { setAEditar(true); setSucesso(null) }}>
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        className="secundario"
+                        onClick={() => void alternarArquivo()}
+                        disabled={aArquivar}
+                      >
+                        {aArquivar ? 'A arquivar…' : 'Arquivar'}
+                      </button>
+                    </>
+                  )}
                   <button
                     type="button"
                     className="perigo"
@@ -189,13 +235,13 @@ export function ProjetoDetalhe() {
           </div>
         )}
 
+        <Tarefas projeto={projeto} membros={membros} aoMudar={atualizarContagens} />
+
         <Membros
           projeto={projeto}
           membros={membros}
           aoMudar={(novos) => setEstado({ tipo: 'pronto', projeto, membros: novos })}
         />
-
-        <Tarefas projeto={projeto} membros={membros} aoMudar={atualizarContagens} />
       </main>
     </>
   )
@@ -210,7 +256,8 @@ function Membros({
   membros: Membro[]
   aoMudar: (membros: Membro[]) => void
 }) {
-  const souGestor = projeto.meuPapel === 'GESTOR'
+  // Num projeto arquivado ninguém gere membros
+  const souGestor = projeto.meuPapel === 'GESTOR' && !projeto.arquivado
   const [email, setEmail] = useState('')
   const [aEnviar, setAEnviar] = useState(false)
   const [erro, setErro] = useState<string | null>(null)

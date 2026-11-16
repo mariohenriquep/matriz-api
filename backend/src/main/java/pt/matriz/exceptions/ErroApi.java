@@ -41,6 +41,12 @@ public class ErroApi extends RuntimeException {
         return new ErroApi(HttpStatus.CONFLICT, "/erros/conflito", "Conflito", detalhe);
     }
 
+    /** 409: o projeto está arquivado e só pode ser consultado, reativado ou eliminado. */
+    public static ErroApi projetoArquivado() {
+        return new ErroApi(HttpStatus.CONFLICT, "/erros/projeto-arquivado", "Conflito",
+                "O projeto está arquivado: reativa-o para fazer alterações");
+    }
+
     public static ErroApi regraDeNegocio(String tipo, String detalhe) {
         return new ErroApi(HttpStatus.UNPROCESSABLE_ENTITY, tipo, "Regra de negócio", detalhe);
     }

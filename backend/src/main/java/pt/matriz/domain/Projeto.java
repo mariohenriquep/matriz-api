@@ -12,5 +12,11 @@ public record Projeto(
         Papel meuPapel,
         ContagensTarefas contagens,
         OffsetDateTime criadoEm,
-        OffsetDateTime atualizadoEm) {
+        OffsetDateTime atualizadoEm,
+        /** {@code null} se o projeto estiver ativo. */
+        OffsetDateTime arquivadoEm) {
+
+    public boolean arquivado() {
+        return arquivadoEm != null;
+    }
 }

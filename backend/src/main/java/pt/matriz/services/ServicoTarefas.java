@@ -52,7 +52,7 @@ public class ServicoTarefas {
     /** Estado inicial {@code POR_FAZER}; o criador é sempre o utilizador autenticado. */
     @Transactional
     public Tarefa criar(long projeto, long utilizador, CriacaoTarefa nova) {
-        acesso.exigirMembro(projeto, utilizador);
+        acesso.exigirMembroAtivo(projeto, utilizador);
         List<Long> responsaveis = responsaveisValidos(projeto, nova.responsavelIds());
         Prioridade prioridade = nova.prioridade() == null ? Prioridade.MEDIA : nova.prioridade();
         long id = tarefas.criar(projeto, TITULO.validar(nova.titulo()), DESCRICAO.validar(nova.descricao()), prioridade,
@@ -64,7 +64,7 @@ public class ServicoTarefas {
     /** Qualquer membro edita, incluindo estado e prioridade; qualquer transição de estado é permitida (P-04). */
     @Transactional
     public Tarefa editar(long tarefa, long utilizador, EdicaoTarefa edicao) {
-        acesso.exigirMembroDaTarefa(tarefa, utilizador);
+        acesso.exigirMembroDaTarefaAtiva(tarefa, utilizador);
         if (edicao.vazia()) {
             throw ErroApi.validacao("titulo", "Indica pelo menos um campo a alterar");
         }
@@ -90,7 +90,7 @@ public class ServicoTarefas {
     /** Só o criador da tarefa ou o Gestor do projeto. */
     @Transactional
     public void eliminar(long tarefa, long utilizador) {
-        long projeto = acesso.exigirMembroDaTarefa(tarefa, utilizador);
+        long projeto = acesso.exigirMembroDaTarefaAtiva(tarefa, utilizador);
         boolean gestor = acesso.exigirMembro(projeto, utilizador) == Papel.GESTOR;
         if (!gestor && tarefas.criador(tarefa) != utilizador) {
             throw ErroApi.semPermissao("Só quem criou a tarefa ou o gestor do projeto a pode eliminar");
@@ -104,7 +104,7 @@ public class ServicoTarefas {
      */
     @Transactional
     public Tarefa atribuir(long tarefa, long utilizador, long responsavel) {
-        long projeto = acesso.exigirMembroDaTarefa(tarefa, utilizador);
+        long projeto = acesso.exigirMembroDaTarefaAtiva(tarefa, utilizador);
         if (!tarefas.naoMembros(projeto, List.of(responsavel)).isEmpty()) {
             throw ErroApi.regraDeNegocio("/erros/responsavel-nao-membro", "O responsável tem de ser membro do projeto");
         }
@@ -122,7 +122,7 @@ public class ServicoTarefas {
 
     @Transactional
     public void removerResponsavel(long tarefa, long utilizador, long responsavel) {
-        acesso.exigirMembroDaTarefa(tarefa, utilizador);
+        acesso.exigirMembroDaTarefaAtiva(tarefa, utilizador);
         if (tarefas.removerResponsavel(tarefa, responsavel) == 0) {
             throw ErroApi.naoEncontrado("Este utilizador não é responsável pela tarefa");
         }

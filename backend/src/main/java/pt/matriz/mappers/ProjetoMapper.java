@@ -20,7 +20,8 @@ public final class ProjetoMapper {
     public static ProjetoResposta paraResposta(Projeto projeto) {
         return new ProjetoResposta(String.valueOf(projeto.id()), projeto.nome(), projeto.descricao(),
                 new ResumoUtilizador(String.valueOf(projeto.gestorId()), projeto.gestorNome()), projeto.meuPapel(),
-                paraResposta(projeto.contagens()), projeto.criadoEm(), projeto.atualizadoEm());
+                paraResposta(projeto.contagens()), projeto.criadoEm(), projeto.atualizadoEm(), projeto.arquivado(),
+                projeto.arquivadoEm());
     }
 
     public static Contagens paraResposta(ContagensTarefas contagens) {
