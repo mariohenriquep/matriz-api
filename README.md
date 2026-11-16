@@ -251,6 +251,10 @@ Num push de uma tag de versão (`vX.Y.Z`), a mesma pipeline corre de ponta a pon
 
 A pipeline falha se algum teste falhar, e as imagens só se constroem depois de as verificações passarem. Usa só permissão de leitura do repositório; as credenciais de teste são geradas em cada execução. Exceções aceites do Trivy, com justificação, em [`.trivyignore`](.trivyignore).
 
+### Deploy no Render
+
+A aplicação pode ser publicada no plano gratuito do Render a partir do Blueprint [`render.yaml`](render.yaml): PostgreSQL gratuito, backend a partir da imagem do Docker Hub e frontend como site estático. Passos, limites do plano gratuito (o backend adormece, a base de dados expira ao fim de 30 dias) e atualizações em [`docs/deploy-render.md`](docs/deploy-render.md).
+
 ## Estado atual
 
 - ✅ **Fase 1 — Especificação (Ficha PL 01):** requisitos, backlog e restrições.

@@ -1,0 +1,100 @@
+# Deploy da Matriz no plano gratuito do Render (Blueprint). Guia completo em docs/deploy-render.md.
+# Três peças: PostgreSQL gratuito, backend a partir da imagem do Docker Hub (publicada pela CI na tag)
+# e frontend como site estático (construído pelo Render a partir deste repositório).
+# Os valores marcados com "sync: false" são pedidos pelo Render ao criar o Blueprint e nunca ficam no Git.
+
+databases:
+  - name: matriz-db
+    plan: free
+    region: frankfurt
+    postgresMajorVersion: "16"
+    databaseName: matriz
+    user: matriz
+
+services:
+  # Backend (Spring Boot). Para mudar de versão, alterar a tag da imagem num PR depois de publicada.
+  - type: web
+    name: matriz-backend
+    runtime: image
+    image:
+      url: docker.io/marrike/matriz-backend:0.7.1
+    plan: free
+    region: frankfurt
+    healthCheckPath: /actuator/health
+    envVars:
+      # Porta onde o Render encaminha o tráfego (a imagem escuta na 8080)
+      - key: PORT
+        value: "8080"
+      # Arranque mais rápido e menos memória na instância gratuita (0,1 CPU, 512 MB)
+      - key: JAVA_TOOL_OPTIONS
+        value: -XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xss512k
+      # Base de dados pela rede privada do Render (mesma região); o backend monta o endereço JDBC
+      - key: MATRIZ_DB_HOST
+        fromDatabase:
+          name: matriz-db
+          property: host
+      - key: MATRIZ_DB_PORTA
+        fromDatabase:
+          name: matriz-db
+          property: port
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: matriz-db
+          property: database
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: matriz-db
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: matriz-db
+          property: password
+      # Segredo aleatório gerado pelo Render (256 bits em base64)
+      - key: MATRIZ_JWT_SEGREDO
+        generateValue: true
+      # Endereço do frontend no Render, por exemplo https://matriz-frontend.onrender.com
+      - key: MATRIZ_CORS_ORIGENS
+        sync: false
+      - key: MATRIZ_FUSO_HORARIO
+        value: Europe/Lisbon
+      # Sem registo de contas na aplicação: as contas de demonstração são a forma de entrar.
+      # Só são criadas se a base de dados estiver vazia. A password é escolhida ao criar o Blueprint.
+      - key: MATRIZ_SEED_ATIVO
+        value: "true"
+      - key: MATRIZ_SEED_PASSWORD
+        sync: false
+
+  # Frontend (React/Vite) como site estático: não adormece e é servido por CDN
+  - type: web
+    name: matriz-frontend
+    runtime: static
+    buildCommand: cd frontend && npm ci --ignore-scripts --no-audit --no-fund && npm run build
+    staticPublishPath: frontend/dist
+    # Só volta a construir quando o frontend muda no main
+    buildFilter:
+      paths:
+        - frontend/**
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Endereço público do backend, por exemplo https://matriz-backend.onrender.com/api/v1 (fixado na build)
+      - key: VITE_API_URL
+        sync: false
+    routes:
+      # Aplicação de página única: as rotas do React Router devolvem o index.html
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Referrer-Policy
+        value: same-origin
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
