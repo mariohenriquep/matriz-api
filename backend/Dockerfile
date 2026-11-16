@@ -17,7 +17,8 @@ RUN ./mvnw -B -q package -DskipTests && cp target/matriz-backend-*.jar app.jar
 
 # 2) Execução: só o JRE e o JAR, com um utilizador sem privilégios
 FROM eclipse-temurin:21-jre-alpine
-RUN addgroup -S matriz && adduser -S -G matriz matriz
+# Correções de segurança do Alpine publicadas depois da imagem base (encontradas pelo Trivy)
+RUN apk upgrade --no-cache && addgroup -S matriz && adduser -S -G matriz matriz
 WORKDIR /app
 COPY --from=build /app/app.jar app.jar
 USER matriz
@@ -25,5 +26,5 @@ ENV MATRIZ_PORTA=8080
 EXPOSE 8080
 # Saudável quando a API responde e a base de dados está ligada ({"status":"UP"})
 HEALTHCHECK --interval=10s --timeout=3s --start-period=60s --retries=5 \
-  CMD wget -qO- "http://localhost:${MATRIZ_PORTA}/actuator/health" | grep -q '"status":"UP"' || exit 1
+  CMD wget -qO- "http://127.0.0.1:${MATRIZ_PORTA}/actuator/health" | grep -q '"status":"UP"' || exit 1
 ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "app.jar"]
