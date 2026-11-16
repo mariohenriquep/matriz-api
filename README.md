@@ -243,7 +243,9 @@ Cada pull request e cada push para o `main` corre a pipeline [`.github/workflows
 | E2E | o teste Playwright, com um PostgreSQL do Compose |
 | Segurança | Trivy: vulnerabilidades HIGH/CRITICAL com correção nas dependências, configuração e segredos |
 | Qualidade | SonarQube Cloud (quality gate no PR) |
-| Imagens Docker | só depois dos anteriores: build das imagens, Trivy nas imagens e arranque da aplicação com os healthchecks |
+| Imagens Docker | só depois dos anteriores: build das imagens, Trivy nas imagens e arranque da aplicação com os healthchecks; em tags de versão, publicação no Docker Hub |
+
+Num push de uma tag de versão (`vX.Y.Z`), a mesma pipeline corre de ponta a ponta e, se tudo passar, publica no Docker Hub as imagens que o Trivy analisou: `marrike/matriz-backend` e `marrike/matriz-frontend`, com as tags da versão (por exemplo `0.5.0`) e `latest`. A publicação falha se a tag não corresponder à versão do `pom.xml`, do `openapi.yaml` e dos `package.json`. Precisa da variável `DOCKERHUB_USERNAME` e do secret `DOCKERHUB_TOKEN` nas definições do repositório (*Settings → Secrets and variables → Actions*). A imagem publicada do frontend chama a API em `http://localhost:8080/api/v1`; para outro endereço é preciso construir a imagem com outro `VITE_API_URL`.
 
 A pipeline falha se algum teste falhar, e as imagens só se constroem depois de as verificações passarem. Usa só permissão de leitura do repositório; as credenciais de teste são geradas em cada execução. Exceções aceites do Trivy, com justificação, em [`.trivyignore`](.trivyignore).
 

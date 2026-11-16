@@ -1,13 +1,16 @@
 # Integração contínua da Matriz (Ficha 05, Ex. 4).
 # Corre em cada pull request e em cada push para o main: testes e build do backend e do frontend, teste E2E,
 # análise de segurança (Trivy) e de qualidade (SonarQube Cloud) e, só se as verificações passarem, a construção
-# das imagens Docker, a análise das imagens e um arranque de verificação. Não publica nada.
+# das imagens Docker, a análise das imagens e um arranque de verificação. Só num push de uma tag vX.Y.Z
+# é que as imagens verificadas são publicadas no Docker Hub (passos no fim do job docker).
 # As actions estão fixadas por commit (SHA), com a versão em comentário, para não mudarem sem revisão.
 name: CI
 
 on:
   push:
     branches: [main]
+    # Uma tag de versão (por exemplo v0.5.0) corre a pipeline completa e publica as imagens
+    tags: ['v*.*.*']
   pull_request:
   workflow_dispatch:
 
@@ -203,6 +206,40 @@ jobs:
         run: |
           curl -fsS http://localhost:8080/actuator/health | grep -q '"status":"UP"'
           curl -fsS http://localhost:8000/ | grep -q '<title>Matriz</title>'
+      # Publicação no Docker Hub, só em tags de versão. Publica as mesmas imagens que o Trivy analisou e que
+      # arrancaram acima. Precisa da variável DOCKERHUB_USERNAME e do secret DOCKERHUB_TOKEN (Read & Write).
+      - name: Confirmar a versão e a configuração do Docker Hub
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+          TEM_TOKEN: ${{ secrets.DOCKERHUB_TOKEN != '' }}
+        run: |
+          VERSAO="${GITHUB_REF_NAME#v}"
+          if [ -z "$DOCKERHUB_USERNAME" ] || [ "$TEM_TOKEN" != "true" ]; then
+            echo "::error::Falta a variável DOCKERHUB_USERNAME ou o secret DOCKERHUB_TOKEN."; exit 1
+          fi
+          # A tag tem de corresponder à versão registada no código
+          for FICHEIRO in frontend/package.json e2e/package.json; do
+            V="$(node -p "require('./$FICHEIRO').version")"
+            [ "$V" = "$VERSAO" ] || { echo "::error::$FICHEIRO tem a versão $V, a tag é $GITHUB_REF_NAME."; exit 1; }
+          done
+          grep -q "<version>$VERSAO</version>" backend/pom.xml || { echo "::error::backend/pom.xml não tem a versão $VERSAO."; exit 1; }
+          grep -q "^  version: $VERSAO" openapi.yaml || { echo "::error::openapi.yaml não tem a versão $VERSAO."; exit 1; }
+          echo "VERSAO=$VERSAO" >> "$GITHUB_ENV"
+      - name: Publicar as imagens no Docker Hub
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+          for IMAGEM in matriz-backend matriz-frontend; do
+            for TAG in "$VERSAO" latest; do
+              docker tag "$IMAGEM:local" "$DOCKERHUB_USERNAME/$IMAGEM:$TAG"
+              docker push "$DOCKERHUB_USERNAME/$IMAGEM:$TAG"
+            done
+          done
+          docker logout
       - name: Logs dos serviços
         if: always()
         run: docker compose logs --tail=50

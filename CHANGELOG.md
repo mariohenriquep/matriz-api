@@ -11,6 +11,7 @@ Fase 5: entrega (Ficha PL 05, PRs #17 a #19 e seguintes). Notas da versão em [`
 - Imagens Docker do backend (JRE 21, utilizador sem privilégios) e do frontend (nginx sem privilégios), com `.dockerignore` e healthchecks.
 - `compose.yaml` com a aplicação completa (PostgreSQL, backend e frontend), rede própria, volume persistente e arranque ordenado pelos healthchecks.
 - Pipeline de CI no GitHub Actions: testes do backend, do frontend e E2E; Trivy no repositório e nas imagens; SonarQube Cloud; build e arranque das imagens só depois das verificações.
+- Publicação das imagens no Docker Hub (`marrike/matriz-backend` e `marrike/matriz-frontend`, tags da versão e `latest`) num push de uma tag `vX.Y.Z`, depois de todas as verificações.
 - Diagramas Mermaid da execução em containers e da pipeline em [`docs/architecture.md`](docs/architecture.md) §8.
 - README com as tecnologias, a execução com Docker Compose, a documentação da API e a integração contínua.
 
