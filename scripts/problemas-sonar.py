@@ -2,8 +2,8 @@
 """Mostra no log da CI os problemas que o SonarQube Cloud encontrou no código novo (sem abrir o site).
 
 Corre depois da análise: espera que o SonarQube Cloud acabe de processar o relatório (.scannerwork/report-task.txt)
-e lista os problemas abertos do pull request (SONAR_PR) ou do ramo (SONAR_RAMO). O projeto é público: a API de
-leitura não precisa do token. Nunca falha o job: só informa.
+e lista os problemas abertos do pull request (SONAR_PR) ou do ramo (SONAR_RAMO), com o SONAR_TOKEN. Nunca falha o
+job: só informa.
 """
 import json
 import os
@@ -16,7 +16,8 @@ PROJETO = 'mariohenriquep_matriz-api'
 
 
 def obter(url):
-    with urllib.request.urlopen(url, timeout=30) as resposta:
+    pedido = urllib.request.Request(url, headers={'Authorization': f"Bearer {os.environ.get('SONAR_TOKEN', '')}"})
+    with urllib.request.urlopen(pedido, timeout=30) as resposta:
         return json.load(resposta)
 
 
@@ -27,7 +28,12 @@ def esperar_processamento():
     except OSError:
         return
     for _ in range(36):  # até 3 minutos
-        estado = obter(tarefa['ceTaskUrl'])['task']['status']
+        try:
+            estado = obter(tarefa['ceTaskUrl'])['task']['status']
+        except OSError as erro:
+            print(f'Estado do processamento indisponível ({erro}); a continuar.')
+            time.sleep(20)
+            return
         if estado not in ('PENDING', 'IN_PROGRESS'):
             print(f'Processamento no SonarQube Cloud: {estado}')
             return

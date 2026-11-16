@@ -131,7 +131,7 @@ jobs:
     timeout-minutes: 20
     steps:
       # O token só chega aos passos que precisam dele: este, que só verifica se existe,
-      # e o da análise. Sem o secret (fork ou projeto ainda não criado) a análise é saltada e o job passa.
+      # o da análise e o que lista os problemas. Sem o secret (fork ou projeto ainda não criado) a análise é saltada e o job passa.
       - name: Verificar se o SONAR_TOKEN existe
         id: token
         env:
@@ -177,6 +177,7 @@ jobs:
       - name: Problemas encontrados pelo SonarQube Cloud
         if: steps.token.outputs.existe == 'sim'
         env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_PR: ${{ github.event.pull_request.number }}
           SONAR_RAMO: ${{ github.ref_name }}
         run: python3 scripts/problemas-sonar.py
