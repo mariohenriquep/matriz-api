@@ -71,11 +71,19 @@ public class FiltroLimitePedidos extends OncePerRequestFilter {
                 ? registoPorIp.tentar(ip).or(() -> registoTotal.tentar(TOTAL))
                 : loginPorIp.tentar(ip);
         if (esperar.isPresent()) {
-            log.warn("Limite de pedidos atingido em {} para {}", registo ? "registo" : "login", ip);
+            // O IP não vai para o log (vem de um cabeçalho do pedido: risco de injeção nos logs). O número de
+            // entradas do X-Forwarded-For chega para confirmar MATRIZ_PROXIES_CONFIAVEIS (ver docs/deploy-render.md).
+            log.warn("Limite de pedidos atingido em {} (X-Forwarded-For com {} entradas)",
+                    registo ? "registo" : "login", entradasEncaminhamento(pedido));
             recusar(resposta, esperar.get());
             return;
         }
         cadeia.doFilter(pedido, resposta);
+    }
+
+    private static int entradasEncaminhamento(HttpServletRequest pedido) {
+        String cabecalho = pedido.getHeader("X-Forwarded-For");
+        return cabecalho == null || cabecalho.isBlank() ? 0 : cabecalho.split(",").length;
     }
 
     private void recusar(HttpServletResponse resposta, Duration esperar) throws IOException {

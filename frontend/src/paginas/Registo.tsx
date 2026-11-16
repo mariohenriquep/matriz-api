@@ -11,12 +11,20 @@ type Campo = 'nome' | 'email' | 'password' | 'confirmacao'
 export const MIN_PASSWORD = 8
 const MAX_PASSWORD = 64
 
+/** Uma arroba, sem espaços, com algo antes e um domínio com ponto depois (o backend valida o resto). */
+function pareceEmail(email: string) {
+  const partes = email.split('@')
+  if (partes.length !== 2 || /\s/.test(email)) return false
+  const [local, dominio] = partes
+  return local.length > 0 && dominio.includes('.') && !dominio.startsWith('.') && !dominio.endsWith('.')
+}
+
 /** Verificações rápidas antes de enviar; as regras completas (ex.: passwords comuns) são do backend. */
 function validar(nome: string, email: string, password: string, confirmacao: string) {
   const erros: Partial<Record<Campo, string>> = {}
   if (!nome.trim()) erros.nome = 'O nome é obrigatório'
   if (!email.trim()) erros.email = 'O email é obrigatório'
-  else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) erros.email = 'O email não é válido'
+  else if (!pareceEmail(email.trim())) erros.email = 'O email não é válido'
   const tamanho = caracteres(password)
   if (tamanho < MIN_PASSWORD) erros.password = `A password tem de ter pelo menos ${MIN_PASSWORD} caracteres`
   else if (tamanho > MAX_PASSWORD) erros.password = `A password tem no máximo ${MAX_PASSWORD} caracteres`
@@ -70,8 +78,12 @@ export function Registo() {
     const mensagem = erros[nomeCampo]
     return {
       'aria-invalid': mensagem ? true : undefined,
-      'aria-describedby': mensagem ? `erro-${nomeCampo}` : nomeCampo === 'password' ? 'ajuda-password' : undefined,
+      'aria-describedby': mensagem ? `erro-${nomeCampo}` : ajudaDe(nomeCampo),
     }
+  }
+
+  function ajudaDe(nomeCampo: Campo) {
+    return nomeCampo === 'password' ? 'ajuda-password' : undefined
   }
 
   function erroDe(nomeCampo: Campo) {

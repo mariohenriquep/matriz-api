@@ -27,12 +27,10 @@ final class RegrasConta {
 
     private static final CampoTexto NOME = CampoTexto.obrigatorio("nome", "O nome", MAX_NOME);
 
-    /**
-     * Uma só arroba, sem espaços nem caracteres de controlo, e um domínio com pelo menos um ponto
-     * (o {@code @Email} do Bean Validation aceita "ana@local", que não recebe emails).
-     */
-    private static final Pattern EMAIL = Pattern.compile(
-            "^[^@\\s\\p{Cntrl}]+@[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)+$");
+    /** Parte antes da arroba: sem espaços nem caracteres de controlo (nem outra arroba). */
+    private static final Pattern LOCAL = Pattern.compile("[^@\\s\\p{Cntrl}]+");
+    /** Cada parte do domínio: letras, números e hífenes, sem hífen nas pontas. */
+    private static final Pattern ROTULO = Pattern.compile("[A-Za-z0-9-]+");
 
     /** Caracteres de controlo e de formatação invisíveis (ex.: U+202E, que inverte o texto) não entram no nome. */
     private static final Pattern INVISIVEIS = Pattern.compile("[\\p{Cc}\\p{Cf}]");
@@ -64,11 +62,32 @@ final class RegrasConta {
             throw ErroApi.validacao("email", "O email é obrigatório");
         }
         String normalizado = limpo.toLowerCase(Locale.ROOT);
-        if (normalizado.length() > MAX_EMAIL || !EMAIL.matcher(normalizado).matches()
-                || normalizado.indexOf('@') > MAX_LOCAL_EMAIL) {
+        if (normalizado.length() > MAX_EMAIL || !emailValido(normalizado)) {
             throw ErroApi.validacao("email", "O email não é válido");
         }
         return normalizado;
+    }
+
+    /**
+     * Uma só arroba, parte local sem espaços nem caracteres de controlo, e um domínio com pelo menos um ponto
+     * (o {@code @Email} do Bean Validation aceita "ana@local", que não recebe emails). Verificado por partes, sem
+     * uma expressão regular com repetições encaixadas (lentas com textos maliciosos).
+     */
+    private static boolean emailValido(String email) {
+        int arroba = email.indexOf('@');
+        if (arroba < 1 || arroba > MAX_LOCAL_EMAIL || !LOCAL.matcher(email.substring(0, arroba)).matches()) {
+            return false;
+        }
+        String[] rotulos = email.substring(arroba + 1).split("\\.", -1);
+        if (rotulos.length < 2) {
+            return false;
+        }
+        for (String rotulo : rotulos) {
+            if (!ROTULO.matcher(rotulo).matches() || rotulo.startsWith("-") || rotulo.endsWith("-")) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
