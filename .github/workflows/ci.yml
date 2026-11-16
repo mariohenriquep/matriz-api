@@ -173,6 +173,13 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@e805d875275f728fac1885b413934be6d7c63f65 # v8.4.1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      # Lista no log os problemas do código novo, para os ver sem abrir o SonarQube Cloud (não falha o job)
+      - name: Problemas encontrados pelo SonarQube Cloud
+        if: steps.token.outputs.existe == 'sim'
+        env:
+          SONAR_PR: ${{ github.event.pull_request.number }}
+          SONAR_RAMO: ${{ github.ref_name }}
+        run: python3 scripts/problemas-sonar.py
 
   docker:
     name: Imagens Docker (build e arranque)
