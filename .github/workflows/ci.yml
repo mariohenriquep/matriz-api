@@ -128,7 +128,7 @@ jobs:
   qualidade:
     name: Qualidade (SonarQube Cloud)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       # O token só chega aos passos que precisam dele: este, que só verifica se existe,
       # e o da análise. Sem o secret (fork ou projeto ainda não criado) a análise é saltada e o job passa.
@@ -150,11 +150,24 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
-      # O analisador de Java precisa das classes compiladas (sonar.java.binaries)
-      - name: Compilar o backend
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.token.outputs.existe == 'sim'
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      # O analisador de Java precisa das classes compiladas (sonar.java.binaries); o verify também corre os testes
+      # e gera a cobertura do JaCoCo (backend/target/site/jacoco/jacoco.xml)
+      - name: Testes do backend com cobertura
         if: steps.token.outputs.existe == 'sim'
         working-directory: backend
-        run: ./mvnw -B -q test-compile
+        run: ./mvnw -B -q verify
+      - name: Testes do frontend com cobertura (frontend/coverage/lcov.info)
+        if: steps.token.outputs.existe == 'sim'
+        working-directory: frontend
+        run: |
+          npm ci --ignore-scripts
+          npm run test:cobertura
       - name: Análise SonarQube Cloud (configuração em sonar-project.properties)
         if: steps.token.outputs.existe == 'sim'
         uses: SonarSource/sonarqube-scan-action@e805d875275f728fac1885b413934be6d7c63f65 # v8.4.1
