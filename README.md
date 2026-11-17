@@ -151,4 +151,4 @@ Versão atual: **0.8.0**. Histórico em [`CHANGELOG.md`](CHANGELOG.md) e notas d
 
 ## Autor
 
-**Mário Henrique** · [GitHub](https://github.com/mariohenriquep)
+**Mário Henrique Pinto** · [LinkedIn](https://www.linkedin.com/in/mariohenriquep/) · [GitHub](https://github.com/mariohenriquep) · [pinmariohenrique@gmail.com](mailto:pinmariohenrique@gmail.com)
