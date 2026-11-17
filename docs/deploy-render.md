@@ -21,7 +21,7 @@ O browser chama a API diretamente (`VITE_API_URL`) e o backend autoriza a origem
 
 ## Contas de demonstração
 
-A aplicação não tem registo de contas, por isso no Render o seed fica ligado (`MATRIZ_SEED_ATIVO=true`): no primeiro arranque, com a base de dados vazia, cria as contas `ana@matriz.local`, `rui@matriz.local` e `joana@matriz.local` e os três projetos de exemplo, todos com a password `MATRIZ_SEED_PASSWORD`. Esta password é escolhida por quem cria o Blueprint e nunca entra no Git. Como o site é público, usar uma password forte (por exemplo `openssl rand -base64 18`). O seed não volta a correr enquanto houver utilizadores.
+Desde a 0.8.0 há registo público ("Criar conta" na página inicial), mas as contas novas ficam no plano gratuito e não criam projetos. Por isso no Render o seed continua ligado (`MATRIZ_SEED_ATIVO=true`): no primeiro arranque, com a base de dados vazia, cria as contas `ana@matriz.local`, `rui@matriz.local` e `joana@matriz.local` e os três projetos de exemplo, todos com a password `MATRIZ_SEED_PASSWORD`. Esta password é escolhida por quem cria o Blueprint e nunca entra no Git. Como o site é público, usar uma password forte (por exemplo `openssl rand -base64 18`). O seed não volta a correr enquanto houver utilizadores.
 
 ## Primeira instalação
 
@@ -61,8 +61,14 @@ Para continuar depois de a base de dados gratuita expirar sem pagar: apagar a ba
 | `MATRIZ_DB_HOST`, `MATRIZ_DB_PORTA`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | backend | base de dados `matriz-db` |
 | `MATRIZ_JWT_SEGREDO` | backend | gerado pelo Render |
 | `MATRIZ_CORS_ORIGENS`, `MATRIZ_SEED_PASSWORD` | backend | pedidos ao criar o Blueprint |
-| `MATRIZ_SEED_ATIVO`, `MATRIZ_FUSO_HORARIO`, `PORT`, `JAVA_TOOL_OPTIONS` | backend | `render.yaml` |
+| `MATRIZ_SEED_ATIVO`, `MATRIZ_FUSO_HORARIO`, `MATRIZ_PROXIES_CONFIAVEIS`, `PORT`, `JAVA_TOOL_OPTIONS` | backend | `render.yaml` |
 | `VITE_API_URL` | frontend (build) | pedido ao criar o Blueprint |
 | `NODE_VERSION` | frontend (build) | `render.yaml` |
 
 O backend aceita o endereço da base de dados de duas formas: `MATRIZ_DB_URL` com o endereço JDBC completo (desenvolvimento e Docker Compose) ou, sem ela, as partes `MATRIZ_DB_HOST`, `MATRIZ_DB_PORTA` e `POSTGRES_DB` (Render, que não dá um endereço JDBC).
+
+## Limites de pedidos atrás do Render (0.8.0)
+
+O login (10 por minuto) e o registo (5 por hora, 50 por hora no total) têm limites por IP. No Render, o pedido passa pelo Cloudflare e pelo balanceador do Render antes de chegar ao backend, e cada um acrescenta uma entrada ao `X-Forwarded-For`. Com `MATRIZ_PROXIES_CONFIAVEIS=2` o backend usa a penúltima entrada, a que o Cloudflare escreveu com o IP real; as entradas mais à esquerda podem ser inventadas pelo cliente e nunca são usadas.
+
+Confirmar depois do deploy: quando um IP passa o limite (por exemplo, 11 logins errados num minuto), o backend escreve nos logs `Limite de pedidos atingido em login (X-Forwarded-For com N entradas)`. O IP não vai para o log, porque vem de um cabeçalho que o cliente controla (risco de injeção nos logs). Com o browser normal, N deve ser 2; se for 1 ou 3, ajustar `MATRIZ_PROXIES_CONFIAVEIS` no Render para esse número. Mesmo com o valor errado, o limite total de registos continua a travar a criação de contas em massa.

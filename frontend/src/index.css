@@ -1299,3 +1299,325 @@ body:has(.cartao-login) {
     transition: none !important;
   }
 }
+
+/* --- Páginas públicas: apresentação, registo e login (versão 0.8.0) --- */
+a.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  padding: 0.55rem 1rem;
+  border: 1px solid transparent;
+  border-radius: var(--raio-pequeno);
+  background: var(--gradiente);
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 6px 16px -6px rgba(91, 76, 240, 0.55);
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s, color 0.15s;
+}
+
+a.botao:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px -8px rgba(91, 76, 240, 0.6);
+}
+
+a.botao.secundario {
+  background: var(--superficie);
+  color: var(--texto);
+  border-color: var(--borda);
+  box-shadow: var(--sombra);
+}
+
+a.botao.secundario:hover {
+  border-color: var(--marca);
+  color: var(--marca);
+}
+
+a.botao.grande {
+  padding: 0.8rem 1.4rem;
+  font-size: 1.02rem;
+}
+
+body:has(.publico) {
+  background:
+    radial-gradient(60rem 30rem at 10% -10%, color-mix(in srgb, var(--marca) 22%, transparent), transparent),
+    radial-gradient(50rem 30rem at 110% 60%, color-mix(in srgb, var(--marca-2) 16%, transparent), transparent),
+    var(--fundo);
+  min-height: 100vh;
+}
+
+.publico {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.topo-publico {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 0;
+}
+
+.topo-publico .marca {
+  color: var(--texto);
+  padding: 0;
+}
+
+.topo-publico nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.publico .cartao-login {
+  margin-top: 6vh;
+}
+
+.troca-conta {
+  margin-top: 1.25rem;
+  text-align: center;
+}
+
+.ajuda {
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+/* Armadilha para robôs: fora do ecrã (não display:none, que alguns robôs detetam) */
+.armadilha {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.destaque {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 3rem;
+  padding: 4rem 0 3rem;
+}
+
+.sobretitulo {
+  color: var(--marca);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.destaque h1 {
+  font-size: clamp(2rem, 4.2vw, 3.1rem);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  margin: 0.5rem 0 1rem;
+}
+
+.destaque-descricao {
+  font-size: 1.1rem;
+  color: var(--texto-suave);
+  max-width: 34rem;
+}
+
+.destaque-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.quadro-exemplo {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 20px;
+  box-shadow: var(--sombra-alta);
+  transform: rotate(-1.5deg);
+}
+
+.exemplo-coluna {
+  display: grid;
+  align-content: start;
+  gap: 0.5rem;
+  padding: 0.6rem;
+  border-radius: 12px;
+  min-height: 13rem;
+}
+
+.exemplo-coluna.por-fazer {
+  background: var(--por-fazer-suave);
+}
+
+.exemplo-coluna.em-curso {
+  background: var(--em-curso-suave);
+}
+
+.exemplo-coluna.concluida {
+  background: var(--concluida-suave);
+}
+
+.exemplo-titulo {
+  font-weight: 700;
+  font-size: 0.8rem;
+  margin: 0 0 0.25rem;
+}
+
+.exemplo-cartao {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.6rem;
+  background: var(--superficie);
+  border-radius: 10px;
+  box-shadow: var(--sombra);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.exemplo-coluna.em-curso .exemplo-cartao {
+  animation: flutuar 3.5s ease-in-out infinite;
+}
+
+.exemplo-prioridade {
+  justify-self: start;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+}
+
+.exemplo-prioridade.alta {
+  color: var(--alta);
+  background: var(--alta-suave);
+}
+
+.exemplo-prioridade.media {
+  color: var(--media);
+  background: var(--media-suave);
+}
+
+@keyframes flutuar {
+  50% {
+    transform: translateY(-6px);
+    box-shadow: var(--sombra-alta);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exemplo-coluna.em-curso .exemplo-cartao {
+    animation: none;
+  }
+}
+
+.seccao-publica {
+  padding: 2.5rem 0;
+}
+
+.seccao-publica > h2 {
+  font-size: 1.6rem;
+  margin-bottom: 1.25rem;
+}
+
+.funcionalidades {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1rem;
+}
+
+.funcionalidades .cartao {
+  margin: 0;
+}
+
+.funcionalidade-icone {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-bottom: 0.75rem;
+  border-radius: 12px;
+  background: var(--marca-suave);
+  color: var(--marca);
+  font-size: 1.2rem;
+}
+
+.passos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1rem;
+}
+
+.passos li {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+}
+
+.passo-numero {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: var(--gradiente);
+  color: #fff;
+  font-weight: 700;
+}
+
+.nota-plano {
+  margin-top: 1.5rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--raio-pequeno);
+  background: var(--marca-suave);
+  color: var(--texto);
+}
+
+.rodape-publico {
+  padding: 2rem 0 2.5rem;
+  border-top: 1px solid var(--borda);
+  margin-top: 1.5rem;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 860px) {
+  .destaque {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding-top: 2rem;
+  }
+
+  .quadro-exemplo {
+    transform: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .publico {
+    padding: 0 1rem;
+  }
+
+  .topo-publico nav .botao {
+    padding: 0.45rem 0.7rem;
+  }
+
+  .quadro-exemplo {
+    gap: 0.4rem;
+    padding: 0.6rem;
+  }
+}
+
+.campo {
+  display: grid;
+  gap: 0.3rem;
+}

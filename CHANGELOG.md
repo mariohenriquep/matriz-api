@@ -2,6 +2,22 @@
 
 As versões seguem [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto a major for 0, o contrato pode mudar entre versões menores. Cada versão tem uma tag `vX.Y.Z` no `main`. O mesmo número aparece no contrato (`openapi.yaml`), no backend (`backend/pom.xml`) e no frontend (`frontend/package.json`).
 
+## [0.8.0] - 2026-11-16
+
+Página inicial pública e registo seguro. Notas da versão em [`docs/release-notes/v0.8.0.md`](docs/release-notes/v0.8.0.md).
+
+### Adicionado
+- Página inicial pública em `/` (para quem não tem sessão) e página "Criar conta" em `/registo`.
+- `POST /auth/registo`: cria uma conta no plano gratuito; responde sempre o mesmo, exista ou não o email; campo-armadilha para robôs.
+- Planos `GRATUITO` e `PROFISSIONAL` (migração V5, coluna `utilizador.plano`). O plano gratuito não cria projetos (`403 /erros/plano-sem-acesso`). `plano` e `podeCriarProjetos` em `/auth/eu` e no login.
+- Limites de pedidos por IP no login (10/min) e no registo (5/hora, 50/hora no total), com `429` e `Retry-After`.
+- Regras da password do registo (8 a 64 caracteres, máximo 72 bytes, passwords comuns, repetitivas ou com o email recusadas) e validação/normalização do email.
+- Testes: `RegistoTest`, `LimitesPedidosTest`, `RegrasContaTest`, `LimitadorPedidosTest`, `EnderecoClienteTest` (backend), `Registo.test.tsx`, `Apresentacao.test.tsx` e casos do plano gratuito em `Inicio.test.tsx` (frontend), E2E `registo.spec.ts`.
+
+### Alterado
+- US-01: o registo já não diz "Já existe uma conta com este email" e não inicia sessão automaticamente (para não revelar que emails existem).
+- O login passa a estar em `/login` também para quem abre a aplicação em `/` (a página inicial pública ocupa `/`).
+
 ## [0.7.1] - 2026-11-16
 
 Deploy no plano gratuito do Render. Notas da versão em [`docs/release-notes/v0.7.1.md`](docs/release-notes/v0.7.1.md).

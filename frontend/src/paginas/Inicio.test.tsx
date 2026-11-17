@@ -120,3 +120,28 @@ describe('Quadro geral na página inicial', () => {
     expect(within(coluna('Por fazer')).getByText('Escrever os textos')).toBeInTheDocument()
   })
 })
+
+describe('Conta do plano gratuito (registo público)', () => {
+  const gratuita = { ...ana, plano: 'GRATUITO' as const, podeCriarProjetos: false }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('não mostra a criação de projetos e explica como entrar num projeto', async () => {
+    vi.mocked(apiProjetos.listarProjetos).mockResolvedValue({ itens: [], total: 0 })
+    abrirComSessao('/', { '/': <Inicio /> }, gratuita)
+
+    expect(await screen.findByText(/Quando o gestor de um projeto te adicionar/)).toHaveTextContent(ana.email)
+    expect(screen.queryByRole('button', { name: /Novo projeto/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Criar projeto' })).not.toBeInTheDocument()
+  })
+
+  it('vê os projetos para que foi convidada, sem o botão de criar', async () => {
+    vi.mocked(apiProjetos.listarProjetos).mockResolvedValue({ itens: [formacao], total: 1 })
+    abrirComSessao('/', { '/': <Inicio /> }, gratuita)
+
+    expect(await screen.findByRole('link', { name: 'Formação' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Novo projeto/ })).not.toBeInTheDocument()
+  })
+})

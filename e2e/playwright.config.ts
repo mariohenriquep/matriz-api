@@ -36,6 +36,9 @@ export default defineConfig({
         MATRIZ_CORS_ORIGENS: `http://localhost:${PORTA_WEB}`,
         MATRIZ_SEED_ATIVO: 'true',
         MATRIZ_SEED_PASSWORD: PASSWORD_DEMO,
+        // Todos os testes entram do mesmo IP: limites altos para não chegarem a 429
+        MATRIZ_LIMITE_LOGIN: '1000',
+        MATRIZ_LIMITE_REGISTO: '1000',
         // Segredo novo a cada execução: os tokens só valem durante os testes
         MATRIZ_JWT_SEGREDO: randomBytes(48).toString('base64'),
       },

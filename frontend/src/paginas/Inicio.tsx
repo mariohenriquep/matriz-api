@@ -29,6 +29,8 @@ type Estado =
  */
 export function Inicio() {
   const { utilizador } = useSessao()
+  // O plano gratuito (contas do registo público) não cria projetos; o backend também o recusa (403)
+  const podeCriar = utilizador?.podeCriarProjetos === true
   const [parametros, setParametros] = useSearchParams()
   const vistaUrl = parametros.get('vista')
   const vista: Vista = vistaUrl === 'quadro' || vistaUrl === 'arquivados' ? vistaUrl : 'ativos'
@@ -126,7 +128,7 @@ export function Inicio() {
               </p>
             )}
           </section>
-          {!aCriar && (
+          {podeCriar && !aCriar && (
             <button type="button" onClick={() => { setACriar(true); setSucesso(null) }}>
               + Novo projeto
             </button>
@@ -203,10 +205,17 @@ export function Inicio() {
             ) : (
               <>
                 <p>Ainda não participas em nenhum projeto.</p>
-                {!aCriar && (
-                  <button type="button" onClick={() => setACriar(true)}>
-                    Criar projeto
-                  </button>
+                {podeCriar ? (
+                  !aCriar && (
+                    <button type="button" onClick={() => setACriar(true)}>
+                      Criar projeto
+                    </button>
+                  )
+                ) : (
+                  <p className="suave">
+                    Quando o gestor de um projeto te adicionar à equipa (com o email {utilizador?.email}), o projeto
+                    aparece aqui. Criar os teus próprios projetos faz parte do plano Profissional, disponível em breve.
+                  </p>
                 )}
               </>
             )}

@@ -42,9 +42,11 @@
 
 **Como** visitante, **quero** criar uma conta e iniciar sessão, **para** aceder aos projetos da minha equipa.
 
-1. **Dado** que não existe conta com `ana@exemplo.pt`, **quando** me registo com nome "Ana", esse email e uma password com 8 ou mais caracteres, **então** a conta é criada e fico com sessão iniciada.
+1. **Dado** que não existe conta com `ana@exemplo.pt`, **quando** me registo com nome "Ana", esse email e uma password com 8 ou mais caracteres, **então** a conta é criada no plano gratuito e sigo para o login com o email preenchido. *(Alterado na 0.8.0: não se inicia sessão automaticamente, porque a resposta do registo não pode revelar se o email já tinha conta.)*
 2. **Dado** que a Matriz foi instalada com a Ana configurada como administradora, **quando** o Rui é o primeiro a registar-se, **então** a conta do Rui fica sem privilégios de administrador.
-3. **Dado** que já existe conta com `ana@exemplo.pt`, **quando** alguém se tenta registar com `Ana@Exemplo.pt`, **então** o registo é recusado com "Já existe uma conta com este email".
+3. **Dado** que já existe conta com `ana@exemplo.pt`, **quando** alguém se tenta registar com `Ana@Exemplo.pt`, **então** vê a mesma mensagem de um registo novo ("Pedido de registo recebido…"), nenhuma conta é criada e a conta existente não muda. *(Alterado na 0.8.0, a pedido do Mário: segurança primeiro. Antes: "Já existe uma conta com este email", o que permitia descobrir que emails estão registados.)*
+5. **Dado** que me registei pelo registo público, **quando** entro, **então** não vejo nenhum projeto nem a opção de criar projetos; vejo um projeto só depois de o Gestor me adicionar (plano gratuito, 0.8.0).
+6. **Dado** que o mesmo IP já fez 5 pedidos de registo na última hora, **quando** faz outro, **então** recebe "Demasiadas tentativas. Tenta novamente daqui a N minutos." (0.8.0).
 4. **Dado** que tenho conta, **quando** inicio sessão com email ou password errados, **então** vejo "Credenciais inválidas", sem indicar qual dos dois está errado.
 5. **Dado** que tenho sessão iniciada, **quando** termino a sessão, **então** deixo de conseguir abrir qualquer página de projeto sem voltar a iniciar sessão.
 

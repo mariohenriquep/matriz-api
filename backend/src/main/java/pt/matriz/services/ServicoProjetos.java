@@ -48,9 +48,10 @@ public class ServicoProjetos {
         return projetos.obter(projeto, utilizador).orElseThrow(() -> ErroApi.naoEncontrado("Projeto não encontrado"));
     }
 
-    /** O utilizador autenticado fica Gestor; o cliente nunca indica o dono. */
+    /** O utilizador autenticado fica Gestor; o cliente nunca indica o dono. O plano gratuito não cria projetos. */
     @Transactional
     public Projeto criar(long utilizador, String nome, String descricao) {
+        acesso.exigirPodeCriarProjetos(utilizador);
         long id = projetos.criar(NOME.validar(nome), DESCRICAO.validar(descricao), utilizador);
         return obter(id, utilizador);
     }

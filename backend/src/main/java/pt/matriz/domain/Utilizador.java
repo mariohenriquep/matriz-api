@@ -5,6 +5,8 @@ import java.time.OffsetDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -31,6 +33,11 @@ public class Utilizador {
     @Column(name = "versao_token", nullable = false)
     private int versaoToken;
 
+    /** Só muda na base de dados (ainda não há pagamentos). */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20, updatable = false)
+    private Plano plano;
+
     @Column(name = "criado_em", nullable = false, insertable = false, updatable = false)
     private OffsetDateTime criadoEm;
 
@@ -47,6 +54,16 @@ public class Utilizador {
     protected Utilizador() {
     }
 
+    /** Conta nova do registo público: plano gratuito, sem projetos. Os dados já vêm validados. */
+    public static Utilizador novo(String nome, String email, String passwordHash) {
+        Utilizador utilizador = new Utilizador();
+        utilizador.nome = nome;
+        utilizador.email = email;
+        utilizador.passwordHash = passwordHash;
+        utilizador.plano = Plano.GRATUITO;
+        return utilizador;
+    }
+
     public Long getId() {
         return id;
     }
@@ -61,6 +78,10 @@ public class Utilizador {
 
     public String getPasswordHash() {
         return passwordHash;
+    }
+
+    public Plano getPlano() {
+        return plano;
     }
 
     public int getVersaoToken() {

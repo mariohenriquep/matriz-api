@@ -3,7 +3,8 @@ import { PASSWORD_DEMO } from '../ambiente.mjs'
 
 /** Entra com uma conta do seed e espera pela saudação do painel. */
 export async function entrar(page: Page, email: string, nome: string) {
-  await page.goto('/')
+  // Em "/" quem não tem sessão vê a apresentação pública (versão 0.8.0): o login está em /login
+  await page.goto('/login')
   await page.getByLabel('Email').fill(email)
   await page.getByLabel('Password').fill(PASSWORD_DEMO)
   await page.getByRole('button', { name: 'Entrar' }).click()
@@ -26,4 +27,10 @@ export async function criarProjetoComTarefa(page: Page, projeto: string, titulo:
   await tarefas.getByRole('button', { name: 'Criar tarefa' }).click()
   await expect(tarefas.getByRole('link', { name: titulo })).toBeVisible()
   return tarefas
+}
+
+/** Termina a sessão e espera pela página inicial pública. */
+export async function terminarSessao(page: Page) {
+  await page.getByRole('button', { name: 'Terminar sessão' }).click()
+  await expect(page.getByRole('link', { name: 'Criar conta', exact: true })).toBeVisible()
 }

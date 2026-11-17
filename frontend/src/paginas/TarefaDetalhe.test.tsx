@@ -25,7 +25,7 @@ vi.mock('../api/tarefas', async (original) => ({
 function abrir(utilizador: Utilizador, papel: 'GESTOR' | 'MEMBRO', arquivado = false) {
   vi.mocked(apiProjetos.obterProjeto).mockResolvedValue(umProjeto({ meuPapel: papel, arquivado }))
   render(
-    <ContextoSessao.Provider value={{ utilizador, aviso: null, entrar: vi.fn(), sair: vi.fn() }}>
+    <ContextoSessao.Provider value={{ utilizador: { ...utilizador, plano: 'PROFISSIONAL', podeCriarProjetos: true }, aviso: null, entrar: vi.fn(), sair: vi.fn() }}>
       <MemoryRouter initialEntries={['/tarefas/t-1']}>
         <Routes>
           <Route path="/tarefas/:tarefaId" element={<TarefaDetalhe />} />

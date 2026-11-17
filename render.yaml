@@ -57,8 +57,13 @@ services:
         sync: false
       - key: MATRIZ_FUSO_HORARIO
         value: Europe/Lisbon
-      # Sem registo de contas na aplicação: as contas de demonstração são a forma de entrar.
-      # Só são criadas se a base de dados estiver vazia. A password é escolhida ao criar o Blueprint.
+      # Limites do login e do registo por IP (0.8.0): o IP do cliente vem do X-Forwarded-For, onde o
+      # Cloudflare e o balanceador do Render acrescentam cada um uma entrada. Ver EnderecoCliente.java.
+      - key: MATRIZ_PROXIES_CONFIAVEIS
+        value: "2"
+      # Contas de demonstração (com o plano Profissional, podem criar projetos). Desde a 0.8.0 há registo
+      # público, mas as contas novas ficam no plano gratuito. Só são criadas se a base de dados estiver vazia.
+      # A password é escolhida ao criar o Blueprint.
       - key: MATRIZ_SEED_ATIVO
         value: "true"
       - key: MATRIZ_SEED_PASSWORD

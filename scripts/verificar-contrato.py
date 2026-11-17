@@ -76,6 +76,10 @@ def login(e): return json.loads(call('POST', '/auth/login', body={'email': e, 'p
 check('POST', '/auth/login', body={'email': 'ana@matriz.local', 'password': P}, esperado=200)
 check('POST', '/auth/login', body={'email': 'ana@matriz.local', 'password': 'x'}, esperado=401)
 check('POST', '/auth/login', body={'email': '', 'password': ''}, esperado=400)
+# Registo público (0.8.0): dados inválidos dão 400; com um email já registado, 202 sem alterar a conta
+check('POST', '/auth/registo', body={'nome': 'x', 'email': 'invalido', 'password': 'curta'}, esperado=400)
+check('POST', '/auth/registo', body={'nome': 'Ana', 'email': 'ana@matriz.local', 'password': 'uma password segura'},
+      esperado=202)
 ana, rui, joana = login('ana@matriz.local'), login('rui@matriz.local'), login('joana@matriz.local')
 check('GET', '/auth/eu', ana, esperado=200); check('GET', '/auth/eu', esperado=401)
 check('GET', '/projetos', ana, esperado=200); check('GET', '/projetos?pesquisa=web', ana, esperado=200)
@@ -118,7 +122,7 @@ check('DELETE', f'/projetos/{pid}', ana, esperado=204)
 # 401 sem token e 404 para quem não é membro, em todas as operações (projeto 1 / tarefa 1 são da Ana; Joana não é membro)
 corpos = {'POST': {'titulo': 'x', 'nome': 'x', 'email': 'rui@matriz.local', 'utilizadorId': '2', 'conteudo': 'x'}, 'PATCH': {'nome': 'x'}}
 for tpl, ops in spec['paths'].items():
-    if tpl.startswith('/auth/login'): continue
+    if tpl.startswith(('/auth/login', '/auth/registo')): continue  # públicas
     for m in ops:
         if m == 'parameters': continue
         p = tpl.replace('{projetoId}', '1').replace('{tarefaId}', '1').replace('{utilizadorId}', '2')

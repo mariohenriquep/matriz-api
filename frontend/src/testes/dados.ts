@@ -1,9 +1,11 @@
 // Dados fictícios partilhados pelos testes.
-import type { Utilizador } from '../api/autenticacao'
+import type { Conta, Utilizador } from '../api/autenticacao'
 import type { Membro, Projeto } from '../api/projetos'
 import type { Tarefa } from '../api/tarefas'
 
 export const ana: Utilizador = { id: 'u-ana', nome: 'Ana Gestora', email: 'ana@exemplo.pt' }
+/** A Ana como utilizadora autenticada (plano profissional: pode criar projetos). */
+export const contaAna: Conta = { ...ana, plano: 'PROFISSIONAL', podeCriarProjetos: true }
 export const rui: Utilizador = { id: 'u-rui', nome: 'Rui Membro', email: 'rui@exemplo.pt' }
 
 export const membros: Membro[] = [

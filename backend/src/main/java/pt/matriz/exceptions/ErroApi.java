@@ -37,6 +37,11 @@ public class ErroApi extends RuntimeException {
         return new ErroApi(HttpStatus.FORBIDDEN, "/erros/sem-permissao", "Sem permissão", detalhe);
     }
 
+    /** 403: a operação não está incluída no plano da conta (ex.: criar projetos no plano gratuito). */
+    public static ErroApi planoSemAcesso(String detalhe) {
+        return new ErroApi(HttpStatus.FORBIDDEN, "/erros/plano-sem-acesso", "Sem permissão", detalhe);
+    }
+
     public static ErroApi conflito(String detalhe) {
         return new ErroApi(HttpStatus.CONFLICT, "/erros/conflito", "Conflito", detalhe);
     }

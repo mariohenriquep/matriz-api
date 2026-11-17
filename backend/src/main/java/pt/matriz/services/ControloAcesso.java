@@ -3,8 +3,11 @@ package pt.matriz.services;
 import org.springframework.stereotype.Component;
 
 import pt.matriz.domain.Papel;
+import pt.matriz.domain.Plano;
+import pt.matriz.domain.Utilizador;
 import pt.matriz.exceptions.ErroApi;
 import pt.matriz.repositories.ProjetoRepositorio;
+import pt.matriz.repositories.UtilizadorRepositorio;
 
 /**
  * Regras de acesso de {@code docs/implementation-plan.md} §3, num só sítio. Todas as operações sobre projetos,
@@ -14,15 +17,28 @@ import pt.matriz.repositories.ProjetoRepositorio;
  *   <li>Quem não é membro recebe 404, como se o recurso não existisse (CE-07).</li>
  *   <li>Um membro sem o papel necessário recebe 403.</li>
  *   <li>Alterar um projeto arquivado, ou as suas tarefas, dá 409 (os métodos {@code ...Ativo}).</li>
+ *   <li>Criar projetos depende do plano da conta: o gratuito recebe 403 (versão 0.8.0).</li>
  * </ul>
  */
 @Component
 public class ControloAcesso {
 
     private final ProjetoRepositorio projetos;
+    private final UtilizadorRepositorio utilizadores;
 
-    public ControloAcesso(ProjetoRepositorio projetos) {
+    public ControloAcesso(ProjetoRepositorio projetos, UtilizadorRepositorio utilizadores) {
         this.projetos = projetos;
+        this.utilizadores = utilizadores;
+    }
+
+    /** 403 se o plano da conta não incluir criar projetos (as contas do registo público). */
+    public void exigirPodeCriarProjetos(long utilizadorId) {
+        boolean pode = utilizadores.findById(utilizadorId).map(Utilizador::getPlano).map(Plano::podeCriarProjetos)
+                .orElse(false);
+        if (!pode) {
+            throw ErroApi.planoSemAcesso("O teu plano não inclui criar projetos. Pede a um gestor que te adicione "
+                    + "a um projeto");
+        }
     }
 
     /** Devolve o papel do utilizador no projeto, ou 404 se o projeto não existir ou ele não for membro. */

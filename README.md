@@ -192,9 +192,11 @@ Problemas comuns:
 
 1. O login (`POST /api/v1/auth/login`) devolve um token JWT, válido durante **8 horas a partir do login**, com ou sem atividade.
 2. O frontend guarda o token no `sessionStorage`: a sessão sobrevive a recarregar a página e termina quando o separador fecha.
-3. Todos os pedidos à API, exceto o login, levam `Authorization: Bearer <token>`. Sem token, ou com um token inválido ou expirado, a API responde `401` e o frontend volta ao login com a mensagem "A tua sessão terminou".
+3. Todos os pedidos à API, exceto o registo e o login, levam `Authorization: Bearer <token>`. Sem token, ou com um token inválido ou expirado, a API responde `401` e o frontend volta ao login com a mensagem "A tua sessão terminou".
 4. "Terminar sessão" (`POST /api/v1/auth/logout`) invalida no servidor todos os tokens desse utilizador, incluindo os de outros separadores.
 5. As passwords são guardadas só como hash BCrypt.
+6. **Registo público (0.8.0):** "Criar conta" na página inicial (`POST /api/v1/auth/registo`). A conta nova fica no plano gratuito: não cria projetos e só vê os projetos para que um Gestor a adiciona. A resposta é sempre a mesma, exista ou não uma conta com o email. Para dar o plano Profissional a uma conta (ainda sem pagamentos): `UPDATE utilizador SET plano = 'PROFISSIONAL' WHERE email = '...';`.
+7. **Limites de pedidos por IP:** 10 logins por minuto e 5 registos por hora (e 50 registos por hora no total). Acima disso a API responde `429`. Configuráveis com `MATRIZ_LIMITE_LOGIN`, `MATRIZ_LIMITE_REGISTO` e `MATRIZ_LIMITE_REGISTO_TOTAL`; atrás de proxies, `MATRIZ_PROXIES_CONFIAVEIS` diz quantos acrescentam o IP ao `X-Forwarded-For` (2 no Render).
 
 Exemplo com `curl`:
 
@@ -263,6 +265,8 @@ A aplicação pode ser publicada no plano gratuito do Render a partir do Bluepri
 - ✅ **Fase 4 — Testes e revisão (Ficha PL 04):** plano de testes ([`docs/test-plan.md`](docs/test-plan.md)), testes unitários, de integração com gravação real e E2E com Playwright, e Code Review e Security Review ([`docs/quality-security-review.md`](docs/quality-security-review.md)) com as correções aprovadas, incluindo o bloqueio do login após 5 tentativas falhadas.
 - ✅ **Fase 5 — Entrega (Ficha PL 05):** containers Docker, Docker Compose, CI no GitHub Actions com Trivy, SonarQube Cloud e cobertura dos testes, publicação das imagens no Docker Hub ([`docs/delivery-plan.md`](docs/delivery-plan.md), validação em [`docs/delivery-validation.md`](docs/delivery-validation.md)). Versão 0.5.0 ([notas](docs/release-notes/v0.5.0.md)).
 
-Versão atual: **0.5.0** (histórico em [`CHANGELOG.md`](CHANGELOG.md)).
+- ✅ **Extras:** quadro Kanban e arquivo de projetos (0.6.0), quadro geral (0.7.0), deploy no Render (0.7.1), página inicial pública com registo seguro (0.8.0).
+
+Versão atual: **0.8.0** (histórico em [`CHANGELOG.md`](CHANGELOG.md)).
 
 - ⏭️ **Depois:** os extras do MVP original, começando pelo quadro Kanban e pelo arquivo de projetos.

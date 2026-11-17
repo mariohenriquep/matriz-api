@@ -19,6 +19,7 @@ Pessoa com conta na Matriz.
 | tentativas_falhadas | inteiro | por defeito 0; repõe a 0 após login com sucesso (RNF-11) |
 | bloqueado_ate | data/hora | opcional; login recusado até esta hora (RNF-11, P-29) |
 | versao_token | inteiro | por defeito 0; incrementado no logout para invalidar tokens emitidos (D-05) |
+| plano | texto | `GRATUITO` (por defeito, registo público: não cria projetos) ou `PROFISSIONAL` (cria projetos; futuro plano pago). As contas anteriores à 0.8.0 ficaram `PROFISSIONAL` (migração V5) |
 | criado_em | data/hora | obrigatório |
 
 ### PROJETO
