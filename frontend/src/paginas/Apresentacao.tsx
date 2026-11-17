@@ -117,7 +117,7 @@ export function Apresentacao() {
         </section>
       </main>
       <footer className="rodape-publico">
-        <p className="suave">Matriz · As passwords nunca são guardadas em texto simples, só com um hash bcrypt.</p>
+        <p className="suave">Matriz</p>
       </footer>
     </div>
   )
