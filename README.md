@@ -25,7 +25,7 @@ Matriz is a full-stack project and task management app for teams, built from scr
 - **Backend:** Java 21, Spring Boot 3.5 (Web, Security with JWT, Data JPA), PostgreSQL 16 with Flyway, clean architecture enforced by ArchUnit.
 - **Frontend:** React 19, TypeScript, Vite.
 - **Quality:** ~190 automated tests (JUnit 5 + Testcontainers, Vitest + Testing Library, Playwright E2E), contract checks against the OpenAPI 3.1 spec, code and security review.
-- **Delivery:** Docker multi-stage images, Docker Compose, GitHub Actions CI with Trivy and SonarQube Cloud, images published to Docker Hub, deployed on Render.
+- **Delivery:** Docker multi-stage images, Docker Compose, GitHub Actions CI with Trivy, Gitleaks and SonarQube Cloud, images published to Docker Hub, deployed on Render.
 - **AI-assisted, human-in-the-loop:** specification, architecture, implementation and reviews were done with an AI coding agent under explicit project rules ([`AGENTS.md`](AGENTS.md)); every step is logged in [`docs/ai-log/`](docs/ai-log/).
 
 The code, UI and documentation are in Portuguese (Portugal).
@@ -60,7 +60,7 @@ A Matriz resolve isto com projetos, membros e tarefas num quadro Kanban. Foi con
 | Frontend | React 19, React Router, TypeScript, Vite |
 | API | REST com contrato [OpenAPI 3.1](openapi.yaml) (24 operações) e erros em Problem Details (RFC 9457) |
 | Testes | JUnit 5, Testcontainers, ArchUnit; Vitest e Testing Library; Playwright (E2E) |
-| Entrega | Docker (imagens multi-stage, sem privilégios), Docker Compose, GitHub Actions, Trivy, SonarQube Cloud, Docker Hub, Render |
+| Entrega | Docker (imagens multi-stage, sem privilégios), Docker Compose, GitHub Actions, Trivy, Gitleaks, SonarQube Cloud, Docker Hub, Render |
 
 ## Arquitetura
 
@@ -99,7 +99,7 @@ Cerca de **190 testes automáticos** correm em cada pull request:
 - **E2E:** 4 cenários com Playwright (criar tarefa, Kanban e arquivo, quadro geral, registo).
 - **Contrato:** [`scripts/verificar-contrato.py`](scripts/verificar-contrato.py) percorre todas as operações do `openapi.yaml` contra a API a correr.
 
-A pipeline de [CI](.github/workflows/ci.yml) corre os testes, analisa dependências, configuração e imagens com o **Trivy**, envia a cobertura para o **SonarQube Cloud** e só depois constrói e arranca as imagens Docker. Numa tag de versão publica as imagens no Docker Hub ([`marrike/matriz-backend`](https://hub.docker.com/r/marrike/matriz-backend), [`marrike/matriz-frontend`](https://hub.docker.com/r/marrike/matriz-frontend)).
+A pipeline de [CI](.github/workflows/ci.yml) corre os testes, analisa dependências, configuração e imagens com o **Trivy**, procura segredos em todo o histórico do Git com o **Gitleaks**, envia a cobertura para o **SonarQube Cloud** e só depois constrói e arranca as imagens Docker. Numa tag de versão publica as imagens no Docker Hub ([`marrike/matriz-backend`](https://hub.docker.com/r/marrike/matriz-backend), [`marrike/matriz-frontend`](https://hub.docker.com/r/marrike/matriz-frontend)).
 
 Também houve uma [Code Review e Security Review](docs/quality-security-review.md) com findings classificados por severidade e as correções aplicadas (por exemplo, o bloqueio do login), e testes de IDOR com contas de demonstração: nenhum utilizador consegue ler ou alterar projetos de que não é membro.
 
