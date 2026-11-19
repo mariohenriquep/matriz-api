@@ -22,6 +22,7 @@ Antes de qualquer tarefa, lê os documentos relevantes:
 | Ecrãs e interface | `docs/ui/` |
 | Plano, incrementos e regras de acesso | `docs/implementation-plan.md` |
 | O que já foi verificado e como | `docs/verification.md` |
+| Como correr, testar e configurar a aplicação | `docs/como-executar.md` |
 
 Se encontrares contradições entre documentos, não escolhas sozinho: assinala-as e pergunta.
 
@@ -80,7 +81,7 @@ Todos a partir da raiz do repositório. A configuração vem do `.env` (copiado 
 | Teste E2E (precisa de `docker compose up -d postgres`) | `cd e2e && npx playwright test` |
 | Verificar a API contra o contrato (backend a correr) | `MATRIZ_SEED_PASSWORD=<do .env> python3 scripts/verificar-contrato.py` |
 
-Contas de demonstração: `ana@`, `rui@` e `joana@matriz.local`, com a password `MATRIZ_SEED_PASSWORD` do `.env` (papéis no `README.md`).
+Contas de demonstração: `ana@`, `rui@` e `joana@matriz.local`, com a password `MATRIZ_SEED_PASSWORD` do `.env` (papéis em `docs/como-executar.md`).
 
 ## 6. Manter-se no âmbito da tarefa
 
