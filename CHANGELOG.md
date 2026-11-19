@@ -2,6 +2,11 @@
 
 As versões seguem [Versionamento Semântico](https://semver.org/lang/pt-BR/). Enquanto a major for 0, o contrato pode mudar entre versões menores. Cada versão tem uma tag `vX.Y.Z` no `main`. O mesmo número aparece no contrato (`openapi.yaml`), no backend (`backend/pom.xml`) e no frontend (`frontend/package.json`).
 
+## [Por publicar]
+
+### Segurança
+- Imagem do frontend passa a usar a imagem oficial `nginx:1.30-alpine-slim` (nginx 1.30.7), ajustada para correr sem root como antes (utilizador `nginx`, porta 8080). A `nginxinc/nginx-unprivileged:1.30-alpine` ainda está no nginx 1.30.6, com 6 vulnerabilidades HIGH/CRITICAL (HTTP/2, HTTP/3, resolver, SSL, mail) que o Trivy passou a detetar em 2026-11-19 e que chumbavam a CI.
+
 ## [0.8.0] - 2026-11-16
 
 Página inicial pública e registo seguro. Notas da versão em [`docs/release-notes/v0.8.0.md`](docs/release-notes/v0.8.0.md).
