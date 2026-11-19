@@ -1,6 +1,6 @@
 # Integração contínua da Matriz (Ficha 05, Ex. 4).
 # Corre em cada pull request e em cada push para o main: testes e build do backend e do frontend, teste E2E,
-# análise de segurança (Trivy) e de qualidade (SonarQube Cloud) e, só se as verificações passarem, a construção
+# análise de segurança (Trivy e Gitleaks) e de qualidade (SonarQube Cloud) e, só se as verificações passarem, a construção
 # das imagens Docker, a análise das imagens e um arranque de verificação. Só num push de uma tag vX.Y.Z
 # é que as imagens verificadas são publicadas no Docker Hub (passos no fim do job docker).
 # As actions estão fixadas por commit (SHA), com a versão em comentário, para não mudarem sem revisão.
@@ -125,6 +125,28 @@ jobs:
           trivyignores: .trivyignore
           exit-code: '1'
 
+  segredos:
+    name: Segredos (Gitleaks em todo o histórico)
+    runs-on: ubuntu-latest
+    # Num pull request, o Gitleaks lê a lista de commits do PR pela API
+    permissions:
+      contents: read
+      pull-requests: read
+    timeout-minutes: 10
+    steps:
+      # Histórico completo: o Gitleaks procura segredos em todos os commits, incluindo os que já foram apagados
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Gitleaks (passwords, tokens e chaves em todo o histórico)
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Repositório de conta pessoal: não precisa de GITLEAKS_LICENSE
+          GITLEAKS_VERSION: 8.30.1
+          GITLEAKS_ENABLE_COMMENTS: false
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: false
+
   qualidade:
     name: Qualidade (SonarQube Cloud)
     runs-on: ubuntu-latest
@@ -185,7 +207,7 @@ jobs:
   docker:
     name: Imagens Docker (build e arranque)
     # Só avança depois de todas as verificações
-    needs: [backend, frontend, e2e, seguranca]
+    needs: [backend, frontend, e2e, seguranca, segredos]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

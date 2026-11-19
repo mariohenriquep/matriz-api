@@ -186,11 +186,13 @@ flowchart LR
     PR --> FT[frontend<br/>lint, testes, build]
     PR --> E2E[e2e<br/>Playwright]
     PR --> SEG[seguranca<br/>Trivy no repositório]
+    PR --> GL[segredos<br/>Gitleaks no histórico]
     PR --> QUA[qualidade<br/>SonarQube Cloud]
     BK --> DK
     FT --> DK
     E2E --> DK
+    GL --> DK
     SEG --> DK[docker<br/>build, Trivy nas imagens,<br/>arranque com healthchecks]
 ```
 
-O job `docker` só corre se os quatro primeiros passarem. O `qualidade` corre em paralelo e o quality gate aparece no PR. Detalhe em [`docs/delivery-plan.md`](delivery-plan.md) e no [`README.md`](../README.md#integração-contínua).
+O job `docker` só corre se os cinco primeiros passarem. O `qualidade` corre em paralelo e o quality gate aparece no PR. Detalhe em [`docs/delivery-plan.md`](delivery-plan.md) e no [`README.md`](../README.md#integração-contínua).
